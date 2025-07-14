@@ -25,6 +25,8 @@ namespace Hoshi.Models.OrderModels
         public bool? IsConfirmed { get; set; }
         public bool IsDeleted { get; set; }
 
+
+        [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
         public OfferStatus OfferStatus { get; set; } = OfferStatus.Waitting;
 
         public int WorkerId { get; set; }

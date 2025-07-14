@@ -17,10 +17,9 @@ namespace Hoshi.Models.GlobalModels
         public double MinFees { get; set; }
 
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
-
         public FeeType? FeeType { get; set; }
 
-        public bool IsSpecial => ServiceId is not null;
+        public bool IsSpecial { get; set; }
 
         public int? ServiceId { get; set; }
         public Service? Service { get; set; }

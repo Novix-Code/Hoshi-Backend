@@ -19,6 +19,8 @@ namespace Hoshi.Models.OrderModels
         public double VisitPrice { get; set; }
         public DateTime VisitingDateTime { get; set; }
 
+
+        [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
         public VisitStatus VisitStatus { get; set; } = VisitStatus.Waitting;
 
         // This prop auto generated in post process

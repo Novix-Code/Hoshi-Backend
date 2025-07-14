@@ -32,6 +32,8 @@ namespace Hoshi.Models.OrderModels
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
         public double? TotalWorkerCost { get; set; }
 
+
+        [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Published;
 
         public int ClientId { get; set; }
