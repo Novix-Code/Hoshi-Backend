@@ -9,7 +9,7 @@ namespace Hoshi.Models.UserModels.WorkerModels
     [Index(nameof(UserId), IsUnique = true)]
     [NoAction(ControllerAction.Delete)]
     [EndpointGroupping("Worker")]
-    public class WorkerSpecifications : TimestampedModel
+    public class WorkerSpecification : TimestampedModel
     {
         public string Bio { get; set; } = string.Empty;
         public string ImageURL { get; set; } = string.Empty;

@@ -2,7 +2,7 @@
 
 namespace Hoshi.Models.UserModels.AdminModels
 {
-    public class PagePermission : TimestampedModel
+    public class PermissionPage : TimestampedModel
     {
         public int PageId { get; set; }
         public Page? Page { get; set; }

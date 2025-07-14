@@ -1,13 +1,14 @@
 ﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericModels;
 
 namespace Hoshi.Models.DashboardMdoels
 {
+    [NoAction(ControllerAction.Add)]
     [NoAction(ControllerAction.AddList)]
-    [NoAction(ControllerAction.Update)]
     [NoAction(ControllerAction.GetById)]
     [NoAction(ControllerAction.Delete)]
     [EndpointGroupping("Admin")]
-    public class ArchiveSettings
+    public class ArchiveSettings : TimestampedModel
     {
         public int AutoSaveDuration = 30;
         public bool AllData = true;
