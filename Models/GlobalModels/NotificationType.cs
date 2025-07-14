@@ -1,7 +1,12 @@
-﻿using GenericCRUDLibrary.GenericModels;
+﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericModels;
 
 namespace Hoshi.Models.GlobalModels
 {
+    [UseFSPController]
+    [NoAction(ControllerAction.Pagination)]
+    [NoAction(ControllerAction.FilterPagination)]
+    [EndpointGroupping("Admin")]
     public class NotificationType: TimestampedModel
     {
         public string Title { get; set; } = string.Empty;

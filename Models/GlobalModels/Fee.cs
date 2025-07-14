@@ -5,7 +5,11 @@ using Hoshi.Models.ServiceModels;
 
 namespace Hoshi.Models.GlobalModels
 {
+    [UseFSPController]
+    [NoAction(ControllerAction.Pagination)]
+    [NoAction(ControllerAction.FilterPagination)]
     [NoAction(ControllerAction.Delete)]
+    [EndpointGroupping("Admin")]
     public class Fee : TimestampedModel
     {
         public double MainFees { get; set; }

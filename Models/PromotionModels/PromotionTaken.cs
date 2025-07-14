@@ -6,8 +6,7 @@ using Hoshi.Models.UserModels;
 namespace Hoshi.Models.PromotionModels
 {
 
-    [UseFSPController]
-    [NoAction(ControllerAction.Delete)]
+    [UseJustFSPController]
     public class PromotionTaken : TimestampedModel
     {
         public int UserId { get; set; }

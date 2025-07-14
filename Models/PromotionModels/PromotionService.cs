@@ -8,7 +8,8 @@ namespace Hoshi.Models.PromotionModels
     [UseJustFSPController]
     [NoAction(ControllerAction.Pagination)]
     [NoAction(ControllerAction.FilterPagination)]
-    public class ServicePromotion : IBaseModel
+    [EndpointGroupping("Admin")]
+    public class PromotionService : IBaseModel
     {
         public int Id { get; set; }
 

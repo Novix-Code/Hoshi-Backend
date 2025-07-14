@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 namespace Hoshi.Models.UserModels
 {
     [UseFSPController]
+    [EndpointGroupping("Admin")]
     public class User : IdentityUser<int>, IBaseModel, ISoftDelete
     {
         public string UserCode { get; set; } = string.Empty;

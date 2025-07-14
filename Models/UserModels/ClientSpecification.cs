@@ -7,6 +7,7 @@ namespace Hoshi.Models.UserModels
 {
     [Index(nameof(UserId), IsUnique = true)]
     [NoAction(ControllerAction.Delete)]
+    [EndpointGroupping("Client")]
     public class ClientSpecification : TimestampedModel
     {
         public string ImageURL { get; set; } = string.Empty;

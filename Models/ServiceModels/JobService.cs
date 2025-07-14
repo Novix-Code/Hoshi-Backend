@@ -1,7 +1,9 @@
-﻿using GenericCRUDLibrary.GenericModels;
+﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericModels;
 
 namespace Hoshi.Models.ServiceModels
 {
+    [EndpointGroupping("Admin")]
     public class JobService : TimestampedModel
     {
         public int JobId { get; set; }

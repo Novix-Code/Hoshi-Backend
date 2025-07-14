@@ -7,6 +7,7 @@ namespace Hoshi.Models.UserModels.WorkerModels
     [NoAction(ControllerAction.Delete)]
     [NoAction(ControllerAction.Pagination)]
     [NoAction(ControllerAction.FilterPagination)]
+    [EndpointGroupping("Worker")]
     public class WorkerPaymentHistroy
     {
         public string BillImageURL { get; set; } = string.Empty;

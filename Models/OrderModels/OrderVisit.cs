@@ -9,6 +9,8 @@ namespace Hoshi.Models.OrderModels
     [NoAction(ControllerAction.Delete)]
     [NoAction(ControllerAction.Pagination)]
     [NoAction(ControllerAction.FilterPagination)]
+    [EndpointGroupping("Worker", ControllerAction.Add)]
+    [EndpointGroupping("Worker", ControllerAction.Update)]
     public class OrderVisit : TimestampedModel
     {
         public string VisitNote { get; set; } = string.Empty;

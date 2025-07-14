@@ -1,9 +1,15 @@
-﻿using GenericCRUDLibrary.GenericInterfaces;
+﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericInterfaces;
 using GenericCRUDLibrary.GenericModels;
 using Hoshi.Enums;
 
 namespace Hoshi.Models.PromotionModels
 {
+    [EndpointGroupping("Admin", ControllerAction.Add)]
+    [EndpointGroupping("Admin", ControllerAction.AddList)]
+    [EndpointGroupping("Admin", ControllerAction.Update)]
+    [EndpointGroupping("Admin", ControllerAction.Delete)]
+    [EndpointGroupping("Admin", ControllerAction.Restore)]
     public class Promotion : TimestampedModel, ISoftDelete
     {
         public double Value { get; set; }

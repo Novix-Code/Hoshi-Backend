@@ -7,6 +7,10 @@ using Hoshi.Models.UserModels;
 
 namespace Hoshi.Models.OrderModels
 {
+    [UseFSPController]
+    [NoAction(ControllerAction.AddList)]
+    [EndpointGroupping("Worker", ControllerAction.Add)]
+    [EndpointGroupping("Worker", ControllerAction.Update)]
     public class Offer : TimestampedModel, ISoftDelete
     {
         public double OfferedPrice { get; set; }

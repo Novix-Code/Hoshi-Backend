@@ -1,7 +1,10 @@
-﻿using GenericCRUDLibrary.GenericInterfaces;
+﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericInterfaces;
 
 namespace Hoshi.Models.OrderModels
 {
+    [EndpointGroupping("Client", ControllerAction.Add)]
+    [EndpointGroupping("Client", ControllerAction.Update)]
     public class OrderImage : IBaseModel, ISoftDelete
     {
         public int Id { get; set; }

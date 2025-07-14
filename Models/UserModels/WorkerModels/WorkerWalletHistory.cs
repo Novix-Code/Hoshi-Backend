@@ -6,6 +6,7 @@ namespace Hoshi.Models.UserModels.WorkerModels
     [UseJustFSPController]
     [NoAction(ControllerAction.Pagination)]
     [NoAction(ControllerAction.FilterPagination)]
+    [EndpointGroupping("Worker")]
     public class WorkerWalletHistory : TimestampedModel
     {
         public string Title { get; set; } = string.Empty;

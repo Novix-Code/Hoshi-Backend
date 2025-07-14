@@ -10,6 +10,9 @@ namespace Hoshi.Models.OrderModels
 {
     [UseFSPController]
     [NoAction(ControllerAction.Delete)]
+    [NoAction(ControllerAction.AddList)]
+    [EndpointGroupping("Client", ControllerAction.Add)]
+    [EndpointGroupping("Client", ControllerAction.Update)]
     public class Order : TimestampedModel
     {
         public string Description { get; set; } = string.Empty;
