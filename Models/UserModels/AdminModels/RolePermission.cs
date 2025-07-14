@@ -1,7 +1,9 @@
-﻿using GenericCRUDLibrary.GenericModels;
+﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericModels;
 
 namespace Hoshi.Models.UserModels.AdminModels
 {
+    [EndpointGroupping("Admin")]
     public class RolePermission : TimestampedModel
     {
         public int RoleId { get; set; }

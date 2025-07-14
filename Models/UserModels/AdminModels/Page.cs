@@ -1,8 +1,10 @@
-﻿using GenericCRUDLibrary.GenericInterfaces;
+﻿using GenericCRUDLibrary.CustomAttributes;
+using GenericCRUDLibrary.GenericInterfaces;
 using GenericCRUDLibrary.GenericModels;
 
 namespace Hoshi.Models.UserModels.AdminModels
 {
+    [EndpointGroupping("Admin")]
     public class Page : TimestampedModel, ISoftDelete
     {
         public string PageName { get; set; } = string.Empty;

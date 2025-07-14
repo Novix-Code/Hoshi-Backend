@@ -5,6 +5,7 @@ using GenericCRUDLibrary.GenericModels;
 namespace Hoshi.Models.UserModels.AdminModels
 {
     [UseFSPController]
+    [EndpointGroupping("Admin")]
     public class Permission : TimestampedModel, ISoftDelete
     {
         public string PermissionName { get; set; } = string.Empty;

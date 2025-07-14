@@ -4,6 +4,7 @@ using GenericCRUDLibrary.GenericModels;
 namespace Hoshi.Models.UserModels.AdminModels
 {
     [UseFSPController]
+    [EndpointGroupping("Admin")]
     public class AdminPage : TimestampedModel
     {
         public int UserId { get; set; }

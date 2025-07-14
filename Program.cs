@@ -1,6 +1,19 @@
 
 using GenericCRUDLibrary.GenericMiddlewares;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
+using Hoshi.Repositories.WorkerWalletService;
+using Hoshi.Repositories.WorkerOfferService;
+using Hoshi.Repositories.ClientOfferService;
+using Hoshi.Repositories.OrderVisitService;
+using Hoshi.Repositories.WorkerVisitService;
+using Hoshi.Repositories.ClientVisitService;
+using Hoshi.Repositories.ServiceService;
+using Hoshi.Repositories.ClientHomeService;
+using Hoshi.Repositories.OrderService;
+using Hoshi.Repositories.WorkerOrderService;
+using Hoshi.Repositories.ClientOrderService;
+using Hoshi.Repositories.UserService;
+using Hoshi.Repositories.AuthService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.Models.UserModels;
@@ -21,6 +34,33 @@ namespace Hoshi
             builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(op =>
+            {
+                op.SwaggerDoc("Worker", new OpenApiInfo
+                {
+                    Title = "Worker APIs",
+                    Version = "1.0",
+                    Description = "This APIs for Worker in this project."
+                });
+            });
+            builder.Services.AddSwaggerGen(op =>
+            {
+                op.SwaggerDoc("Client", new OpenApiInfo
+                {
+                    Title = "Client APIs",
+                    Version = "1.0",
+                    Description = "This APIs for Client in this project."
+                });
+            });
+            builder.Services.AddSwaggerGen(op =>
+            {
+                op.SwaggerDoc("Admin", new OpenApiInfo
+                {
+                    Title = "Admin APIs",
+                    Version = "1.0",
+                    Description = "This APIs for Admin in this project."
+                });
+            });
 
             builder.Services.AddSwaggerGen();
 
@@ -45,6 +85,36 @@ namespace Hoshi
                 typeof(GenericFSPService<,,>)
             );
 
+
+
+			builder.Services.AddAutoMapper(typeof(Program));
+
+			builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+
+			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
+
+			builder.Services.AddTransient(typeof(IClientOrderService), typeof(ClientOrderService));
+
+			builder.Services.AddTransient(typeof(IWorkerOrderService), typeof(WorkerOrderService));
+
+			builder.Services.AddTransient(typeof(IOrderService), typeof(OrderService));
+
+			builder.Services.AddTransient(typeof(IClientHomeService), typeof(ClientHomeService));
+
+			builder.Services.AddTransient(typeof(IServiceService), typeof(ServiceService));
+
+			builder.Services.AddTransient(typeof(IClientVisitService), typeof(ClientVisitService));
+
+			builder.Services.AddTransient(typeof(IWorkerVisitService), typeof(WorkerVisitService));
+
+			builder.Services.AddTransient(typeof(IOrderVisitService), typeof(OrderVisitService));
+
+			builder.Services.AddTransient(typeof(IClientOfferService), typeof(ClientOfferService));
+
+			builder.Services.AddTransient(typeof(IWorkerOfferService), typeof(WorkerOfferService));
+
+			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -53,6 +123,12 @@ namespace Hoshi
                 app.UseSwagger();
                 app.UseSwaggerUI(op =>
                 {
+					op.SwaggerEndpoint("/swagger/Worker/swagger.json", "Worker APIs");
+
+					op.SwaggerEndpoint("/swagger/Client/swagger.json", "Client APIs");
+
+					op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
+
                     op.DocumentTitle = "Hoshi - Swagger";
 
                     // This options to make swagger more easy to use.
