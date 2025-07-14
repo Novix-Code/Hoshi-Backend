@@ -8,6 +8,7 @@ namespace Hoshi.Models.UserModels.WorkerModels
     [NoAction(ControllerAction.Pagination)]
     [NoAction(ControllerAction.FilterPagination)]
     [EndpointGroupping("Worker")]
+    [CreateRepoPattern("WorkerWalletService")]
     public class WorkerWallet : TimestampedModel
     {
         public double Balance { get; set; } = 0.0;

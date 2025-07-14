@@ -11,6 +11,8 @@ namespace Hoshi.Models.OrderModels
     [NoAction(ControllerAction.FilterPagination)]
     [EndpointGroupping("Worker", ControllerAction.Add)]
     [EndpointGroupping("Worker", ControllerAction.Update)]
+    [CreateRepoPattern("ClientVisitService")]
+    [CreateRepoPattern("WorkerVisitService")]
     public class OrderVisit : TimestampedModel
     {
         public string VisitNote { get; set; } = string.Empty;

@@ -13,6 +13,8 @@ namespace Hoshi.Models.OrderModels
     [NoAction(ControllerAction.AddList)]
     [EndpointGroupping("Client", ControllerAction.Add)]
     [EndpointGroupping("Client", ControllerAction.Update)]
+    [CreateRepoPattern("ClientOrderService")]
+    [CreateRepoPattern("WorkerOrderService")]
     public class Order : TimestampedModel
     {
         public string Description { get; set; } = string.Empty;

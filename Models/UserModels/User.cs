@@ -7,6 +7,7 @@ namespace Hoshi.Models.UserModels
 {
     [UseFSPController]
     [EndpointGroupping("Admin")]
+    [CreateRepoPattern("AuthService")]
     public class User : IdentityUser<int>, IBaseModel, ISoftDelete
     {
         public string UserCode { get; set; } = string.Empty;

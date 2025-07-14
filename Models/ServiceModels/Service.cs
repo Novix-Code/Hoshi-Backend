@@ -12,6 +12,7 @@ namespace Hoshi.Models.ServiceModels
     [EndpointGroupping("Admin", ControllerAction.Update)]
     [EndpointGroupping("Admin", ControllerAction.Delete)]
     [EndpointGroupping("Admin", ControllerAction.Restore)]
+    [CreateRepoPattern("ClientHomeService")]
     public class Service : TimestampedModel, ISoftDelete
     {
         public string ServiveName { get; set; } = string.Empty;

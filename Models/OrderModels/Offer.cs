@@ -11,6 +11,8 @@ namespace Hoshi.Models.OrderModels
     [NoAction(ControllerAction.AddList)]
     [EndpointGroupping("Worker", ControllerAction.Add)]
     [EndpointGroupping("Worker", ControllerAction.Update)]
+    [CreateRepoPattern("ClientOfferService")]
+    [CreateRepoPattern("WorkerOfferService")]
     public class Offer : TimestampedModel, ISoftDelete
     {
         public double OfferedPrice { get; set; }
