@@ -62,6 +62,26 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         {
             return base.PaginationFilteredSearch(paginationFilteredSearchDTO);
         }
+        [NonAction]
+        public override IActionResult FilteredSearch(List<FilteredSearchDTO> filters)
+        {
+            return base.FilteredSearch(filters);    
+
+        }
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> GetById(int id)
+        {
+            var response = await clientHomeService.GetByIdServiceAsync(id);
+            return StatusCode((int)response.StatusCode,response);
+        }
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> GetAll()
+        {
+            var response  = await clientHomeService.GetAllServiceAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+
 
         [EndpointGroupName("Admin")]
         public override Task<IActionResult> Add(ServicePostDTO postDTO)
