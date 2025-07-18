@@ -29,7 +29,7 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
 
         public required int ServiceId { get; set; }
 
-        public int? AppliedPromotionId { get; set; }
+        //public int? AppliedPromotionId { get; set; }
 
         public List<OrderImagePostDTO>? OrderImages { get; set; }
 
