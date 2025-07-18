@@ -64,10 +64,11 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
 			this.orderService = orderService;
         }
 
-        [NonAction]
-        public override Task<IActionResult> Delete(int id)
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> Delete(int id)
         {
-            return base.Delete(id);
+            var response  = await clientOrderService.DeleteOrder(id);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [NonAction]
@@ -82,6 +83,19 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
             var response = await clientOrderService.AddOrderAsync(postDTO);
             return StatusCode((int)response.StatusCode, response);
             
+        }
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> GetAll()
+        {
+            var response = await clientOrderService.GetAllClientsAsync();
+            return StatusCode((int)response.StatusCode,response);   
+        }
+
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> GetById(int id)
+        {
+            var response = await clientOrderService.GetOrderDetails(id);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [EndpointGroupName("Client")]
