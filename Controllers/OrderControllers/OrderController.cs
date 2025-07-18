@@ -77,9 +77,11 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
 
         [EndpointGroupName("Client")]
-        public override Task<IActionResult> Add(OrderPostDTO postDTO)
+        public override async Task<IActionResult> Add(OrderPostDTO postDTO)
         {
-            return base.Add(postDTO);
+            var response = await clientOrderService.AddOrderAsync(postDTO);
+            return StatusCode((int)response.StatusCode, response);
+            
         }
 
         [EndpointGroupName("Client")]
