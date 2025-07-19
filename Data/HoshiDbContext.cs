@@ -6,6 +6,7 @@ using Hoshi.Models.PromotionModels;
 using Hoshi.Models.ServiceModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.AdminModels;
+using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -60,6 +61,7 @@ namespace Hoshi.Data
         public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<PermissionPage> PermissionPages { get; set; }
         public DbSet<AdminPage> AdminPages { get; set; }
+        public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
 
         //-----------------------------------------------------------------
         //--------------------------System Models--------------------------
