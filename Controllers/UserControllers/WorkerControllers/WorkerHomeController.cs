@@ -4,8 +4,6 @@ using Hoshi.Repositories.WorkerHomeService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Hoshi.DTOs.OrderDTOs.OfferDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 
 namespace Hoshi.Controllers.UserControllers.WorkerControllers
 {

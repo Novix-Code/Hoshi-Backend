@@ -4,16 +4,8 @@ using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.Enums;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
-using Hoshi.DTOs.OrderDTOs.InvoiceDTOs;
 using Hoshi.DTOs.OrderDTOs.OfferDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderImageDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
-using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
-using Hoshi.Models.DashboardMdoels;
-using Hoshi.Models.GlobalModels;
-using Hoshi.Models.OrderModels;
-using Hoshi.Models.UserModels.WorkerModels;
 
 namespace Hoshi.Repositories.WorkerHomeService
 {
