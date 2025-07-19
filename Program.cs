@@ -17,12 +17,13 @@ using Hoshi.Repositories.AuthService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.EmailServiceFold;
+using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.TokenServ;
+using Hoshi.Repositories.WorkerHomeService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Hoshi.Repositories.FileServiceFold;
-using Hoshi.Repositories.EmailServiceFold;
-using Hoshi.Repositories.TokenServ;
 
 namespace Hoshi
 {
@@ -34,11 +35,7 @@ namespace Hoshi
 
             // Add services to the container.
 
-            builder.Services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-            }); ;
+            builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(op =>
@@ -94,11 +91,9 @@ namespace Hoshi
 
 
 
-            builder.Services.AddAutoMapper(typeof(Program));
-            builder.Services.AddMemoryCache();
+			builder.Services.AddAutoMapper(typeof(Program));
 
-
-            builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+			builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
 
 			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
@@ -126,8 +121,9 @@ namespace Hoshi
             builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
 			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
 			builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
+			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
 
-
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

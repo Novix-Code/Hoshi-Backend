@@ -84,5 +84,26 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
         {
             return base.Update(putDTO);
         }
+        
+        [HttpPost("create-offer")]
+        public async Task<IActionResult> CreateOffer([FromBody] OfferPostDTO dto)
+        {
+	        var result = await workerOfferService.CreateOfferAsync(dto);
+	        return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPatch("confirm-offer")]
+        public async Task<IActionResult> ConfirmOffer([FromQuery] int OfferId)
+        {
+	        var result = await workerOfferService.ConfirmOfferAsync(OfferId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        
+        [HttpDelete("cancel-offer")]
+        public async Task<IActionResult> CancelOffer([FromQuery] int offerId)
+        {
+	        var result = await workerOfferService.CancelOfferAsync(offerId);
+	        return StatusCode(result.StatusCode, result);
+        }
     }
 }

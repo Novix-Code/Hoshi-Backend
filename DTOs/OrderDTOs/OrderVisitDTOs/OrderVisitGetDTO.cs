@@ -1,5 +1,6 @@
 using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericModels;
+using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.Enums;
 
 namespace Hoshi.DTOs.OrderDTOs.OrderVisitDTOs
@@ -7,10 +8,11 @@ namespace Hoshi.DTOs.OrderDTOs.OrderVisitDTOs
 
     public class OrderVisitGetDTO : TimestampedModel
     {
+        
         public string VisitNote { get; set; }
         public double VisitPrice { get; set; }
         public DateTime VisitingDateTime { get; set; }
-
+        public OrderGetDTO? Order { get; set; }
 
         public VisitStatus VisitStatus { get; set; } = VisitStatus.Waitting;
 
