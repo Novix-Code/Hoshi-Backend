@@ -36,7 +36,8 @@ namespace Hoshi.Repositories.UserService
             IFileService fileService,
             IMapper mapper,
             HoshiDbContext unitOfWork,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ITokenService tokenService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -44,6 +45,7 @@ namespace Hoshi.Repositories.UserService
             _mapper = mapper;
             _context = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
+            _tokenService = tokenService;
         }
 
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)

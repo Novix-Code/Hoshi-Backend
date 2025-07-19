@@ -20,6 +20,9 @@ using Hoshi.Models.UserModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.EmailServiceFold;
+using Hoshi.Repositories.TokenServ;
 
 namespace Hoshi
 {
@@ -91,9 +94,11 @@ namespace Hoshi
 
 
 
-			builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddMemoryCache();
 
-			builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+
+            builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
 
 			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
@@ -118,6 +123,10 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IWorkerOfferService), typeof(WorkerOfferService));
 
 			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
+            builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
+			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
+			builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
+
 
             var app = builder.Build();
 
