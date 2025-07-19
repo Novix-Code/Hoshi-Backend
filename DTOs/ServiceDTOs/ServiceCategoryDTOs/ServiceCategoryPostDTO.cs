@@ -8,7 +8,7 @@ namespace Hoshi.DTOs.ServiceDTOs.ServiceCategoryDTOs
 
     public class ServiceCategoryPostDTO 
     {
-        public required string ServiveName { get; set; }
+        public required string ServiveName { get; set; } = string.Empty;
         public required bool IsDeleted { get; set; }
 
         public List<ServicePostDTO>? Services { get; set; }

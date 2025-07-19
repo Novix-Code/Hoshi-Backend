@@ -173,9 +173,10 @@ namespace Hoshi.Mappers
 			GenericCreateBasicMaps<Archive, ArchivePostDTO, ArchivePutDTO, ArchiveGetDTO>();
 
 			GenericCreateBasicMaps<AdminNotification, AdminNotificationPostDTO, AdminNotificationPutDTO, AdminNotificationGetDTO>();
-            
+			CreateMap<Order, OrderGetAllDto>();
+			CreateMap<OrderGetAllDto ,Order>().ReverseMap();
         }
-        
+
         /// <summary>
         /// A generic function to create defualt maps for basic models.
         /// </summary>

@@ -37,7 +37,7 @@ namespace Hoshi.Controllers.UserControllers.ClientSpecificationControllers
 			];
         }
 
-        [NonAction]
+        [HttpDelete("Delete{id}")]
         public override Task<IActionResult> Delete(int id)
         {
             return base.Delete(id);

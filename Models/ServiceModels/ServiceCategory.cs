@@ -18,6 +18,6 @@ namespace Hoshi.Models.ServiceModels
         public string ServiveName { get; set; } = string.Empty;
         public bool IsDeleted { get; set; }
 
-        public List<Service>? Services { get; set; }
+        public List<Service>? Services { get; set; } = new List<Service>(); 
     }
 }
