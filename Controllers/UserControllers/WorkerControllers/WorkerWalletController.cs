@@ -1,5 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using GenericCRUDLibrary.GenericControllers;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
@@ -63,6 +65,38 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerWalletContro
         public override IActionResult PaginationFilteredSearch(PaginationFilteredSearchDTO paginationFilteredSearchDTO)
         {
             return base.PaginationFilteredSearch(paginationFilteredSearchDTO);
+        }
+
+        /// <summary>
+        /// Get Worker Wallet - Returns balance and wallet history
+        /// </summary>
+        [Authorize]
+        [HttpGet("get-worker-wallet")]
+        public async Task<IActionResult> GetWorkerWallet()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int workerId))
+                return Unauthorized();
+
+            var result = await workerWalletService.GetWorkerWalletAsync(workerId);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Add Payment - Submit bill image for payment request
+        /// </summary>
+        [Authorize]
+        [HttpPost("add-payment")]
+        public async Task<IActionResult> AddPayment([FromForm] AddPaymentRequestDTO request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int workerId))
+                return Unauthorized();
+
+            var result = await workerWalletService.AddPaymentAsync(workerId, request);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
