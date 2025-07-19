@@ -18,7 +18,7 @@ namespace Hoshi.Models.PromotionModels
         public int OrderId { get; set; }
         public Order? Order { get; set; }
         
-        public int OfferId { get; set; }
+        public int? OfferId { get; set; }
         public Offer? Offer { get; set; }
     }
 }
