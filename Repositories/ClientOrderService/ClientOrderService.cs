@@ -45,20 +45,24 @@ namespace Hoshi.Repositories.ClientOrderService
             };
             _Context.Invoices.Add(invoicMapper);
             _Context.OrderStatusHistory.Add(histMapper);
+
+            var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
+            var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
+
+            var _offerId = await _Context.Offers.Where(p => p.OrderId == orderMapper.Id).Select(p => (int?)p.Id).FirstOrDefaultAsync();
+
+
+            var promotionOrder = new PromotionTakenPostDTO
+            {
+                UserId = dto.ClientId,
+                OrderId = orderMapper.Id,
+                OfferId = _offerId,
+                PromotionId = slectedPromotionId
+            };
+            var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
+            _Context.PromotionsTaken.Add(promotionMapper);
+
             await _Context.SaveChangesAsync();
-            //var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
-            //var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p=>p.Id).FirstOrDefault(); 
-            //add offer
-            //var promotionOrder = new PromotionTakenPostDTO
-            //{
-            //    UserId = dto.ClientId , 
-            //    OrderId = orderMapper.Id , 
-            //    OfferId = await _Context.Offers.Where(p=>p.OrderId == orderMapper.Id).Select(p=>p.Id).FirstOrDefaultAsync(),
-            //    PromotionId = slectedPromotionId
-            //};
-            //var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
-            //_Context.PromotionsTaken.Add(promotionMapper);
-            //await _Context.SaveChangesAsync();
             return ResultDTO<string>.Success(orderMapper.Id.ToString());
              
         }
