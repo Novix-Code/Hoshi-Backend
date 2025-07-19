@@ -192,6 +192,7 @@ namespace Hoshi.Mappers
             //     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
         }
 
+        
         /// <summary>
         /// A generic function to create defualt maps for basic models.
         /// </summary>

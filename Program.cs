@@ -17,13 +17,13 @@ using Hoshi.Repositories.AuthService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.EmailServiceFold;
+using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.TokenServ;
 using Hoshi.Repositories.WorkerHomeService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Hoshi.Repositories.FileServiceFold;
-using Hoshi.Repositories.EmailServiceFold;
-using Hoshi.Repositories.TokenServ;
 
 namespace Hoshi
 {
@@ -41,6 +41,7 @@ namespace Hoshi
 
                 options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             }); ;
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(op =>
@@ -96,11 +97,9 @@ namespace Hoshi
 
 
 
-            builder.Services.AddAutoMapper(typeof(Program));
-            builder.Services.AddMemoryCache();
+			builder.Services.AddAutoMapper(typeof(Program));
 
-
-            builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+			builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
 
 			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
