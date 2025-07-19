@@ -13,6 +13,6 @@ namespace Hoshi.DTOs.PromotionDTOs.PromotionTakenDTOs
 
         public required int OrderId { get; set; }
         
-        public required int OfferId { get; set; }
+        public int? OfferId { get; set; }
     }
 }
