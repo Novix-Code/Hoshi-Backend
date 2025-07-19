@@ -3,8 +3,6 @@ using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerWalletDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerWalletHistoryDTOs;
-using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPaymentHistroyDTOs;
-using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Microsoft.EntityFrameworkCore;
 
