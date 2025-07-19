@@ -66,6 +66,13 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         public override IActionResult FilteredSearch(List<FilteredSearchDTO> filters)
         {
             return base.FilteredSearch(filters);    
+        }
+        [HttpPost("Search")]
+        [EndpointGroupName("Client")]
+        public async Task<IActionResult> ServiceSearch([FromForm] string serviceName)
+        {
+            var response = await serviceService.searchServiceAsyn(serviceName);
+            return StatusCode((int)response.StatusCode, response);
 
         }
         [EndpointGroupName("Client")]
