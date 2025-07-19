@@ -14,6 +14,7 @@ using Hoshi.Repositories.ClientOrderService;
 
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.Models.OrderModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.OrderControllers.OrderControllers
 {
@@ -86,6 +87,35 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         public override Task<IActionResult> Update(OrderPutDTO putDTO)
         {
             return base.Update(putDTO);
+        }
+        
+        [Authorize]
+        [HttpGet("order-details")]
+        public async Task<IActionResult> GetSubmittedOrderDetails([FromQuery] int orderId)
+        {
+	        var result = await orderService.GetSubmittedOrderDetailsAsync(orderId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        [Authorize]
+        [HttpGet("order-client-details")]
+        public async Task<IActionResult> GetOrderClientDetails([FromQuery] int orderId)
+        {
+	        var result = await orderService.GetOrderClientDetailsAsync(orderId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        [Authorize]
+        [HttpGet("complete-order")]
+        public async Task<IActionResult> CompleteOrder([FromQuery] int orderId)
+        {
+	        var result = await orderService.CompleteOrderAsync(orderId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        
+        [HttpGet("assigned-order")]
+        public async Task<IActionResult> GetAssignedOrder([FromQuery] int orderId)
+        {
+	        var result = await orderService.GetAssignedOrderAsync(orderId);
+	        return StatusCode(result.StatusCode, result);
         }
     }
 }

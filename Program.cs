@@ -17,6 +17,7 @@ using Hoshi.Repositories.AuthService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.WorkerHomeService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -113,8 +114,11 @@ namespace Hoshi
 
 			builder.Services.AddTransient(typeof(IWorkerOfferService), typeof(WorkerOfferService));
 
-			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
+            builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
+            
+			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
 
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

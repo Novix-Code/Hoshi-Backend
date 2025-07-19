@@ -80,5 +80,26 @@ namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
         {
             return base.Update(putDTO);
         }
+        
+        [HttpPost("add-visit")]
+        public async Task<IActionResult> AddVisit([FromBody] OrderVisitPostDTO dto)
+        {
+            var result = await workerVisitService.AddVisitAsync(dto);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPatch("complete-visit")]
+        public async Task<IActionResult> CompleteVisit([FromQuery] int visitId)
+        {
+            var result = await workerVisitService.CompleteVisitAsync(visitId);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpDelete("cancel-visit")]
+        public async Task<IActionResult> CancelVisit([FromQuery] int visitId)
+        {
+            var result = await workerVisitService.CancelVisitAsync(visitId);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

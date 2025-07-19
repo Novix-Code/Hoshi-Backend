@@ -62,6 +62,7 @@ using Hoshi.DTOs.DashboardMdoels.ArchiveDTOs;
 using Hoshi.DTOs.DashboardMdoels.AdminNotificationDTOs;
 using Hoshi.Models.DashboardMdoels;
 using GenericCRUDLibrary.GenericInterfaces;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 
 namespace Hoshi.Mappers
 {
@@ -173,7 +174,23 @@ namespace Hoshi.Mappers
 			GenericCreateBasicMaps<Archive, ArchivePostDTO, ArchivePutDTO, ArchiveGetDTO>();
 
 			GenericCreateBasicMaps<AdminNotification, AdminNotificationPostDTO, AdminNotificationPutDTO, AdminNotificationGetDTO>();
+			
+			CreateMap<ClientSpecification, ClientDataDto>()
+				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User.UserName)).ReverseMap();	
+
+            CreateMap<Service, ServiceDataDto>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.ServiceCategory.ServiveName)).ReverseMap();
+
+            CreateMap<Order, SubmittedOrderDetailsDto>()
+                .ForMember(dest => dest.OrderNumber, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ImagesUrl, opt => opt.MapFrom(src => src.OrderImages.Select(img => img.ImageURL)));
+
+            // CreateMap<Order, OrderSearchResultDto>()
+            //     .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.ServiveName))
+            //     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
             
+            CreateMap<Offer, OfferGetDTO>();
+            CreateMap<Order, OrderGetDTO>();
         }
         
         /// <summary>
