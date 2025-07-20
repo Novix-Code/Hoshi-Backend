@@ -38,6 +38,7 @@ namespace Hoshi
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+
                 options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             }); ;
 
@@ -127,7 +128,7 @@ namespace Hoshi
           
 			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
           
-      builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
+            builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
           
 			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
           

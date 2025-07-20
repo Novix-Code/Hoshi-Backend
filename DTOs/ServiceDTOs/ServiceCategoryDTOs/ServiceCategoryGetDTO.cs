@@ -8,7 +8,7 @@ namespace Hoshi.DTOs.ServiceDTOs.ServiceCategoryDTOs
 
     public class ServiceCategoryGetDTO : TimestampedModel, ISoftDelete
     {
-        public string ServiveName { get; set; }
+        public string CategoryName { get; set; }
         public bool IsDeleted { get; set; }
 
         public List<ServiceGetDTO>? Services { get; set; }

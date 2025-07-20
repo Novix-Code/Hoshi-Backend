@@ -181,7 +181,7 @@ namespace Hoshi.Mappers
 				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User!.UserName)).ReverseMap();	
 
             CreateMap<Service, ServiceDataDto>()
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.ServiceCategory!.ServiveName)).ReverseMap();
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.ServiceCategory!.CategoryName)).ReverseMap();
 
             CreateMap<Order, SubmittedOrderDetailsDto>()
                 .ForMember(dest => dest.OrderNumber, opt => opt.MapFrom(src => src.Id))

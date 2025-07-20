@@ -1,4 +1,5 @@
-﻿using Hoshi.Models.DashboardMdoels;
+﻿using Hoshi.Data.Seeders;
+using Hoshi.Models.DashboardMdoels;
 using Hoshi.Models.DashboardMdoels.StatisticsModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
@@ -32,6 +33,11 @@ namespace Hoshi.Data
                     foreignKey.DeleteBehavior = DeleteBehavior.NoAction;
                 }
             }
+
+            // Add Main Data Seeders:
+            LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
+            ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
+            FeesSeeder.SeedFees(modelBuilder);
         }
 
         //---------------------------------------------------------------

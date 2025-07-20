@@ -53,7 +53,7 @@ namespace Hoshi.Repositories.ClientHomeService
 
                 var targetActiveCategories = allCategories.Select(category => new TargetActiveCategory
                 {
-                    Title = category.ServiveName,
+                    Title = category.CategoryName,
                     ActiveService = category.Services
                         .Where(s => !s.IsDeleted)
                         .ToList()
@@ -101,7 +101,7 @@ namespace Hoshi.Repositories.ClientHomeService
 
             var targetActiveCategories = allCategories.Select(category => new TargetActiveCategory
             {
-                Title = category.ServiveName,
+                Title = category.CategoryName,
                 ActiveService = category.Services
                     .Where(service => !service.IsDeleted)
                     .ToList()

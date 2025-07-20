@@ -14,8 +14,9 @@ namespace Hoshi.Repositories.TokenServ
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
 
-        public TokenService(IMemoryCache cache,
-IConfiguration configuration,
+        public TokenService(
+            IMemoryCache cache,
+            IConfiguration configuration,
             UserManager<User> userManager)
         {
             _configuration = configuration;
