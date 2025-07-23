@@ -33,37 +33,39 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         private readonly IEmailService _emailService;
 
         public UserController(
-            IMapper mapper, 
+            IMapper mapper,
             IGenericCRUDService<
-                HoshiDbContext, 
-                User, 
-                UserGetDTO, 
-                UserPostDTO, 
-                UserPutDTO> genericCRUDService, 
+                HoshiDbContext,
+                User,
+                UserGetDTO,
+                UserPostDTO,
+                UserPutDTO> genericCRUDService,
             IGenericFSPService<
-                HoshiDbContext, 
-                User, 
+                HoshiDbContext,
+                User,
                 UserGetDTO> genericFSPService,
-			IAuthService authService,
-			IUserService userService 
-        ) : base(mapper, genericCRUDService, genericFSPService)
+            IAuthService authService,
+            IUserService userService
+,
+            IEmailService emailService) : base(mapper, genericCRUDService, genericFSPService)
         {
-			this.authService = authService;
-			this._userService = userService;
+            this.authService = authService;
+            this._userService = userService;
+            _emailService = emailService;
         }
 
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromForm] ApplicationUserRegisterRequestDto registerRequestDto)
         {
-            var serviceResponse = await _userService.Register(registerRequestDto);
+            var serviceResponse = await authService.Register(registerRequestDto);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] ApplicationUserLoginRequestDto loginRequestDto)
         {
-            var serviceResponse = await _userService.Login(loginRequestDto);
+            var serviceResponse = await authService.Login(loginRequestDto);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
@@ -71,7 +73,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
-            var serviceResponse = await _userService.Delete(id);
+            var serviceResponse = await authService.Delete(id);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
@@ -79,7 +81,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         [Authorize]
         public async Task<IActionResult> Edit([FromForm] ApplicationUserEditRequestDto userEditRequestDto)
         {
-            var serviceResponse = await _userService.Edit(userEditRequestDto);
+            var serviceResponse = await authService.Edit(userEditRequestDto);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
@@ -87,21 +89,21 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         [Authorize]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var serviceResponse = await _userService.GetById(id);
+            var serviceResponse = await authService.GetById(id);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
         [HttpPost("forget-password")]
         public async Task<IActionResult> ForgetPassword([FromBody] string email)
         {
-            var response = await _userService.CreateResetPasswordTokenAsync(email);
+            var response = await authService.CreateResetPasswordTokenAsync(email);
             return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto requestDto)
         {
-            var response = await _userService.ResetPasswordAsync(requestDto);
+            var response = await authService.ResetPasswordAsync(requestDto);
             await _emailService.SendVerifivationCode(requestDto.Email);
             return StatusCode((int)response.StatusCode, response);
         }
@@ -109,32 +111,14 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         [HttpGet("get-current-userId")]
         public IActionResult GetUserId()
         {
-            var response = _userService.GetCurrentUserId();
+            var response = authService.GetCurrentUserId();
             return StatusCode((int)response.StatusCode, response);
         }
-
-
-        //[HttpPost("ban/{userId}")]
-        //[Authorize(Roles = "admin")]
-        //public async Task<IActionResult> BanUser([FromRoute] string userId)
-        //{
-        //    var serviceResponse = await _userService.BanUserAsync(userId);
-        //    return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
-        //}
-
-        //[HttpPost("unban/{userId}")]
-        //[Authorize(Roles = "admin")]
-        //public async Task<IActionResult> UnbanUser([FromRoute] string userId)
-        //{
-        //    var serviceResponse = await _userService.UnbanUserAsync(userId);
-        //    return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
-        //}
-
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            var serviceResponse = await _userService.Logout();
+            var serviceResponse = await authService.Logout();
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 

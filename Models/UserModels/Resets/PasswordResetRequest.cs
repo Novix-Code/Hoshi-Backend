@@ -10,6 +10,6 @@ namespace Hoshi.Models.UserModels.Resets
         public string ResetToken { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime ExpiresAt { get; set; }
-        public int Id { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int Id { get; set; }
     }
 }
