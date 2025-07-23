@@ -105,5 +105,21 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 	        var result = await workerOfferService.CancelOfferAsync(offerId);
 	        return StatusCode(result.StatusCode, result);
         }
+
+
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> GetById(int id)
+        {
+            var response = await clientOfferService.GetByIdAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [EndpointGroupName("Client")]
+        [HttpPost("AcceptOffer{id}")]
+        public async Task<IActionResult> AcceptOffer(int id)
+        {
+            var response = await clientOfferService.AcceptOfferAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }
