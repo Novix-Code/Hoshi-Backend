@@ -9,7 +9,7 @@ namespace Hoshi.DTOs.ServiceDTOs.ServiceCategoryDTOs
     public class ServiceCategoryPutDTO  : IBaseModel
     {
 		public int Id { get; set; }
-        public string? ServiveName { get; set; }
+        public string? CategoryName { get; set; }
         public bool? IsDeleted { get; set; }
 
     }

@@ -1,6 +1,295 @@
+using AutoMapper;
+using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using Hoshi.Data;
+using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
+using Hoshi.Enums;
+using Hoshi.Models.DashboardModels;
+using Hoshi.Models.GlobalModels;
+using Hoshi.Models.OrderModels;
+using Hoshi.Models.UserModels.WorkerModels;
+using Microsoft.EntityFrameworkCore;
+
 namespace Hoshi.Repositories.WorkerVisitService
 {
     public class WorkerVisitService : IWorkerVisitService
     {
+        private readonly HoshiDbContext _hoshiDbContext;
+        private readonly IMapper _mapper;
+        public WorkerVisitService(HoshiDbContext hoshiDbContext, IMapper mapper)
+        {
+            _hoshiDbContext = hoshiDbContext;
+            _mapper = mapper;
+        }
+        public async Task<ResultDTO<OrderVisitGetDTO>> AddVisitAsync(OrderVisitPostDTO dto)
+        {
+            using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var order = await _hoshiDbContext.Orders.FindAsync(dto.OrderId);
+                if (order == null)
+                {
+                    return ResultDTO<OrderVisitGetDTO>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "الطلب غير موجود.",
+                        ErrorEn = "Order not found."
+                    });
+                }
+                
+                var visit = _mapper.Map<OrderVisit>(dto);
+                _hoshiDbContext.OrderVisits.Add(visit);
+                await _hoshiDbContext.SaveChangesAsync();
+                var visitDto = _mapper.Map<OrderVisitGetDTO>(visit);
+                await transaction.CommitAsync();
+                return ResultDTO<OrderVisitGetDTO>.Success(visitDto);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return ResultDTO<OrderVisitGetDTO>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ في الخادم.",
+                    ErrorEn = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        public async Task<ResultDTO<bool>> CompleteVisitAsync(int visitId)
+        {
+            using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var visit = await _hoshiDbContext.OrderVisits
+                    .Include(v => v.Order)
+                        .ThenInclude(o => o.Client)
+                    .Include(v => v.Order)
+                        .ThenInclude(o => o.Worker)
+                    .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Completed);
+
+                if (visit == null)
+                {
+                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "الزيارة غير موجودة.",
+                        ErrorEn = "Visit not found."
+                    });
+                }
+                
+                // Update visit status
+                visit.VisitStatus = VisitStatus.Completed;
+                
+                // Get client and validate
+                var client = await _hoshiDbContext.ClientSpecifications.FirstOrDefaultAsync(c => c.UserId == visit.Order.ClientId);
+                if (client == null)
+                {
+                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "العميل غير موجود.",
+                        ErrorEn = "Client not found."
+                    });
+                }
+
+                // Visit financial calculations
+                double visitPrice = visit.VisitPrice;
+                if (visitPrice <= 0)
+                {
+                    return ResultDTO<bool>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "سعر الزيارة غير صالح.",
+                        ErrorEn = "Invalid visit price."
+                    });
+                }
+
+                // Get fees from Fee table for this service
+                int serviceId = visit.Order.ServiceId;
+                double commissionFee = await _hoshiDbContext.Fees
+                    .Where(f => f.ServiceId == serviceId && f.FeeType == FeeType.CommissionFee && !f.IsSpecial)
+                    .Select(f => f.MainFees)
+                    .FirstOrDefaultAsync();
+
+                double workerEarnings = visitPrice - commissionFee;
+
+                // Client balance deduction
+                if (client.Balance >= visitPrice)
+                {
+                    client.Balance -= visitPrice;
+                }
+                else
+                {
+                    double shortage = visitPrice - client.Balance;
+                    client.Balance = 0;
+                    client.Indebtedness += shortage;
+                }
+
+                // Worker wallet credit
+                var workerWallet = await _hoshiDbContext.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == visit.Order.WorkerId);
+                if (workerWallet == null)
+                {
+                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "محفظة العامل غير موجودة.",
+                        ErrorEn = "Worker wallet not found."
+                    });
+                }
+
+                workerWallet.Balance += workerEarnings;
+                _hoshiDbContext.WorkerWallets.Update(workerWallet);
+
+                // Log worker income
+                _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
+                {
+                    Title = "Visit Completion Income",
+                    Value = workerEarnings,
+                    IsIncome = true,
+                    WorkerWalletId = workerWallet.Id
+                });
+
+                // Company commission deduction from worker wallet
+                if (workerWallet.Balance >= commissionFee)
+                {
+                    workerWallet.Balance -= commissionFee;
+                    _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
+                    {
+                        Title = "Commission Fee",
+                        Value = commissionFee,
+                        IsIncome = false,
+                        WorkerWalletId = workerWallet.Id
+                    });
+
+                    // Add company revenue
+                    _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
+                    {
+                        OrderId = visit.OrderId,
+                        Value = commissionFee ,
+                    });
+                }
+                else
+                {
+                    // Notify about insufficient balance
+                    _hoshiDbContext.UserNotifications.Add(new UserNotification
+                    {
+                        UserId = visit.Order.WorkerId ?? 0,
+                        Description = "رصيد المحفظة غير كافي لخصم العمولة.",
+                        NotificationTypeId = 1 , // may change this later
+
+                    });
+                }
+
+                // Create visit invoice
+                _hoshiDbContext.Invoices.Add(new Invoice
+                {
+                    OrderPrice = visitPrice,
+                    CommissionFee = commissionFee,
+                    ClientTotalPrice = visitPrice,
+                    WorkerTotalPrice = workerEarnings,
+                    OrderId = visit.OrderId,
+                    OrderVisitId = visit.Id
+                });
+
+                _hoshiDbContext.OrderVisits.Update(visit);
+                _hoshiDbContext.ClientSpecifications.Update(client);
+                await transaction.CommitAsync();
+                await _hoshiDbContext.SaveChangesAsync();
+
+                return ResultDTO<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return ResultDTO<bool>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ في الخادم.",
+                    ErrorEn = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        public async Task<ResultDTO<bool>> CancelVisitAsync(int visitId)
+        {
+            using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var visit = await _hoshiDbContext.OrderVisits
+                    .Include(v => v.Order)
+                    .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Cancelled);
+
+                if (visit == null)
+                {
+                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "الزيارة غير موجودة.",
+                        ErrorEn = "Visit not found."
+                    });
+                }
+
+                // Mark as canceled
+                visit.VisitStatus = VisitStatus.Cancelled;
+
+                // Apply cancellation fee logic (for worker)
+                if (visit.Order != null)
+                {
+                    double visitCancellationFee = await _hoshiDbContext.Fees
+                        .Where(f => f.ServiceId == visit.Order.ServiceId && f.FeeType == FeeType.CancellationFee && !f.IsSpecial)
+                        .Select(f => f.MainFees)
+                        .FirstOrDefaultAsync();
+
+                    if (visitCancellationFee > 0)
+                    {
+                        var workerWallet = await _hoshiDbContext.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == visit.Order.WorkerId);
+                        if (workerWallet == null)
+                        {
+                            return ResultDTO<bool>.NotFound(new ErrorDTO
+                            {
+                                ErrorAr = "محفظة العامل غير موجودة.",
+                                ErrorEn = "Worker wallet not found."
+                            });
+                        }
+
+                        if (workerWallet.Balance < visitCancellationFee)
+                        {
+                            return ResultDTO<bool>.BadRequest(new ErrorDTO
+                            {
+                                ErrorAr = "رصيد المحفظة غير كافي لدفع رسوم الإلغاء.",
+                                ErrorEn = "Worker wallet balance is not enough for cancellation fee."
+                            });
+                        }
+
+                        // Deduct cancellation fee from worker wallet
+                        workerWallet.Balance -= visitCancellationFee;
+                        _hoshiDbContext.WorkerWallets.Update(workerWallet);
+
+                        // Log cancellation fee transaction
+                        _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
+                        {
+                            Title = "Visit Cancellation Fee",
+                            Value = visitCancellationFee,
+                            IsIncome = false,
+                            WorkerWalletId = workerWallet.Id
+                        });
+
+                        // Add company revenue from cancellation fee
+                        _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
+                        {
+                            OrderId = visit.OrderId,
+                            Value = visitCancellationFee
+                        });
+                    }
+                }
+
+                _hoshiDbContext.OrderVisits.Update(visit);
+                await transaction.CommitAsync();
+                await _hoshiDbContext.SaveChangesAsync();
+                return ResultDTO<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return ResultDTO<bool>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ في الخادم.",
+                    ErrorEn = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+        
     }
 }

@@ -15,7 +15,7 @@ namespace Hoshi.Controllers.GlobalControllers.FeeControllers
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
-    public class FeeController : GenericFSPController<
+    public class FeeController : SoftDeleteGenericFSPController<
         HoshiDbContext, 
         Fee, 
         FeeGetDTO, 
@@ -53,12 +53,6 @@ namespace Hoshi.Controllers.GlobalControllers.FeeControllers
         public override IActionResult PaginationFilteredSearch(PaginationFilteredSearchDTO paginationFilteredSearchDTO)
         {
             return base.PaginationFilteredSearch(paginationFilteredSearchDTO);
-        }
-
-        [NonAction]
-        public override Task<IActionResult> Delete(int id)
-        {
-            return base.Delete(id);
         }
     }
 }

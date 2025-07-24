@@ -26,13 +26,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderStatusHistoryControllers
             // Add Includes
 
 			includes = [
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.Client)}",
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.Worker)}",
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.City)}",
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.Service)}",
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.AppliedPromotion)}",
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.OrderImages)}",
-				$"{nameof(OrderStatusHistory.Order)}.{nameof(Order.OrderVisits)}",
+				$"{nameof(OrderStatusHistory.Order)}",
 			];
         }
 

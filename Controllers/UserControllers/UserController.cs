@@ -1,16 +1,11 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using GenericCRUDLibrary.GenericControllers;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
-using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
-using Hoshi.Repositories.UserService;
-
-using Hoshi.Repositories.AuthService;
-
 using Hoshi.Models.UserModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.UserControllers.UserControllers
 {
@@ -25,26 +20,20 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         UserPostDTO, 
         UserPutDTO>
     {
-		private readonly IAuthService authService;
-		private readonly IUserService userService;
         public UserController(
-            IMapper mapper, 
+            IMapper mapper,
             IGenericCRUDService<
-                HoshiDbContext, 
-                User, 
-                UserGetDTO, 
-                UserPostDTO, 
-                UserPutDTO> genericCRUDService, 
+                HoshiDbContext,
+                User,
+                UserGetDTO,
+                UserPostDTO,
+                UserPutDTO> genericCRUDService,
             IGenericFSPService<
-                HoshiDbContext, 
-                User, 
-                UserGetDTO> genericFSPService,
-			IAuthService authService,
-			IUserService userService 
+                HoshiDbContext,
+                User,
+                UserGetDTO> genericFSPService
         ) : base(mapper, genericCRUDService, genericFSPService)
         {
-			this.authService = authService;
-			this.userService = userService;
         }
     }
 }

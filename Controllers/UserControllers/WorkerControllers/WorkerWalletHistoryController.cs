@@ -27,7 +27,7 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerWalletHistor
             // Add Includes
 
 			includes = [
-				$"{nameof(WorkerWalletHistory.WorkerWallet)}.{nameof(WorkerWallet.Worker)}",
+				$"{nameof(WorkerWalletHistory.WorkerWallet)}",
 			];
         }
 

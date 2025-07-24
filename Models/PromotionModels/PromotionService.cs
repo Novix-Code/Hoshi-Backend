@@ -1,6 +1,7 @@
 ﻿using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericInterfaces;
 using Hoshi.Models.ServiceModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Models.PromotionModels
 {
@@ -9,6 +10,7 @@ namespace Hoshi.Models.PromotionModels
     [NoAction(ControllerAction.Pagination)]
     [NoAction(ControllerAction.FilterPagination)]
     [EndpointGroupping("Admin")]
+    [Index(nameof(ServiceId), nameof(PromotionId), IsUnique = true)]
     public class PromotionService : IBaseModel
     {
         public int Id { get; set; }

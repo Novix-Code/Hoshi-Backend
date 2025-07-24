@@ -17,43 +17,56 @@ using Hoshi.Repositories.AuthService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.EmailServiceFold;
+using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.TokenService;
+using Hoshi.Repositories.WorkerHomeService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Hoshi.Data.IdentitySeeders;
+using System.Text.Json.Serialization;
 
 namespace Hoshi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(op =>
             {
+                // Add this line to apply using default value for Login type.
+                op.UseInlineDefinitionsForEnums();
+
                 op.SwaggerDoc("Worker", new OpenApiInfo
                 {
                     Title = "Worker APIs",
                     Version = "1.0",
                     Description = "This APIs for Worker in this project."
                 });
-            });
-            builder.Services.AddSwaggerGen(op =>
-            {
+
                 op.SwaggerDoc("Client", new OpenApiInfo
                 {
                     Title = "Client APIs",
                     Version = "1.0",
                     Description = "This APIs for Client in this project."
                 });
-            });
-            builder.Services.AddSwaggerGen(op =>
-            {
+
                 op.SwaggerDoc("Admin", new OpenApiInfo
                 {
                     Title = "Admin APIs",
@@ -61,8 +74,6 @@ namespace Hoshi
                     Description = "This APIs for Admin in this project."
                 });
             });
-
-            builder.Services.AddSwaggerGen();
 
             // Initialize Db Context
             builder.Services.AddDbContext<HoshiDbContext>(
@@ -85,11 +96,13 @@ namespace Hoshi
                 typeof(GenericFSPService<,,>)
             );
 
-
+            // Add Services Injections
 
 			builder.Services.AddAutoMapper(typeof(Program));
 
-			builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+            builder.Services.AddMemoryCache();
+
+            builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
 
 			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
@@ -114,7 +127,15 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IWorkerOfferService), typeof(WorkerOfferService));
 
 			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
-
+          
+			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
+          
+            builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
+          
+			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
+          
+			builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -156,6 +177,13 @@ namespace Hoshi
             app.UseAuthorization();
 
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                await IdentitySeeder.SeedRolesAsync(services);
+                await IdentitySeeder.SeedAdminUserAsync(services);
+            }
 
             app.Run();
         }

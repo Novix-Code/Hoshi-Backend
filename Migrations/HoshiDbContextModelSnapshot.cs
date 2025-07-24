@@ -22,7 +22,7 @@ namespace Hoshi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.AdminNotification", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,7 +54,7 @@ namespace Hoshi.Migrations
                     b.ToTable("AdminNotifications");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.AdminNotificationFlag", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotificationFlag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -83,7 +83,7 @@ namespace Hoshi.Migrations
                     b.ToTable("AdminNotificationFlags");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.Archive", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.Archive", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -103,7 +103,7 @@ namespace Hoshi.Migrations
                     b.ToTable("Archives");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.ArchiveSettings", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.ArchiveSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -122,7 +122,7 @@ namespace Hoshi.Migrations
                     b.ToTable("ArchiveSettings");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.CompanyRevenue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.CompanyRevenue", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,7 +146,7 @@ namespace Hoshi.Migrations
                     b.ToTable("CompanyRevenues");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.CategoryRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CategoryRequestRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -170,7 +170,7 @@ namespace Hoshi.Migrations
                     b.ToTable("CategoryRequestRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ComplaintSolvingRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ComplaintSolvingRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -206,7 +206,7 @@ namespace Hoshi.Migrations
                     b.ToTable("ComplaintSolvingRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.CustomerGrowthRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CustomerGrowthRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -228,7 +228,7 @@ namespace Hoshi.Migrations
                     b.ToTable("CustomerGrowthRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.IncomeGrowthRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.IncomeGrowthRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -247,7 +247,7 @@ namespace Hoshi.Migrations
                     b.ToTable("IncomeGrowthRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatistics", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatistics", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -267,7 +267,7 @@ namespace Hoshi.Migrations
                     b.ToTable("NumericalStatistics");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatisticsValue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -297,7 +297,7 @@ namespace Hoshi.Migrations
                     b.ToTable("NumericalStatisticsValues");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.OrderComplaetionRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.OrderComplaetionRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -327,7 +327,7 @@ namespace Hoshi.Migrations
                     b.ToTable("OrderComplaetionRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ServiceRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ServiceRequestRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -351,7 +351,7 @@ namespace Hoshi.Migrations
                     b.ToTable("ServiceRequestRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.TermsAndCondetions", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.TermsAndCondetions", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -409,6 +409,710 @@ namespace Hoshi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CityCode = "TRI",
+                            CityName = "طرابلس",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.8872,
+                            Longitude = 13.1913
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CityCode = "BEN",
+                            CityName = "بنغازي",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.116500000000002,
+                            Longitude = 20.0686
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CityCode = "MIS",
+                            CityName = "مصراتة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.374200000000002,
+                            Longitude = 15.0876
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CityCode = "BAY",
+                            CityName = "البيضاء",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.756900000000002,
+                            Longitude = 21.755600000000001
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CityCode = "ZAW",
+                            CityName = "الزاوية",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.757300000000001,
+                            Longitude = 12.7278
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CityCode = "SRT",
+                            CityName = "سرت",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.2089,
+                            Longitude = 16.588699999999999
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CityCode = "SAB",
+                            CityName = "سبها",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 27.037700000000001,
+                            Longitude = 14.4283
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CityCode = "DER",
+                            CityName = "درنة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.756900000000002,
+                            Longitude = 22.636700000000001
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CityCode = "TOB",
+                            CityName = "طبرق",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.084000000000003,
+                            Longitude = 23.957899999999999
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CityCode = "AJD",
+                            CityName = "أجدابيا",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.755400000000002,
+                            Longitude = 20.226299999999998
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CityCode = "GHR",
+                            CityName = "غريان",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.171900000000001,
+                            Longitude = 13.0219
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CityCode = "ZUW",
+                            CityName = "زوارة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.930799999999998,
+                            Longitude = 12.0831
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CityCode = "KHO",
+                            CityName = "الخمس",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.648600000000002,
+                            Longitude = 14.2607
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CityCode = "SAH",
+                            CityName = "صبراتة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.793199999999999,
+                            Longitude = 12.488799999999999
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CityCode = "ZLI",
+                            CityName = "زليتن",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.467399999999998,
+                            Longitude = 14.5687
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CityCode = "MAR",
+                            CityName = "المرج",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.492800000000003,
+                            Longitude = 20.831299999999999
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CityCode = "RAS",
+                            CityName = "رأس لانوف",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.499300000000002,
+                            Longitude = 18.566700000000001
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CityCode = "BRE",
+                            CityName = "البريقة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.409199999999998,
+                            Longitude = 19.5731
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CityCode = "BGW",
+                            CityName = "بن جواد",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.034700000000001,
+                            Longitude = 16.127800000000001
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CityCode = "NOF",
+                            CityName = "النوفلية",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.0608,
+                            Longitude = 16.909700000000001
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CityCode = "GHA",
+                            CityName = "غات",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 24.964700000000001,
+                            Longitude = 10.180300000000001
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CityCode = "MUR",
+                            CityName = "مرزق",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 25.915400000000002,
+                            Longitude = 13.917999999999999
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CityCode = "HON",
+                            CityName = "هون",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.125800000000002,
+                            Longitude = 15.9474
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CityCode = "WAD",
+                            CityName = "ودان",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.1614,
+                            Longitude = 16.138999999999999
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CityCode = "BRA",
+                            CityName = "براك",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 27.548300000000001,
+                            Longitude = 14.2706
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CityCode = "UBA",
+                            CityName = "أوباري",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 26.590699999999998,
+                            Longitude = 12.7719
+                        },
+                        new
+                        {
+                            Id = 27,
+                            CityCode = "TKR",
+                            CityName = "تكركيبة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 24.84,
+                            Longitude = 10.69
+                        },
+                        new
+                        {
+                            Id = 28,
+                            CityCode = "SHW",
+                            CityName = "الشويرف",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 27.966699999999999,
+                            Longitude = 12.783300000000001
+                        },
+                        new
+                        {
+                            Id = 29,
+                            CityCode = "TMN",
+                            CityName = "تمنهنت",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 26.2333,
+                            Longitude = 13.783300000000001
+                        },
+                        new
+                        {
+                            Id = 30,
+                            CityCode = "QTR",
+                            CityName = "القطرون",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 24.416699999999999,
+                            Longitude = 15.8833
+                        },
+                        new
+                        {
+                            Id = 31,
+                            CityCode = "SHA",
+                            CityName = "شحات",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.823599999999999,
+                            Longitude = 21.8581
+                        },
+                        new
+                        {
+                            Id = 32,
+                            CityCode = "SUS",
+                            CityName = "سوسة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.866700000000002,
+                            Longitude = 21.966699999999999
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CityCode = "MKH",
+                            CityName = "المخيلي",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.533299999999997,
+                            Longitude = 22.7667
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CityCode = "BAT",
+                            CityName = "بطة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.700000000000003,
+                            Longitude = 22.366700000000002
+                        },
+                        new
+                        {
+                            Id = 35,
+                            CityCode = "TAZ",
+                            CityName = "تازربو",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 25.449999999999999,
+                            Longitude = 23.183299999999999
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CityCode = "AUG",
+                            CityName = "أوجلة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.100000000000001,
+                            Longitude = 21.116700000000002
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CityCode = "JAL",
+                            CityName = "جالو",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.033000000000001,
+                            Longitude = 21.550000000000001
+                        },
+                        new
+                        {
+                            Id = 38,
+                            CityCode = "KUF",
+                            CityName = "الكفرة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 24.178699999999999,
+                            Longitude = 23.3109
+                        },
+                        new
+                        {
+                            Id = 39,
+                            CityCode = "TAS",
+                            CityName = "تاسيلي",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 24.5,
+                            Longitude = 23.5
+                        },
+                        new
+                        {
+                            Id = 40,
+                            CityCode = "RBY",
+                            CityName = "ربيانة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 24.199999999999999,
+                            Longitude = 23.616700000000002
+                        },
+                        new
+                        {
+                            Id = 41,
+                            CityCode = "NAL",
+                            CityName = "نالوت",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.8733,
+                            Longitude = 10.984999999999999
+                        },
+                        new
+                        {
+                            Id = 42,
+                            CityCode = "JAD",
+                            CityName = "جادو",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.949999999999999,
+                            Longitude = 9.9666999999999994
+                        },
+                        new
+                        {
+                            Id = 43,
+                            CityCode = "YFR",
+                            CityName = "يفرن",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.063299999999998,
+                            Longitude = 12.5283
+                        },
+                        new
+                        {
+                            Id = 44,
+                            CityCode = "ZIN",
+                            CityName = "الزنتان",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.931100000000001,
+                            Longitude = 12.2531
+                        },
+                        new
+                        {
+                            Id = 45,
+                            CityCode = "RJB",
+                            CityName = "الرجبان",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.083300000000001,
+                            Longitude = 12.783300000000001
+                        },
+                        new
+                        {
+                            Id = 46,
+                            CityCode = "MZD",
+                            CityName = "مزدة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.433299999999999,
+                            Longitude = 12.9833
+                        },
+                        new
+                        {
+                            Id = 47,
+                            CityCode = "ASB",
+                            CityName = "الأصابعة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.616700000000002,
+                            Longitude = 12.7333
+                        },
+                        new
+                        {
+                            Id = 48,
+                            CityCode = "KBA",
+                            CityName = "كباو",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.916699999999999,
+                            Longitude = 10.1167
+                        },
+                        new
+                        {
+                            Id = 49,
+                            CityCode = "TAR",
+                            CityName = "ترهونة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.433300000000003,
+                            Longitude = 13.6333
+                        },
+                        new
+                        {
+                            Id = 50,
+                            CityCode = "BWL",
+                            CityName = "بني وليد",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.7547,
+                            Longitude = 13.9869
+                        },
+                        new
+                        {
+                            Id = 51,
+                            CityCode = "MSL",
+                            CityName = "مسلاتة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.616700000000002,
+                            Longitude = 14.0
+                        },
+                        new
+                        {
+                            Id = 52,
+                            CityCode = "QRB",
+                            CityName = "القره بوللي",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.75,
+                            Longitude = 13.033300000000001
+                        },
+                        new
+                        {
+                            Id = 53,
+                            CityCode = "AJL",
+                            CityName = "العجيلات",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.7667,
+                            Longitude = 12.3667
+                        },
+                        new
+                        {
+                            Id = 54,
+                            CityCode = "RGD",
+                            CityName = "رقدالين",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.816699999999997,
+                            Longitude = 12.1
+                        },
+                        new
+                        {
+                            Id = 55,
+                            CityCode = "SRM",
+                            CityName = "صرمان",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.75,
+                            Longitude = 12.566700000000001
+                        },
+                        new
+                        {
+                            Id = 56,
+                            CityCode = "MAY",
+                            CityName = "الماية",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.7333,
+                            Longitude = 12.916700000000001
+                        },
+                        new
+                        {
+                            Id = 57,
+                            CityCode = "ASP",
+                            CityName = "الآ سبيعة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.700000000000003,
+                            Longitude = 13.15
+                        },
+                        new
+                        {
+                            Id = 58,
+                            CityCode = "GAN",
+                            CityName = "جنزور",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.866700000000002,
+                            Longitude = 13.033300000000001
+                        },
+                        new
+                        {
+                            Id = 59,
+                            CityCode = "SID",
+                            CityName = "السيدرة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.649999999999999,
+                            Longitude = 18.433299999999999
+                        },
+                        new
+                        {
+                            Id = 60,
+                            CityCode = "AGH",
+                            CityName = "أغدامس",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.116700000000002,
+                            Longitude = 9.4832999999999998
+                        },
+                        new
+                        {
+                            Id = 61,
+                            CityCode = "RQB",
+                            CityName = "الرقيبة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.2667,
+                            Longitude = 11.1
+                        },
+                        new
+                        {
+                            Id = 62,
+                            CityCode = "GHD",
+                            CityName = "غدامس",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.133299999999998,
+                            Longitude = 9.5
+                        },
+                        new
+                        {
+                            Id = 63,
+                            CityCode = "BOZ",
+                            CityName = "بوزريق",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.366700000000002,
+                            Longitude = 13.949999999999999
+                        },
+                        new
+                        {
+                            Id = 64,
+                            CityCode = "QWL",
+                            CityName = "القواليش",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.4833,
+                            Longitude = 14.300000000000001
+                        },
+                        new
+                        {
+                            Id = 65,
+                            CityCode = "MRA",
+                            CityName = "مرادة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.083300000000001,
+                            Longitude = 13.933299999999999
+                        },
+                        new
+                        {
+                            Id = 66,
+                            CityCode = "HRB",
+                            CityName = "الحرابة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.366700000000002,
+                            Longitude = 14.433299999999999
+                        },
+                        new
+                        {
+                            Id = 67,
+                            CityCode = "TMS",
+                            CityName = "تمساح",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 30.966699999999999,
+                            Longitude = 15.533300000000001
+                        },
+                        new
+                        {
+                            Id = 68,
+                            CityCode = "JUF",
+                            CityName = "الجفرة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.199999999999999,
+                            Longitude = 16.100000000000001
+                        },
+                        new
+                        {
+                            Id = 69,
+                            CityCode = "SOK",
+                            CityName = "سوكنة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.116700000000002,
+                            Longitude = 15.916700000000001
+                        },
+                        new
+                        {
+                            Id = 70,
+                            CityCode = "ZLA",
+                            CityName = "زلة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 29.183299999999999,
+                            Longitude = 16.050000000000001
+                        },
+                        new
+                        {
+                            Id = 71,
+                            CityCode = "QRY",
+                            CityName = "القريات",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.666699999999999,
+                            Longitude = 22.333300000000001
+                        },
+                        new
+                        {
+                            Id = 72,
+                            CityCode = "MSD",
+                            CityName = "مساعد",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.616700000000002,
+                            Longitude = 22.083300000000001
+                        },
+                        new
+                        {
+                            Id = 73,
+                            CityCode = "ABR",
+                            CityName = "الأبرق",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.083300000000001,
+                            Longitude = 20.2333
+                        },
+                        new
+                        {
+                            Id = 74,
+                            CityCode = "QMN",
+                            CityName = "قمينس",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 32.7333,
+                            Longitude = 22.0
+                        },
+                        new
+                        {
+                            Id = 75,
+                            CityCode = "UMR",
+                            CityName = "أم الرزم",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.416699999999999,
+                            Longitude = 21.633299999999998
+                        },
+                        new
+                        {
+                            Id = 76,
+                            CityCode = "SLM",
+                            CityName = "السلوم",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.533300000000001,
+                            Longitude = 25.116700000000002
+                        },
+                        new
+                        {
+                            Id = 77,
+                            CityCode = "BRD",
+                            CityName = "البردي",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.7667,
+                            Longitude = 25.083300000000001
+                        },
+                        new
+                        {
+                            Id = 78,
+                            CityCode = "IMS",
+                            CityName = "إمساعد",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Latitude = 31.7333,
+                            Longitude = 25.0167
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.Complaint", b =>
@@ -498,6 +1202,12 @@ namespace Hoshi.Migrations
                     b.Property<int?>("FeeType")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSpecial")
+                        .HasColumnType("bit");
+
                     b.Property<double>("MainFees")
                         .HasColumnType("float");
 
@@ -518,6 +1228,99 @@ namespace Hoshi.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("Fees");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 0,
+                            IsDeleted = false,
+                            IsSpecial = false,
+                            MainFees = 25.0,
+                            MaxFees = 200.0,
+                            MinFees = 25.0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 1,
+                            IsDeleted = false,
+                            IsSpecial = false,
+                            MainFees = 15.0,
+                            MaxFees = 180.0,
+                            MinFees = 15.0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 2,
+                            IsDeleted = false,
+                            IsSpecial = false,
+                            MainFees = 18.0,
+                            MaxFees = 300.0,
+                            MinFees = 20.0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 3,
+                            IsDeleted = false,
+                            IsSpecial = false,
+                            MainFees = 0.0,
+                            MaxFees = 250.0,
+                            MinFees = 0.0
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 4,
+                            IsDeleted = false,
+                            IsSpecial = false,
+                            MainFees = 10.0,
+                            MaxFees = 0.0,
+                            MinFees = 0.0
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 0,
+                            IsDeleted = false,
+                            IsSpecial = true,
+                            MainFees = 18.0,
+                            MaxFees = 210.0,
+                            MinFees = 19.0,
+                            ServiceId = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 1,
+                            IsDeleted = false,
+                            IsSpecial = true,
+                            MainFees = 12.0,
+                            MaxFees = 175.0,
+                            MinFees = 15.0,
+                            ServiceId = 8
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            FeeType = 2,
+                            IsDeleted = false,
+                            IsSpecial = true,
+                            MainFees = 9.0,
+                            MaxFees = 100.0,
+                            MinFees = 8.5,
+                            ServiceId = 15
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.NotificationType", b =>
@@ -870,7 +1673,7 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("OrderId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<string>("VisitNote")
@@ -985,7 +1788,7 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OfferId")
+                    b.Property<int?>("OfferId")
                         .HasColumnType("int");
 
                     b.Property<int>("OrderId")
@@ -1034,6 +1837,134 @@ namespace Hoshi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Jobs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "عامل تنظيف"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "فني صيانة عامة"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "كهربائي"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "سباك"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "فني تكييف وتبريد"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "دهان"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "نجار"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "مهندس ديكور"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "بستاني"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "ميكانيكي سيارات"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "سائق توصيل"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "فني كمبيوتر"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "مبرمج"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "حارس أمن"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "فني أنظمة أمان"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "عامل نقل"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "مصمم حدائق"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            JobTitle = "فني أجهزة منزلية"
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.JobService", b =>
@@ -1063,6 +1994,330 @@ namespace Hoshi.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("JobServices");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 1,
+                            ServiceId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 1,
+                            ServiceId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 1,
+                            ServiceId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 1,
+                            ServiceId = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 1,
+                            ServiceId = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 2,
+                            ServiceId = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 2,
+                            ServiceId = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 2,
+                            ServiceId = 8
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 2,
+                            ServiceId = 9
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 3,
+                            ServiceId = 10
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 3,
+                            ServiceId = 11
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 3,
+                            ServiceId = 12
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 3,
+                            ServiceId = 13
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 4,
+                            ServiceId = 14
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 4,
+                            ServiceId = 15
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 4,
+                            ServiceId = 16
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 4,
+                            ServiceId = 17
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 5,
+                            ServiceId = 18
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 5,
+                            ServiceId = 19
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 5,
+                            ServiceId = 20
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 6,
+                            ServiceId = 21
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 6,
+                            ServiceId = 22
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 6,
+                            ServiceId = 23
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 7,
+                            ServiceId = 25
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 7,
+                            ServiceId = 26
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 7,
+                            ServiceId = 27
+                        },
+                        new
+                        {
+                            Id = 27,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 8,
+                            ServiceId = 24
+                        },
+                        new
+                        {
+                            Id = 28,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 8,
+                            ServiceId = 23
+                        },
+                        new
+                        {
+                            Id = 29,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 9,
+                            ServiceId = 28
+                        },
+                        new
+                        {
+                            Id = 30,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 9,
+                            ServiceId = 29
+                        },
+                        new
+                        {
+                            Id = 31,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 9,
+                            ServiceId = 30
+                        },
+                        new
+                        {
+                            Id = 32,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 10,
+                            ServiceId = 31
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 10,
+                            ServiceId = 32
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 10,
+                            ServiceId = 33
+                        },
+                        new
+                        {
+                            Id = 35,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 11,
+                            ServiceId = 34
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 11,
+                            ServiceId = 36
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 12,
+                            ServiceId = 37
+                        },
+                        new
+                        {
+                            Id = 38,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 12,
+                            ServiceId = 38
+                        },
+                        new
+                        {
+                            Id = 39,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 13,
+                            ServiceId = 39
+                        },
+                        new
+                        {
+                            Id = 40,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 14,
+                            ServiceId = 40
+                        },
+                        new
+                        {
+                            Id = 41,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 15,
+                            ServiceId = 13
+                        },
+                        new
+                        {
+                            Id = 42,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 15,
+                            ServiceId = 41
+                        },
+                        new
+                        {
+                            Id = 43,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 16,
+                            ServiceId = 35
+                        },
+                        new
+                        {
+                            Id = 44,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 17,
+                            ServiceId = 28
+                        },
+                        new
+                        {
+                            Id = 45,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 18,
+                            ServiceId = 6
+                        },
+                        new
+                        {
+                            Id = 46,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            JobId = 18,
+                            ServiceId = 20
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.Service", b =>
@@ -1108,6 +2363,377 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerSpecificationId");
 
                     b.ToTable("Services");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/house-cleaning.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 1,
+                            ServiveName = "تنظيف المنازل الشامل"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/window-cleaning.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 1,
+                            ServiveName = "تنظيف النوافذ والزجاج"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/carpet-cleaning.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 1,
+                            ServiveName = "تنظيف السجاد والموكيت"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/kitchen-bathroom-cleaning.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 1,
+                            ServiveName = "تنظيف المطابخ والحمامات"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/furniture-cleaning.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 1,
+                            ServiveName = "تنظيف الأثاث والمفروشات"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/appliance-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 2,
+                            ServiveName = "صيانة الأجهزة المنزلية"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/door-window-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 2,
+                            ServiveName = "إصلاح الأبواب والنوافذ"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/generator-maintenance.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 2,
+                            ServiveName = "صيانة المولدات الكهربائية"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/tile-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 2,
+                            ServiveName = "إصلاح البلاط والأرضيات"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/electrical-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 3,
+                            ServiveName = "تركيب الكهرباء المنزلية"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/electrical-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 3,
+                            ServiveName = "إصلاح الأعطال الكهربائية"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/lighting-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 3,
+                            ServiveName = "تركيب الإنارة والثريات"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/security-systems.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 3,
+                            ServiveName = "تركيب أنظمة الأمان"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/plumbing-leak-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 4,
+                            ServiveName = "إصلاح تسريبات المياه"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/faucet-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 4,
+                            ServiveName = "تركيب وصيانة الحنفيات"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/drain-cleaning.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 4,
+                            ServiveName = "تسليك المجاري والأنابيب"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/water-tank-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 4,
+                            ServiveName = "تركيب خزانات المياه"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/ac-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 5,
+                            ServiveName = "تركيب أجهزة التكييف"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/ac-maintenance.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 5,
+                            ServiveName = "صيانة وتنظيف المكيفات"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/refrigerator-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 5,
+                            ServiveName = "إصلاح الثلاجات والمجمدات"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/interior-painting.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 6,
+                            ServiveName = "دهان الجدران الداخلية"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/exterior-painting.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 6,
+                            ServiveName = "دهان الواجهات الخارجية"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/wallpaper-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 6,
+                            ServiveName = "تركيب ورق الجدران"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/interior-design.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 6,
+                            ServiveName = "الديكور والتصميم الداخلي"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/furniture-making.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 7,
+                            ServiveName = "تفصيل وتركيب الأثاث"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/furniture-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 7,
+                            ServiveName = "إصلاح الأثاث المكسور"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/shelving-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 7,
+                            ServiveName = "تركيب الأرفف والخزائن"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/garden-design.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 8,
+                            ServiveName = "تنسيق وتصميم الحدائق"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/tree-trimming.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 8,
+                            ServiveName = "قص وتهذيب الأشجار"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/planting.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 8,
+                            ServiveName = "زراعة النباتات والورود"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/car-washing.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 9,
+                            ServiveName = "غسيل وتنظيف السيارات"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/car-maintenance.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 9,
+                            ServiveName = "صيانة السيارات المنزلية"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/tire-change.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 9,
+                            ServiveName = "تغيير إطارات السيارات"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/delivery.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 10,
+                            ServiveName = "توصيل الطلبات والمشتريات"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/furniture-moving.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 10,
+                            ServiveName = "نقل الأثاث والعفش"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/personal-transport.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 10,
+                            ServiveName = "خدمات النقل الشخصي"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/computer-repair.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 11,
+                            ServiveName = "تركيب وصيانة الكمبيوتر"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/internet-installation.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 11,
+                            ServiveName = "تركيب شبكات الإنترنت"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/web-development.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 11,
+                            ServiveName = "برمجة وتطوير المواقع"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/home-security.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 12,
+                            ServiveName = "خدمات الحراسة المنزلية"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ImageURL = "/images/services/security-cameras.jpg",
+                            IsDeleted = false,
+                            ServiceCategoryId = 12,
+                            ServiveName = "تركيب كاميرات المراقبة"
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.ServiceCategory", b =>
@@ -1118,6 +2744,10 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1127,13 +2757,95 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ServiveName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("ServiceCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryName = "خدمات التنظيف",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryName = "الصيانة والإصلاح",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryName = "الخدمات الكهربائية",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryName = "السباكة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryName = "التكييف والتبريد",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CategoryName = "الدهان والديكور",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CategoryName = "النجارة والأثاث",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CategoryName = "البستنة والحدائق",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CategoryName = "خدمات السيارات",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CategoryName = "التوصيل والنقل",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CategoryName = "الخدمات التقنية",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CategoryName = "الأمن والحراسة",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            IsDeleted = false
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.AdminModels.AdminPage", b =>
@@ -1363,6 +3075,34 @@ namespace Hoshi.Migrations
                     b.ToTable("ClientSpecifications");
                 });
 
+            modelBuilder.Entity("Hoshi.Models.UserModels.Resets.PasswordResetRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ResetToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetRequests");
+                });
+
             modelBuilder.Entity("Hoshi.Models.UserModels.SuspendReason", b =>
                 {
                     b.Property<int>("Id")
@@ -1440,6 +3180,10 @@ namespace Hoshi.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1464,7 +3208,7 @@ namespace Hoshi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -1476,7 +3220,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UserCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
@@ -1489,6 +3232,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -1496,6 +3243,10 @@ namespace Hoshi.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -1648,6 +3399,35 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerId");
 
                     b.ToTable("WorkerRejections");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("WorkerId");
+
+                    b.ToTable("WorkerServices");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
@@ -1941,7 +3721,7 @@ namespace Hoshi.Migrations
                     b.HasDiscriminator().HasValue("Role");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.AdminNotification", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotification", b =>
                 {
                     b.HasOne("Hoshi.Models.UserModels.User", "Admin")
                         .WithMany()
@@ -1952,7 +3732,7 @@ namespace Hoshi.Migrations
                     b.Navigation("Admin");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.CompanyRevenue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.CompanyRevenue", b =>
                 {
                     b.HasOne("Hoshi.Models.OrderModels.Order", "Order")
                         .WithMany()
@@ -1963,7 +3743,7 @@ namespace Hoshi.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.CategoryRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CategoryRequestRate", b =>
                 {
                     b.HasOne("Hoshi.Models.ServiceModels.ServiceCategory", "ServiceCategory")
                         .WithMany()
@@ -1974,7 +3754,7 @@ namespace Hoshi.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ComplaintSolvingRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ComplaintSolvingRate", b =>
                 {
                     b.HasOne("Hoshi.Models.GlobalModels.ComplaintType", "ComplaintType")
                         .WithMany()
@@ -1985,9 +3765,9 @@ namespace Hoshi.Migrations
                     b.Navigation("ComplaintType");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatisticsValue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", b =>
                 {
-                    b.HasOne("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatisticsValue", "LastValue")
+                    b.HasOne("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", "LastValue")
                         .WithMany()
                         .HasForeignKey("LastValueId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -1995,7 +3775,7 @@ namespace Hoshi.Migrations
                     b.Navigation("LastValue");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.OrderComplaetionRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.OrderComplaetionRate", b =>
                 {
                     b.HasOne("Hoshi.Models.ServiceModels.ServiceCategory", "ServiceCategory")
                         .WithMany()
@@ -2006,7 +3786,7 @@ namespace Hoshi.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ServiceRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ServiceRequestRate", b =>
                 {
                     b.HasOne("Hoshi.Models.ServiceModels.Service", "Service")
                         .WithMany()
@@ -2201,10 +3981,13 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.OrderVisit", b =>
                 {
-                    b.HasOne("Hoshi.Models.OrderModels.Order", null)
+                    b.HasOne("Hoshi.Models.OrderModels.Order", "Order")
                         .WithMany("OrderVisits")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.PromotionService", b =>
@@ -2231,8 +4014,7 @@ namespace Hoshi.Migrations
                     b.HasOne("Hoshi.Models.OrderModels.Offer", "Offer")
                         .WithMany()
                         .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Hoshi.Models.OrderModels.Order", "Order")
                         .WithMany()
@@ -2407,6 +4189,17 @@ namespace Hoshi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Hoshi.Models.UserModels.Resets.PasswordResetRequest", b =>
+                {
+                    b.HasOne("Hoshi.Models.UserModels.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Hoshi.Models.UserModels.SuspendedUser", b =>
                 {
                     b.HasOne("Hoshi.Models.UserModels.SuspendReason", "SuspendReason")
@@ -2477,6 +4270,25 @@ namespace Hoshi.Migrations
                         .HasForeignKey("WorkerId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Worker");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerService", b =>
+                {
+                    b.HasOne("Hoshi.Models.ServiceModels.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Hoshi.Models.UserModels.User", "Worker")
+                        .WithMany()
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Service");
 
                     b.Navigation("Worker");
                 });

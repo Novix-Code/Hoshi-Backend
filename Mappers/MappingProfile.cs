@@ -15,15 +15,15 @@ using Hoshi.DTOs.UserDTOs.AdminDTOs.PermissionDTOs;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.PageDTOs;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.AdminPageDTOs;
 using Hoshi.Models.UserModels.AdminModels;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.ServiceRequestRateDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.OrderComplaetionRateDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.NumericalStatisticsValueDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.NumericalStatisticsDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.IncomeGrowthRateDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.CustomerGrowthRateDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.ComplaintSolvingRateDTOs;
-using Hoshi.DTOs.DashboardMdoels.StatisticsDTOs.CategoryRequestRateDTOs;
-using Hoshi.Models.DashboardMdoels.StatisticsModels;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.ServiceRequestRateDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.OrderComplaetionRateDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.NumericalStatisticsValueDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.NumericalStatisticsDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.IncomeGrowthRateDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.CustomerGrowthRateDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.ComplaintSolvingRateDTOs;
+using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.CategoryRequestRateDTOs;
+using Hoshi.Models.DashboardModels.StatisticsModels;
 using Hoshi.DTOs.UserDTOs.UserOTPDTOs;
 using Hoshi.DTOs.UserDTOs.UserCollectionAlertDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
@@ -55,13 +55,14 @@ using Hoshi.DTOs.GlobalDTOs.ComplaintTypeDTOs;
 using Hoshi.DTOs.GlobalDTOs.ComplaintDTOs;
 using Hoshi.DTOs.GlobalDTOs.CityDTOs;
 using Hoshi.Models.GlobalModels;
-using Hoshi.DTOs.DashboardMdoels.TermsAndCondetionsDTOs;
-using Hoshi.DTOs.DashboardMdoels.CompanyRevenueDTOs;
-using Hoshi.DTOs.DashboardMdoels.ArchiveSettingsDTOs;
-using Hoshi.DTOs.DashboardMdoels.ArchiveDTOs;
-using Hoshi.DTOs.DashboardMdoels.AdminNotificationDTOs;
-using Hoshi.Models.DashboardMdoels;
+using Hoshi.DTOs.DashboardDTOs.TermsAndCondetionsDTOs;
+using Hoshi.DTOs.DashboardDTOs.CompanyRevenueDTOs;
+using Hoshi.DTOs.DashboardDTOs.ArchiveSettingsDTOs;
+using Hoshi.DTOs.DashboardDTOs.ArchiveDTOs;
+using Hoshi.DTOs.DashboardDTOs.AdminNotificationDTOs;
+using Hoshi.Models.DashboardModels;
 using GenericCRUDLibrary.GenericInterfaces;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 
 namespace Hoshi.Mappers
 {
@@ -173,8 +174,24 @@ namespace Hoshi.Mappers
 			GenericCreateBasicMaps<Archive, ArchivePostDTO, ArchivePutDTO, ArchiveGetDTO>();
 
 			GenericCreateBasicMaps<AdminNotification, AdminNotificationPostDTO, AdminNotificationPutDTO, AdminNotificationGetDTO>();
-            
+      
+			CreateMap<Order, OrderGetAllDto>().ReverseMap();
+			
+			CreateMap<ClientSpecification, ClientDataDto>()
+				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User!.UserName)).ReverseMap();	
+
+            CreateMap<Service, ServiceDataDto>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.ServiceCategory!.CategoryName)).ReverseMap();
+
+            CreateMap<Order, SubmittedOrderDetailsDto>()
+                .ForMember(dest => dest.OrderNumber, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ImagesUrl, opt => opt.MapFrom(src => src.OrderImages!.Select(img => img.ImageURL)));
+
+            // CreateMap<Order, OrderSearchResultDto>()
+            //     .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.ServiveName))
+            //     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
         }
+
         
         /// <summary>
         /// A generic function to create defualt maps for basic models.

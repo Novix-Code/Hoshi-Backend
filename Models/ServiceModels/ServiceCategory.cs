@@ -15,9 +15,9 @@ namespace Hoshi.Models.ServiceModels
     [EndpointGroupping("Admin", ControllerAction.Restore)]
     public class ServiceCategory : TimestampedModel, ISoftDelete
     {
-        public string ServiveName { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
         public bool IsDeleted { get; set; }
 
-        public List<Service>? Services { get; set; }
+        public List<Service>? Services { get; set; } = new List<Service>(); 
     }
 }

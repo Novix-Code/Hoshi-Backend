@@ -47,19 +47,12 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 			includes = [
 				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.Client)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.Worker)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.City)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.Service)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.AppliedPromotion)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.OrderImages)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.OrderVisits)}",
-				$"{nameof(Offer.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.OrderStatusHistory)}",
 				$"{nameof(Offer.AppliedPromotion)}",
 			];
@@ -83,6 +76,41 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
         public override Task<IActionResult> Update(OfferPutDTO putDTO)
         {
             return base.Update(putDTO);
+        }
+        
+        [HttpPost("create-offer")]
+        public async Task<IActionResult> CreateOffer([FromBody] OfferPostDTO dto)
+        {
+	        var result = await workerOfferService.CreateOfferAsync(dto);
+	        return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPatch("confirm-offer")]
+        public async Task<IActionResult> ConfirmOffer([FromQuery] int OfferId)
+        {
+	        var result = await workerOfferService.ConfirmOfferAsync(OfferId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        
+        [HttpDelete("cancel-offer")]
+        public async Task<IActionResult> CancelOffer([FromQuery] int offerId)
+        {
+	        var result = await workerOfferService.CancelOfferAsync(offerId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        [EndpointGroupName("Client")]
+        public override async Task<IActionResult> GetById(int id)
+        {
+            var response = await clientOfferService.GetByIdAsync(id);
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [EndpointGroupName("Client")]
+        [HttpPost("AcceptOffer{id}")]
+        public async Task<IActionResult> AcceptOffer(int id)
+        {
+            var response = await clientOfferService.AcceptOfferAsync(id);
+            return StatusCode((int)response.StatusCode, response);
         }
     }
 }

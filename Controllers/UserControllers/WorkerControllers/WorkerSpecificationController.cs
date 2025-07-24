@@ -35,7 +35,7 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerSpecificatio
 			includes = [
 				$"{nameof(WorkerSpecification.User)}",
 				$"{nameof(WorkerSpecification.LivingCity)}",
-				$"{nameof(WorkerSpecification.Job)}.{nameof(Job.Services)}",
+				$"{nameof(WorkerSpecification.Job)}",
 				$"{nameof(WorkerSpecification.Services)}.{nameof(Service.ServiceCategory)}",
 			];
         }
