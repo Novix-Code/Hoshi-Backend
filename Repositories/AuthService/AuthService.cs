@@ -1,4 +1,4 @@
-﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.DTOs.FileServicieResult;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
@@ -14,6 +14,10 @@ using Hoshi.Data;
 using Hoshi.Repositories.FileServiceFold;
 using Hoshi.Repositories.TokenServ;
 using System.Security.Cryptography;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
+using Hoshi.Enums;
+using Hoshi.Models.GlobalModels;
+using Hoshi.Models.UserModels.WorkerModels;
 
 namespace Hoshi.Repositories.AuthService
 {
@@ -297,6 +301,188 @@ namespace Hoshi.Repositories.AuthService
         private string GenerateUniqueUserCode()
         {
             return $"USR-{DateTime.UtcNow.Ticks.ToString()[^6..]}"; 
+        }
+        
+        public async Task<ResultDTO<string>> BeWorkerAsync(BeWorkerRequestDTO request)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Validate user exists
+                var userExists = await _userManager.Users.AnyAsync(u => u.Id == request.UserId);
+                if (!userExists)
+                {
+                    return ResultDTO<string>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "المستخدم غير موجود.",
+                        ErrorEn = "User not found."
+                    });
+                }
+
+                // Validate job exists
+                var jobExists = await _context.Jobs.AnyAsync(j => j.Id == request.JobId);
+                if (!jobExists)
+                {
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "الوظيفة المحددة غير موجودة.",
+                        ErrorEn = "Specified job not found."
+                    });
+                }
+
+                // Validate city exists
+                var cityExists = await _context.Cities.AnyAsync(c => c.Id == request.CityId);
+                if (!cityExists)
+                {
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "المدينة المحددة غير موجودة.",
+                        ErrorEn = "Specified city not found."
+                    });
+                }
+
+                // Validate services exist
+                var validServicesCount = await _context.Services
+                    .CountAsync(s => request.ServicesIds.Contains(s.Id));
+                if (validServicesCount != request.ServicesIds.Count)
+                {
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "بعض الخدمات المحددة غير موجودة.",
+                        ErrorEn = "Some specified services not found."
+                    });
+                }
+
+                // Check if worker specification already exists
+                var existingWorkerSpec = await _context.WorkerSpecifications
+                    .FirstOrDefaultAsync(ws => ws.UserId == request.UserId);
+
+                if (existingWorkerSpec != null)
+                {
+                    // Update existing worker specification (re-application case)
+                    existingWorkerSpec.Bio = request.Bio;
+                    existingWorkerSpec.ImageURL = request.PersonalImageURL;
+                    existingWorkerSpec.IdentityImageURL = request.IdentityImageURL;
+                    existingWorkerSpec.IsCompany = request.IsCompany;
+                    existingWorkerSpec.Address = request.Address;
+                    existingWorkerSpec.Latitude = request.Latitude;
+                    existingWorkerSpec.Longitude = request.Longitude;
+                    existingWorkerSpec.JobId = request.JobId;
+                    existingWorkerSpec.LivingCityId = request.CityId;
+                    existingWorkerSpec.IsApproved = null; // Reset approval status for re-review
+                    existingWorkerSpec.ModifiedAt = DateTime.UtcNow;
+
+                    // Update services
+                    var services = await _context.Services
+                        .Where(s => request.ServicesIds.Contains(s.Id))
+                        .ToListAsync();
+                    existingWorkerSpec.Services = services;
+
+                    // Update portfolio if provided
+                    if (request.PortfolioFilesURL != null && request.PortfolioFilesURL.Any())
+                    {
+                        // Remove existing portfolio files
+                        var existingPortfolio = await _context.WorkerPortfolios
+                            .Where(wp => wp.WorkerId == request.UserId)
+                            .ToListAsync();
+                        _context.WorkerPortfolios.RemoveRange(existingPortfolio);
+
+                        // Add new portfolio files
+                        foreach (var fileUrl in request.PortfolioFilesURL)
+                        {
+                            var portfolio = new WorkerPortfolio
+                            {
+                                FileURL = fileUrl,
+                                WorkerId = request.UserId,
+                                CreatedAt = DateTime.UtcNow,
+                                ModifiedAt = DateTime.UtcNow
+                            };
+                            _context.WorkerPortfolios.Add(portfolio);
+                        }
+                    }
+                }
+                else
+                {
+                    // Create new worker specification
+                    var workerSpec = new WorkerSpecification
+                    {
+                        Bio = request.Bio,
+                        ImageURL = request.PersonalImageURL,
+                        IdentityImageURL = request.IdentityImageURL,
+                        IsCompany = request.IsCompany,
+                        Address = request.Address,
+                        Latitude = request.Latitude,
+                        Longitude = request.Longitude,
+                        JobId = request.JobId,
+                        LivingCityId = request.CityId,
+                        UserId = request.UserId,
+                        IsApproved = null, // Pending approval
+                        CompletedOrders = 0,
+                        RateRito = 0.0,
+                        CreatedAt = DateTime.UtcNow,
+                        ModifiedAt = DateTime.UtcNow
+                    };
+
+                    // Add services
+                    var services = await _context.Services
+                        .Where(s => request.ServicesIds.Contains(s.Id))
+                        .ToListAsync();
+                    workerSpec.Services = services;
+
+                    _context.WorkerSpecifications.Add(workerSpec);
+                    await _context.SaveChangesAsync(); // Save to get the ID
+
+                    // Add portfolio files if provided
+                    if (request.PortfolioFilesURL != null && request.PortfolioFilesURL.Any())
+                    {
+                        foreach (var fileUrl in request.PortfolioFilesURL)
+                        {
+                            var portfolio = new WorkerPortfolio
+                            {
+                                FileURL = fileUrl,
+                                WorkerId = request.UserId,
+                                CreatedAt = DateTime.UtcNow,
+                                ModifiedAt = DateTime.UtcNow
+                            };
+                            _context.WorkerPortfolios.Add(portfolio);
+                        }
+                    }
+                }
+                
+                // Send notification to all admin users
+                var adminUsers = await _context.Users
+                    .Where(u => u.UserType == UserType.Admin.ToString())
+                    .ToListAsync();
+
+                foreach (var admin in adminUsers)
+                {
+                    _context.UserNotifications.Add(new UserNotification
+                    {
+                        UserId = admin.Id,
+                        Description =" Worker application submitted by user with ID " + request.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        NotificationTypeId = 1 , // may change this later
+                    });
+                }
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return ResultDTO<string>.Success(new MessageDTO
+                {
+                    MessageAr = "تم إرسال طلب أن تصبح عاملاً بنجاح. سيتم مراجعة طلبك من قبل المشرف.",
+                    MessageEn = "Worker application submitted successfully. Your request will be reviewed by the supervisor."
+                });
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ أثناء معالجة طلبك.",
+                    ErrorEn = "An error occurred while processing your request."
+                });
+            }
         }
     }
 }
