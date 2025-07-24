@@ -1,5 +1,6 @@
 ﻿using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Models.UserModels.WorkerModels
 {
@@ -9,6 +10,8 @@ namespace Hoshi.Models.UserModels.WorkerModels
     [NoAction(ControllerAction.FilterPagination)]
     [EndpointGroupping("Worker")]
     [CreateRepoPattern("WorkerWalletService")]
+
+    [Index(nameof(WorkerId), IsUnique = true)]
     public class WorkerWallet : TimestampedModel
     {
         public double Balance { get; set; } = 0.0;

@@ -5,11 +5,12 @@ namespace Hoshi.Models.UserModels.Resets
 {
     public class PasswordResetRequest : IBaseModel
     {
-        public int UserId { get; set; }
-        public User? User { get; set; }
-        public string ResetToken { get; set; }
+        public int Id { get; set; }
+        public string ResetToken { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime ExpiresAt { get; set; }
-        public int Id { get; set; }
+
+        public int UserId { get; set; }
+        public User? User { get; set; }
     }
 }

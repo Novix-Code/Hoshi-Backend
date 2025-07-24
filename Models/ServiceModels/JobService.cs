@@ -1,9 +1,11 @@
 ﻿using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Models.ServiceModels
 {
     [EndpointGroupping("Admin")]
+    [Index(nameof(ServiceId), nameof(JobId), IsUnique = true)]
     public class JobService : TimestampedModel
     {
         public int JobId { get; set; }

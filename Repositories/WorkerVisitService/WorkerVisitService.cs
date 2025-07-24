@@ -3,7 +3,7 @@ using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 using Hoshi.Enums;
-using Hoshi.Models.DashboardMdoels;
+using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;

@@ -1,23 +1,23 @@
+using AutoMapper;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
-using Hoshi.DTOs.FileServicieResult;
+using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
-using Hoshi.Models.UserModels.Resets;
-using Hoshi.Models.UserModels;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Text;
-using AutoMapper;
-using Hoshi.Data;
-using Hoshi.Repositories.FileServiceFold;
-using Hoshi.Repositories.TokenServ;
-using System.Security.Cryptography;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
+using Hoshi.Models.UserModels;
+using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.TokenService;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Hoshi.Repositories.AuthService
 {
@@ -36,7 +36,7 @@ namespace Hoshi.Repositories.AuthService
             SignInManager<User> signInManager,
             IFileService fileService,
             IMapper mapper,
-            HoshiDbContext unitOfWork,
+            HoshiDbContext context,
             IHttpContextAccessor httpContextAccessor,
             ITokenService tokenService,
             RoleManager<IdentityRole<int>> roleManager)
@@ -45,12 +45,13 @@ namespace Hoshi.Repositories.AuthService
             _signInManager = signInManager;
             _fileService = fileService;
             _mapper = mapper;
-            _context = unitOfWork;
+            _context = context;
             _httpContextAccessor = httpContextAccessor;
             _tokenService = tokenService;
             _roleManager = roleManager;
 
         }
+        
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -114,7 +115,7 @@ namespace Hoshi.Repositories.AuthService
             if (applicationUser is null)
                 return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
 
-            var logoutResult = await Logout(id);
+            var logoutResult = await Logout();
             if ((int)logoutResult.StatusCode < 200 || (int)logoutResult.StatusCode > 299)
                 return logoutResult;
             //Prevent the admin from deleting himself
@@ -192,75 +193,115 @@ namespace Hoshi.Repositories.AuthService
             return ResultDTO<object>.Success(new { UserId = applicationUser.Id, Token = token, Message = "Logged successfully" });
         }
 
-        public async Task<ResultDTO<object>> Register([FromForm] ApplicationUserRegisterRequestDto registerRequestDto)
+        public async Task<ResultDTO<object>> Register(
+            UserType userType, 
+            ApplicationUserRegisterRequestDto registerRequestDto
+        )
         {
+            if(userType is UserType.Admin)
+            {
+                return ResultDTO<object>.BadRequest(
+                    new ErrorDTO 
+                    { 
+                        ErrorAr = "المشرف لا يمكنه انشاء حساب لنفسه.",
+                        ErrorEn = "Admin can not Register."
+                    }
+                );
+            }
+
             if (registerRequestDto == null)
             {
-                return ResultDTO<object>.BadRequest(new ErrorDTO { ErrorAr = "informations not completed" });
+                return ResultDTO<object>.BadRequest(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "البيانات غير مكتملة.",
+                        ErrorEn = "Information not completed."
+                    }
+                );
             }
 
             if (string.IsNullOrWhiteSpace(registerRequestDto.Password))
             {
-                return ResultDTO<object>.BadRequest(new ErrorDTO { ErrorAr = "incorrect password" });
+                return ResultDTO<object>.BadRequest(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "كلمة السر مكتوبة بشكل غير صحيح.",
+                        ErrorEn = "Password written in wrong format."
+                    }
+                );
             }
-            if (registerRequestDto.ProfilePicture != null)
-            {
-                var fileSavingResult = await _fileService.SaveFileAsync(registerRequestDto.ProfilePicture, "Images\\Users");
 
-                if (fileSavingResult == FileServiceResults.UnsupportedFileExtension)
+            var applicationUser = new User
+            {
+                UserName = GenerateUniqueUsername(registerRequestDto.FullName),
+                FullName = registerRequestDto.FullName,
+                PhoneNumber = registerRequestDto.Phone,
+                Email = registerRequestDto.Email,
+                UserType = userType.ToString(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            try
+            {
+                var identityResult = await _userManager.CreateAsync(applicationUser, registerRequestDto.Password);
+
+                // Create User code from first to chars of its type and its Id
+                applicationUser.UserCode = $"{userType.ToString()[..2].ToUpper()}-{applicationUser.Id:D6}";
+
+                // Update User to add the new value
+                _context.Set<User>().Update(applicationUser);
+
+                string role = userType.ToString().ToLower();
+
+                if (!await _roleManager.RoleExistsAsync(role))
                 {
-                    return ResultDTO<object>.Failure(
-                        new ErrorDTO { ErrorAr = "the extension not allowed" },
-                        ResponseStatusCodes.BadRequest
+                    return ResultDTO<object>.InternalServerError(new ErrorDTO
+                    {
+                        ErrorAr = "هذا الدور غير متوفر.",
+                        ErrorEn = "This Role not available."
+                    });
+                }
+
+                var roleResult = await _userManager.AddToRoleAsync(applicationUser, role);
+                if (!roleResult.Succeeded)
+                {
+                    var roleErrors = roleResult.Errors.Select(e => e.Description).ToList();
+                    return ResultDTO<object>.InternalServerError(
+                        new ErrorDTO
+                        {
+                            ErrorAr = "فشل في اضافة الدور للمستخدم.",
+                            ErrorEn = "Faild to add role" + string.Join(", ", roleErrors)
+                        }
                     );
                 }
 
 
-            }
+                var token = await _tokenService.CreateTokenAsync(applicationUser);
+                await _context.SaveChangesAsync();
 
-
-            var applicationUser = new User
-            {
-                UserName = registerRequestDto.Name,
-                PhoneNumber = registerRequestDto.Phone,
-                Email = registerRequestDto.Email,
-                UserType = "Client",
-                UserCode = GenerateUniqueUserCode(),
-                CreatedAt = DateTime.UtcNow
-            };
-
-
-            var identityResult = await _userManager.CreateAsync(applicationUser, registerRequestDto.Password);
-
-            if (!identityResult.Succeeded)
-            {
-                var errors = identityResult.Errors.Select(e => e.Description).ToList();
-                return ResultDTO<object>.BadRequest(new ErrorDTO { ErrorAr = string.Join(" | ", errors) });
-            }
-
-            const string defaultRole = "client";
-            var roleExists = await _roleManager.RoleExistsAsync(defaultRole);
-
-            if (!roleExists)
-            {
-                return ResultDTO<object>.Failure(
-                    new ErrorDTO { ErrorAr = $"not exit {defaultRole} the role" },
-                    ResponseStatusCodes.InternalServerError
+                return ResultDTO<object>.Success(
+                    new
+                    {
+                        UserId = applicationUser.Id,
+                        Token = token,
+                    },
+                    new MessageDTO
+                    {
+                        MessageAr = "تم انشاء الحساب بنجاح.",
+                        MessageEn = "Registeration successfully completed."
+                    }
                 );
             }
-
-            var roleResult = await _userManager.AddToRoleAsync(applicationUser, defaultRole);
-            if (!roleResult.Succeeded)
+            catch (DbUpdateException ex)
             {
-                var roleErrors = roleResult.Errors.Select(e => e.Description).ToList();
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "faild to add the role" + string.Join(", ", roleErrors) }, ResponseStatusCodes.InternalServerError);
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "رقم الهاتف او الحساب مكرر.",
+                        ErrorEn = ex.InnerException!.Message
+                    }
+                );
             }
-
-            // 🔹 8. إرجاع النتيجة
-            return ResultDTO<object>.Success(new
-            {
-                UserId = applicationUser.Id
-            });
         }
 
         public async Task<ResultDTO<object>> GetAllUsers()
@@ -282,8 +323,7 @@ namespace Hoshi.Repositories.AuthService
             return ResultDTO<object>.Success(new { UserId = userId });
         }
 
-
-        public async Task<ResultDTO<string>> Logout(string userId = null)
+        public async Task<ResultDTO<string>> Logout()
         {
             // 1. Get current JWT from header
             var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
@@ -296,11 +336,6 @@ namespace Hoshi.Repositories.AuthService
             await _tokenService.InvalidateTokenAsync(token);
 
             return ResultDTO<string>.Success("Logged out successfully");
-        }
-
-        private string GenerateUniqueUserCode()
-        {
-            return $"USR-{DateTime.UtcNow.Ticks.ToString()[^6..]}"; 
         }
         
         public async Task<ResultDTO<string>> BeWorkerAsync(BeWorkerRequestDTO request)
@@ -375,8 +410,29 @@ namespace Hoshi.Repositories.AuthService
                     // Update services
                     var services = await _context.Services
                         .Where(s => request.ServicesIds.Contains(s.Id))
+                        .Select(s => s.Id)
                         .ToListAsync();
-                    existingWorkerSpec.Services = services;
+
+                    var oldServices = await _context.WorkerServices
+                        .Where(ws => request.ServicesIds.Contains(ws.ServiceId) && ws.WorkerId == request.UserId)
+                        .Select(s => s.ServiceId)
+                        .ToListAsync();
+
+                    var newServices = services.Except(oldServices);
+
+                    List<WorkerService> workerServices = new();
+
+                    foreach (var serviceId in newServices)
+                    {
+                        workerServices.Add(new()
+                        {
+                            ServiceId = serviceId,
+                            WorkerId = request.UserId,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+
+                    await _context.AddRangeAsync(workerServices);
 
                     // Update portfolio if provided
                     if (request.PortfolioFilesURL != null && request.PortfolioFilesURL.Any())
@@ -424,12 +480,26 @@ namespace Hoshi.Repositories.AuthService
                     };
 
                     // Add services
-                    var services = await _context.Services
+                    var servicesIds = await _context.Services
                         .Where(s => request.ServicesIds.Contains(s.Id))
+                        .Select(s => s.Id)
                         .ToListAsync();
-                    workerSpec.Services = services;
 
-                    _context.WorkerSpecifications.Add(workerSpec);
+                    List<WorkerService> workerServices = new();
+
+                    foreach (var serviceId in servicesIds)
+                    {
+                        workerServices.Add(new()
+                        {
+                            ServiceId = serviceId,
+                            WorkerId = request.UserId,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+
+                    await _context.AddRangeAsync(workerServices);
+
+                    await _context.WorkerSpecifications.AddAsync(workerSpec);
                     await _context.SaveChangesAsync(); // Save to get the ID
 
                     // Add portfolio files if provided
@@ -441,8 +511,7 @@ namespace Hoshi.Repositories.AuthService
                             {
                                 FileURL = fileUrl,
                                 WorkerId = request.UserId,
-                                CreatedAt = DateTime.UtcNow,
-                                ModifiedAt = DateTime.UtcNow
+                                CreatedAt = DateTime.UtcNow
                             };
                             _context.WorkerPortfolios.Add(portfolio);
                         }
@@ -483,6 +552,38 @@ namespace Hoshi.Repositories.AuthService
                     ErrorEn = "An error occurred while processing your request."
                 });
             }
+        }
+
+        private string GenerateUniqueUsername(string fullName)
+        {
+            string username = string.Empty;
+
+            var checkLang = new Regex(@"^[a-zA-Z]{3,20}(\s[a-zA-Z]{3,20}){1,4}$");
+
+            if (checkLang.IsMatch(fullName))
+            {
+
+                List<string> names = fullName.Split(' ').ToList();
+
+                foreach (string name in names)
+                {
+                    int length = new Random().Next(1, name.Length);
+
+                    username += name.Substring(0, length);
+                }
+
+                int num = new Random().Next(1, 1000);
+
+                username += $"{num:D4}";
+            }
+            else
+            {
+                int num = new Random().Next(1, 1000);
+
+                username = $"username{num:D4}";
+            }
+
+            return username;
         }
     }
 }

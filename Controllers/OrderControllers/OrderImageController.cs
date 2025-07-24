@@ -31,11 +31,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderImageControllers
             // Add Includes
 
 			includes = [
-				$"{nameof(OrderImage.Order)}.{nameof(Order.Client)}",
-				$"{nameof(OrderImage.Order)}.{nameof(Order.Worker)}",
-				$"{nameof(OrderImage.Order)}.{nameof(Order.City)}",
-				$"{nameof(OrderImage.Order)}.{nameof(Order.Service)}",
-				$"{nameof(OrderImage.Order)}.{nameof(Order.AppliedPromotion)}",
+				$"{nameof(OrderImage.Order)}",
 			];
         }
 

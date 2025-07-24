@@ -1,6 +1,6 @@
-﻿using Hoshi.Data.Seeders;
-using Hoshi.Models.DashboardMdoels;
-using Hoshi.Models.DashboardMdoels.StatisticsModels;
+﻿using Hoshi.Data.LookupSeeders;
+using Hoshi.Models.DashboardModels;
+using Hoshi.Models.DashboardModels.StatisticsModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.PromotionModels;
@@ -54,6 +54,7 @@ namespace Hoshi.Data
 
         // Worker Models
         public DbSet<WorkerSpecification> WorkerSpecifications { get; set; }
+        public DbSet<WorkerService> WorkerServices { get; set; }
         public DbSet<WorkerPortfolio> WorkerPortfolios { get; set; }
         public DbSet<WorkerRejection> WorkerRejections { get; set; }
         public DbSet<WorkerWallet> WorkerWallets { get; set; }

@@ -9,7 +9,7 @@ using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Repositories.FileServiceFold;
-using Hoshi.Repositories.TokenServ;
+using Hoshi.Repositories.TokenService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

@@ -30,6 +30,7 @@ namespace Hoshi.Repositories.FileServiceFold
 
             return false;
         }
+        
         public string GetFileFullPath(string fileName, string folderName)
         {
             return Path.Combine(_environment.WebRootPath, folderName, fileName);
@@ -63,7 +64,7 @@ namespace Hoshi.Repositories.FileServiceFold
 
         public bool ValidateFileExtension(IFormFile file)
         {
-            List<string> allowedFileExtensions = new List<string> { ".jpeg", ".png", ".jpg" };
+            List<string> allowedFileExtensions = new List<string> { ".jpeg", ".png", ".jpg", ".pdf", ".docx" };
 
             //Get file extension
             string fileExtension = Path.GetExtension(file.FileName);

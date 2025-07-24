@@ -19,11 +19,13 @@ using Hoshi.Data;
 using Hoshi.Models.UserModels;
 using Hoshi.Repositories.EmailServiceFold;
 using Hoshi.Repositories.FileServiceFold;
-using Hoshi.Repositories.TokenServ;
+using Hoshi.Repositories.TokenService;
 using Hoshi.Repositories.WorkerHomeService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Hoshi.Data.IdentitySeeders;
+using System.Text.Json.Serialization;
 
 namespace Hoshi
 {
@@ -37,33 +39,34 @@ namespace Hoshi
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
-                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-            }); ;
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
 
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(op =>
             {
+                // Add this line to apply using default value for Login type.
+                op.UseInlineDefinitionsForEnums();
+
                 op.SwaggerDoc("Worker", new OpenApiInfo
                 {
                     Title = "Worker APIs",
                     Version = "1.0",
                     Description = "This APIs for Worker in this project."
                 });
-            });
-            builder.Services.AddSwaggerGen(op =>
-            {
+
                 op.SwaggerDoc("Client", new OpenApiInfo
                 {
                     Title = "Client APIs",
                     Version = "1.0",
                     Description = "This APIs for Client in this project."
                 });
-            });
-            builder.Services.AddSwaggerGen(op =>
-            {
+
                 op.SwaggerDoc("Admin", new OpenApiInfo
                 {
                     Title = "Admin APIs",
@@ -71,8 +74,6 @@ namespace Hoshi
                     Description = "This APIs for Admin in this project."
                 });
             });
-
-            builder.Services.AddSwaggerGen();
 
             // Initialize Db Context
             builder.Services.AddDbContext<HoshiDbContext>(
@@ -95,11 +96,13 @@ namespace Hoshi
                 typeof(GenericFSPService<,,>)
             );
 
-
+            // Add Services Injections
 
 			builder.Services.AddAutoMapper(typeof(Program));
 
-			builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+            builder.Services.AddMemoryCache();
+
+            builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
 
 			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
@@ -174,70 +177,15 @@ namespace Hoshi
             app.UseAuthorization();
 
             app.MapControllers();
+
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                await SeedRolesAsync(services);
-                await SeedAdminUserAsync(services);
+                await IdentitySeeder.SeedRolesAsync(services);
+                await IdentitySeeder.SeedAdminUserAsync(services);
             }
 
             app.Run();
         }
-        public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-
-            string[] roles = { "client", "admin", "worker" };
-
-            foreach (var role in roles)
-            {
-                if (!await roleManager.RoleExistsAsync(role))
-                {
-                    await roleManager.CreateAsync(new IdentityRole<int> { Name = role, NormalizedName = role.ToUpper() });
-                }
-            }
-        }
-        public static async Task SeedAdminUserAsync(IServiceProvider serviceProvider)
-        {
-            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-
-            string adminEmail = "admin@example.com";
-            string adminPassword = "P@ssw0rd";
-
-            // Create Admin role if it doesn't exist
-            if (!await roleManager.RoleExistsAsync("admin"))
-            {
-                await roleManager.CreateAsync(new IdentityRole<int>("admin"));
-            }
-
-            // Check if the admin user exists
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
-            if (adminUser == null)
-            {
-                var newAdmin = new User
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
-
-                var result = await userManager.CreateAsync(newAdmin, adminPassword);
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(newAdmin, "admin");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine($"Error: {error.Description}");
-                    }
-                }
-            }
-        }
-
     }
-
-
 }
