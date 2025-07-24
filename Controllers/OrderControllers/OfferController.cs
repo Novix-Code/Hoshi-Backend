@@ -105,8 +105,6 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 	        var result = await workerOfferService.CancelOfferAsync(offerId);
 	        return StatusCode(result.StatusCode, result);
         }
-
-
         [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetById(int id)
         {

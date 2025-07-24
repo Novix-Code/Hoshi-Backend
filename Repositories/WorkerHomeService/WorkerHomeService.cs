@@ -1,11 +1,11 @@
+using AutoMapper;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
+using Hoshi.DTOs.OrderDTOs.OfferDTOs;
+using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.Enums;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using Hoshi.DTOs.OrderDTOs.OfferDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 
 namespace Hoshi.Repositories.WorkerHomeService
 {

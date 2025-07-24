@@ -1,6 +1,7 @@
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 
 namespace Hoshi.Repositories.AuthService
 {
@@ -16,6 +17,6 @@ namespace Hoshi.Repositories.AuthService
         ResultDTO<object> GetCurrentUserId();
         Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email);
         Task<ResultDTO<string>> Logout(string userId = null);
-
+        Task<ResultDTO<string>> BeWorkerAsync(BeWorkerRequestDTO request);
     }
 }
