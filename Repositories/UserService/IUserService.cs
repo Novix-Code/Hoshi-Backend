@@ -16,6 +16,9 @@ namespace Hoshi.Repositories.UserService
         Task<ResultDTO<object>> BeWorkerReject(int Id , string rejectResoun);
         Task<ResultDTO<object>> WorkerPage();
         Task<ResultDTO<object>> DashbordWorkerDetails(int id);
+        Task<ResultDTO<Object>> OrderPage();
+        Task<ResultDTO<Object>> OrderDetails(int id);
+
 
 
             

@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using MimeKit.Cryptography;
 using Org.BouncyCastle.Crypto.Engines;
 using OtpNet;
+using System;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -192,6 +193,91 @@ namespace Hoshi.Repositories.UserService
                 Orders          = targetOrders 
             };
             return ResultDTO<object>.Success(result);
+        }
+
+        public async Task<ResultDTO<object>> OrderDetails(int id)
+        {
+            var TargetOrder = await _context.OrdersGetView.FirstOrDefaultAsync(p=>p.Id == id);
+            if (TargetOrder == null)
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr ="Order Not Found"}, ResponseStatusCodes.NotFound);
+            var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.ClientId);
+            if (targetClient == null)
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr="Client Not Found"}, ResponseStatusCodes.NotFound);
+            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == targetClient.LivingCityId);
+            if (targetCity == null)
+            {
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "City Not Found" }, ResponseStatusCodes.NotFound);
+
+            }
+            var targetOffer = await _context.Offers.FirstOrDefaultAsync(p=>p.OrderId == id);
+            var targetimages = await _context.Orders.Where(p => p.Id == id).Select(p => p.OrderImages).ToListAsync();
+            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.WorkerId);
+            var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
+            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled).CountAsync();
+            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == TargetOrder.WorkerId);
+            var clientData = new
+            {
+                ImageURL = targetClient.ImageURL,
+                FullName = targetClient.FullName , 
+                Email    = targetClient.Email 
+            };
+            var OrderData = new
+            {
+                OrderId = id , 
+                ClientData = clientData,
+                Description= TargetOrder.Description , 
+                OrderStatus= TargetOrder.OrderStatus , 
+                City       = targetCity,
+                Location   = TargetOrder.Location ,
+                ServicingDatetime = TargetOrder.ServicingDateTime ,
+                OfferedPrice        = targetOffer.OfferedPrice,
+                OrderImages         = targetimages 
+            };
+            var workerData = new
+            {
+                ImageURL = workerDetails.ImageURL , 
+                Email    = workerDetails.Email ,
+                FullName = workerDetails.FullName,
+                Job      = targetJob , 
+                IsCompany= workerDetails.IsCompany , 
+                RateRatio= workerDetails.RateRito , 
+                CompletedOrders = workerDetails.CompletedOrders ,
+                CancelledOffers = targetCanceldOffers,
+                Balance = targetwallet.Balance
+
+
+
+
+            };
+            var result = new
+            {
+                OrderData = OrderData,
+                WorkerData = workerData
+            };
+            return ResultDTO<object>.Success(result);
+
+        }
+
+        public async Task<ResultDTO<object>> OrderPage()
+        {
+            var totalOrders = await _context.OrdersGetView.CountAsync();
+            var totalActiveOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).CountAsync();
+            var totalCompletedOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed).CountAsync();
+            var totalCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled).CountAsync();
+            var ActiveOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).ToListAsync();
+            var CompletedAndCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed && p.OrderStatus== Enums.OrderStatus.Cancelled).ToListAsync();
+            var result = new
+            {
+                TotalOrders = totalOrders,
+                TotalActiveOrders = totalActiveOrders,
+                totalCompletedOrders = totalCompletedOrders,
+                TotalCancelledOrder = totalCancelledOrders,
+                ActiveOrders = ActiveOrders,
+                CompletedAndCancelledOrders = CompletedAndCancelledOrders
+
+            };
+            return ResultDTO<object>.Success(result);
+
         }
 
         public async Task<ResultDTO<object>> overViewPage()

@@ -90,7 +90,18 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             return StatusCode(response.StatusCode, response);   
         }
 
-
+        [HttpGet("OrdersPage")]
+        public async Task<IActionResult> ordrsDetails()
+        {
+            var response = await _userService.OrderPage();
+            return StatusCode(response.StatusCode, response);
+        }
+        [HttpGet("DashbordOrderDetails{id}")]
+        public async Task<IActionResult> dashorderDetls(int id)
+        {
+            var response = await _userService.OrderDetails(id);
+            return StatusCode(response.StatusCode, response);
+        }
 
 
 
