@@ -10,7 +10,8 @@ namespace Hoshi.Repositories.UserService
 
         Task<ResultDTO<object>> overViewPage();
         Task<ResultDTO<object>> Clientpage();
-
-
+        Task<ResultDTO<object>> ClientDetails(int Id);
+        Task<ResultDTO<object>> WorkerPage();
+            
     }
 }

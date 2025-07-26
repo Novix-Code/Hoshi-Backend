@@ -6,6 +6,7 @@ using Hoshi.Data;
 using Hoshi.DTOs.FileServicieResult;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.Models.ServiceModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.ViewModels;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MimeKit.Cryptography;
 using Org.BouncyCastle.Crypto.Engines;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,10 +33,30 @@ namespace Hoshi.Repositories.UserService
             _context = context;
         }
 
-        //public Task<ResultDTO<object>> Clientpage()
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public async Task<ResultDTO<object>> ClientDetails(int Id)
+        {
+            var allclien = await _context.ClientDetailsView.ToListAsync();
+            var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
+            if (targetClient == null)
+                return ResultDTO<object>.Failure(new ErrorDTO() , ResponseStatusCodes.NotFound);
+
+            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == targetClient.LivingCityId);
+            var targetOrders = await _context.OrdersGetView
+                .Where(p => p.ClientId == Id)
+                .ToListAsync();
+
+            var result = new
+            {
+                ImageURL = targetClient.ImageURL,
+                Email = targetClient.Email,
+                Phone = targetClient.PhoneNumber,
+                Location = targetClient.Address,
+                City = targetCity,
+                Orders = targetOrders,
+            };
+            return ResultDTO<object>.Success(result);
+        }
+
 
         public async Task<ResultDTO<object>> Clientpage()
         {
@@ -84,6 +106,24 @@ namespace Hoshi.Repositories.UserService
 
         }
 
+        public async Task<ResultDTO<object>> WorkerPage()
+        {
+            var workerDetails = await _context.WorkerPageView.FirstOrDefaultAsync();
+            var newWorkers    = await _context.NewWorkerView.ToListAsync();
+            var allWorkers    = await _context.AllWorkertView.ToListAsync();    
+            var suspendedWorkers= await _context.SuspendedWorker.ToListAsync();
+            var result = new
+            {
+                TotalWorkers = workerDetails.totalClients,
+                TotalNewWorkers = workerDetails.totalNewClients,
+                TotalActiveWorker = workerDetails.totalActiveClients,
+                AverageWorkersperService = workerDetails.AverageOrdering ,
+                NewWorkers = newWorkers,
+                AllWorkers = allWorkers,
+                SuspendedWorkers = suspendedWorkers,
+            };
+            return ResultDTO<object>.Success(result);
+        }
     }
 
 }

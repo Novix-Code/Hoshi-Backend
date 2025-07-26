@@ -53,6 +53,18 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             var response = await _userService.Clientpage();
             return StatusCode((int)Response.StatusCode, response);  
         }
+        [HttpGet("ClientDetails{id}")]
+        public async Task<IActionResult> clientDetails(int id)
+        {
+            var response = await _userService.ClientDetails(id);    
+            return StatusCode((int)response.StatusCode, response);  
+        }
+        [HttpGet("WorkerPage")]
+        public async Task<IActionResult> workerPage()
+        {
+            var response = await _userService.WorkerPage();
+            return StatusCode((int)response.StatusCode, response);
+        }
 
 
     }

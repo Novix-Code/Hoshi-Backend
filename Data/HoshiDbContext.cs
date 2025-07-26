@@ -1,4 +1,5 @@
 ﻿using Hoshi.Data.LookupSeeders;
+using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.DashboardModels.StatisticsModels;
 using Hoshi.Models.GlobalModels;
@@ -44,6 +45,16 @@ namespace Hoshi.Data
             modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewClientView");
             modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllClientView");
             modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedUser");
+            modelBuilder.Entity<ClientDetailsModelView>().HasNoKey().ToView("ClientDetailsView");
+            modelBuilder.Entity<CitiesViewModel>().HasNoKey().ToView("CitiesgetView");
+            modelBuilder.Entity<orderViewModelDetails>().HasNoKey().ToView("OrdersGetView");
+            modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("WorkerPageView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewWorkerView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllWorkertView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedWorker");
+
+
+
         }
 
 
@@ -58,6 +69,13 @@ namespace Hoshi.Data
         public DbSet<NewClient> NewClientView { get; set; }
         public DbSet<NewClient> AllClientView { get; set; }
         public DbSet<NewClient> SuspendedUser { get; set; }
+        public DbSet<ClientDetailsModelView> ClientDetailsView { get; set; }
+        public DbSet<CitiesViewModel> CitiesgetView { get; set; }
+        public DbSet<orderViewModelDetails> OrdersGetView { get; set; }
+        public DbSet<clientPageModel> WorkerPageView { get; set; }
+        public DbSet<NewClient> NewWorkerView { get; set; }
+        public DbSet<NewClient> AllWorkertView { get; set; }
+        public DbSet<NewClient> SuspendedWorker { get; set; }
 
 
 
