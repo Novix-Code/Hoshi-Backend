@@ -5,6 +5,7 @@ using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.UserService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.UserControllers.UserControllers
@@ -20,6 +21,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         UserPostDTO, 
         UserPutDTO>
     {
+        private readonly IUserService _userService;
         public UserController(
             IMapper mapper,
             IGenericCRUDService<
@@ -32,8 +34,26 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
                 HoshiDbContext,
                 User,
                 UserGetDTO> genericFSPService
-        ) : base(mapper, genericCRUDService, genericFSPService)
+,
+            IUserService userService) : base(mapper, genericCRUDService, genericFSPService)
         {
+            _userService = userService;
         }
+
+
+        [HttpGet("OverViewPage")]
+        public async Task<IActionResult> overView()
+        {
+            var reponse = await _userService.overViewPage();
+            return StatusCode((int)Response.StatusCode, reponse);
+        }
+        [HttpGet("ClientPage")]
+        public async Task<IActionResult> clientpage()
+        {
+            var response = await _userService.Clientpage();
+            return StatusCode((int)Response.StatusCode, response);  
+        }
+
+
     }
 }

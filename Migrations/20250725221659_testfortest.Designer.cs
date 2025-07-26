@@ -4,6 +4,7 @@ using Hoshi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    partial class HoshiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250725221659_testfortest")]
+    partial class testfortest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3568,74 +3571,6 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerWalletId");
 
                     b.ToTable("WorkerWalletHistories");
-                });
-
-            modelBuilder.Entity("Hoshi.Models.ViewModels.NewClient", b =>
-                {
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("SuspendedUser", (string)null);
-                });
-
-            modelBuilder.Entity("Hoshi.Models.ViewModels.OverViewPage", b =>
-                {
-                    b.Property<int>("TotalClients")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalCompletedOrders")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("TotalOrderIncome")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("TotalOrderPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TotalOrders")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalUsers")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalWorkers")
-                        .HasColumnType("int");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("OverviewView", (string)null);
-                });
-
-            modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
-                {
-                    b.Property<double>("AverageOrdering")
-                        .HasColumnType("float");
-
-                    b.Property<int>("totalActiveClients")
-                        .HasColumnType("int");
-
-                    b.Property<int>("totalClients")
-                        .HasColumnType("int");
-
-                    b.Property<int>("totalNewClients")
-                        .HasColumnType("int");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("ClientPageView4", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>

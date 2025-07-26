@@ -9,6 +9,7 @@ using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.AdminModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +39,28 @@ namespace Hoshi.Data
             LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
             FeesSeeder.SeedFees(modelBuilder);
+            modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
+            modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("ClientPageView4");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewClientView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllClientView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedUser");
         }
+
+
+
+
+
+        /// <summary>
+        /// this is View Models
+        /// </summary>
+        public DbSet<OverViewPage> OverviewView { get; set; }
+        public DbSet<clientPageModel> ClientPageView4 { get; set; }
+        public DbSet<NewClient> NewClientView { get; set; }
+        public DbSet<NewClient> AllClientView { get; set; }
+        public DbSet<NewClient> SuspendedUser { get; set; }
+
+
+
 
         //---------------------------------------------------------------
         //--------------------------User Models--------------------------

@@ -7,6 +7,10 @@ namespace Hoshi.Repositories.UserService
 {
     public interface IUserService
     {
-       
+
+        Task<ResultDTO<object>> overViewPage();
+        Task<ResultDTO<object>> Clientpage();
+
+
     }
 }
