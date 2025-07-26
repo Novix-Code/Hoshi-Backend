@@ -65,6 +65,33 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             var response = await _userService.WorkerPage();
             return StatusCode((int)response.StatusCode, response);
         }
+        [HttpGet("BeWorkerRequest{id}")]
+        public async Task<IActionResult> beWorkerReq(int id)
+        {
+            var response   =  await _userService.WorkerDetails(id);
+            return StatusCode((int)response.StatusCode, response);   
+        }
+        [HttpPost("BeWorkerApproved{id}")]
+        public async Task<IActionResult> beworkerapproved(int id)
+        {
+            var resonse  = await _userService.BeWorkerApproved(id);
+            return StatusCode((int)resonse.StatusCode, resonse);
+        }
+        [HttpPost("BeWorkerRejected")]
+        public async Task<IActionResult> beworkerreject(int id , string RejectResoun)
+        {
+            var resonse  = await _userService.BeWorkerReject(id , RejectResoun);
+            return StatusCode((int)resonse.StatusCode, resonse);
+        }
+        [HttpGet("DashbordWorkerDetails{id}")]
+        public async Task<IActionResult> dashWOrker(int id)
+        {
+            var response = await _userService.DashbordWorkerDetails(id);    
+            return StatusCode(response.StatusCode, response);   
+        }
+
+
+
 
 
     }

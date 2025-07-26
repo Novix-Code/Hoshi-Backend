@@ -6,6 +6,7 @@ using Hoshi.Data;
 using Hoshi.DTOs.FileServicieResult;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.Models.GlobalModels;
 using Hoshi.Models.ServiceModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MimeKit.Cryptography;
 using Org.BouncyCastle.Crypto.Engines;
+using OtpNet;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -33,9 +35,86 @@ namespace Hoshi.Repositories.UserService
             _context = context;
         }
 
+        public async Task<ResultDTO<object>> BeWorkerApproved(int Id)
+        {
+            var tergetWorkerSpecif = await _context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
+            tergetWorkerSpecif.IsApproved = true;
+            // handle add notifications 
+            var checkexcist = await _context.NotificationTypes.Where(p=>p.Type == "Success Message").Select(p=>p.Id).FirstOrDefaultAsync(); 
+            if (checkexcist ==0){
+                var notiType = new NotificationType
+                {
+                    Title = "Successfully Approved",
+                    ForClient = false,
+                    Type = "Success Message"
+                };
+                await _context.NotificationTypes.AddAsync(notiType);
+                await _context.SaveChangesAsync();
+                _context.UserNotifications.Add( new UserNotification
+                {
+                    NotificationTypeId = notiType.Id,
+                    Description = "success Message",
+                    UserId = Id
+                });
+                await _context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now approved");
+
+            }
+            else
+            {
+                _context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = checkexcist,
+                    Description = "success Message",
+                    UserId = Id
+                });
+                await _context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now approved");
+            }
+            
+        }
+
+        public async Task<ResultDTO<object>> BeWorkerReject(int Id, string rejectResoun)
+        {
+            var tergetWorkerSpecif = await _context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
+            tergetWorkerSpecif.IsApproved = false;
+            await _context.SaveChangesAsync();
+            var checkexcist = await _context.NotificationTypes.Where(p => p.Type == "Reject Message").Select(p => p.Id).FirstOrDefaultAsync();
+            if (checkexcist == 0)
+            {
+                var notiType = new NotificationType
+                {
+                    Title = "Successfully Reject",
+                    ForClient = false,
+                    Type = "Reject Message"
+                };
+                await _context.NotificationTypes.AddAsync(notiType);
+                await _context.SaveChangesAsync();
+                _context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = notiType.Id,
+                    Description = rejectResoun,
+                    UserId = Id
+                });
+                await _context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now Rejected");
+
+            }
+            else
+            {
+                _context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = checkexcist,
+                    Description = rejectResoun,
+                    UserId = Id
+                });
+                await _context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now Rejected");
+            }
+        }
+
         public async Task<ResultDTO<object>> ClientDetails(int Id)
         {
-            var allclien = await _context.ClientDetailsView.ToListAsync();
             var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
             if (targetClient == null)
                 return ResultDTO<object>.Failure(new ErrorDTO() , ResponseStatusCodes.NotFound);
@@ -78,6 +157,43 @@ namespace Hoshi.Repositories.UserService
             return ResultDTO<object>.Success(result);
         }
 
+        public async Task<ResultDTO<object>> DashbordWorkerDetails(int id)
+        {
+            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == id);
+            if (workerDetails == null)
+            {
+                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+            }
+            var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
+            var targetPortfolios = await _context.PortfolioView.Where(p => p.WorkerId == id).ToListAsync();
+            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == workerDetails.LivingCityId);
+            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p=>p.WorkerId == id);
+            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == id && p.OfferStatus == Enums.OfferStatus.Cancelled).CountAsync();
+            var targetOrders = await _context.OrdersGetView.Where(p => p.WorkerId == id).ToListAsync();
+            var totalIncomeforWorker = await _context.OrdersGetView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed).Select(p => p.TotalWorkerCost).SumAsync();
+
+            var result = new
+            {
+                ImageURL = workerDetails.ImageURL ,
+                Email    = workerDetails.Email ,
+                Phone    = workerDetails.PhoneNumber ,
+                Job      = targetJob , 
+                IsCompany= workerDetails.IsCompany ,
+                City     = targetCity,
+                Location = workerDetails.Address , 
+                Bio      = workerDetails.Bio,
+                RateRatio= workerDetails.RateRito,
+                CompletedOrders = workerDetails.CompletedOrders ,
+                CancelledOffers = targetCanceldOffers ,
+                TotalIncome     = totalIncomeforWorker ,
+                Balance         = targetwallet.Balance ,
+                IdentityImageURL= workerDetails.IdentityImageURL ,
+                Portfolies      = targetPortfolios ,
+                Orders          = targetOrders 
+            };
+            return ResultDTO<object>.Success(result);
+        }
+
         public async Task<ResultDTO<object>> overViewPage()
         {
             var overResult = await _context.OverviewView.FirstOrDefaultAsync();
@@ -100,6 +216,33 @@ namespace Hoshi.Repositories.UserService
                 NewOrders = newOrders,
                 CompletedOrders = completedOrders,
                 NewComplients = newComplaints,
+
+            };
+            return ResultDTO<object>.Success(result);
+
+        }
+
+        public async Task<ResultDTO<object>> WorkerDetails(int Id)
+        {
+            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
+            if (workerDetails == null) 
+            {
+                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+            }
+            var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
+            var targetPortfolio = await _context.PortfolioView.FirstOrDefaultAsync(p => p.WorkerId == Id);
+            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p=>p.Id == workerDetails.LivingCityId);
+
+            var result = new
+            {
+                ImageURL = workerDetails.ImageURL , 
+                Email    = workerDetails.Email ,
+                Phone    = workerDetails.PhoneNumber , 
+                Job      = targetJob ,
+                IsCompany= workerDetails.IsCompany ,
+                City     = targetCity , 
+                Location = workerDetails.Address , 
+                Portfolio= targetPortfolio
 
             };
             return ResultDTO<object>.Success(result);

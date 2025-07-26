@@ -24,6 +24,8 @@ namespace Hoshi.Models.ViewModels
 
         public double? TotalWorkerCost { get; set; }
         public int ClientId { get; set; }
+        public int? WorkerId { get; set; }
+        public OrderStatus OrderStatus { get; set; }
 
 
 
