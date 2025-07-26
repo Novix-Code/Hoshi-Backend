@@ -1,5 +1,6 @@
 using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
 
@@ -7,6 +8,6 @@ namespace Hoshi.Repositories.UserService
 {
     public interface IUserService
     {
-       
+        Task<ResultDTO<List<AdminWithRolesAndPermissionsDTO>>> GetAllAdminsWithRolesAndPermissionsAsync();
     }
 }
