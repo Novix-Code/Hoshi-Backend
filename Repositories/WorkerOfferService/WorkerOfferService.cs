@@ -56,14 +56,12 @@ namespace Hoshi.Repositories.WorkerOfferService
                 // 4. Calculate promotion discount
                 var promotionTitle = string.Empty;
                 var promotionValue = 0.0;
-                if (dto.AppliedPromotionId.HasValue)
+
+                var promotion = await _hoshiDbContext.Promotions.FirstAsync();
+                if (promotion != null)
                 {
-                    var promotion = await _hoshiDbContext.Promotions.FindAsync(dto.AppliedPromotionId.Value);
-                    if (promotion != null)
-                    {
-                        promotionTitle = $"{promotion.TitleFirstPart} {promotion.TitleSecondPart}";
-                        promotionValue = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
-                    }
+                    promotionTitle = $"{promotion.TitleFirstPart} {promotion.TitleSecondPart}";
+                    promotionValue = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
                 }
 
                 // 5. Calculate final amounts

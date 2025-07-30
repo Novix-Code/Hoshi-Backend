@@ -107,7 +107,14 @@ namespace Hoshi.Repositories.ClientOrderService
 
         public async Task<ResultDTO<List<OrderGetAllDto>>> GetAllClientsAsync()
         {
-            var AllOrders = await _Context.Orders.Where(p=>p.OrderStatus != Enums.OrderStatus.Cancelled).ProjectTo<OrderGetAllDto>(_mapper.ConfigurationProvider).ToListAsync();
+            var AllOrders = await _Context.Orders
+                .Include(nameof(Order.Service))
+                .Include(nameof(Order.City))
+                .Include(nameof(Order.OrderImages))
+                .Where(p => p.OrderStatus != Enums.OrderStatus.Cancelled)
+                .ProjectTo<OrderGetAllDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
             return ResultDTO<List<OrderGetAllDto>>.Success( AllOrders); 
         }
 
@@ -119,7 +126,7 @@ namespace Hoshi.Repositories.ClientOrderService
             var targetOffers = await _Context.Offers.Where(p => p.OrderId == orderId).ProjectTo<OfferGetDTO>(_mapper.ConfigurationProvider).ToListAsync();
             if (targetOffers.Count() > 0)
             {
-                var workerId = targetOffers[0].WorkerId;
+                var workerId = targetOffers[0].Worker!.Id;
                 var workerData = await _Context.WorkerPortfolios.FindAsync(workerId);
                 resultDto.WorkerData = _mapper.Map<WorkerPortfolioGetDTO>(workerData);
             }
