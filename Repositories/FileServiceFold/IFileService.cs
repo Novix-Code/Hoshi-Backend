@@ -2,9 +2,8 @@
 {
     public interface IFileService
     {
-        Task<string> SaveFileAsync(IFormFile file, string folderName);
-        bool DeleteFile(string fileName, string folderName);
+        Task<Tuple<bool, string>> SaveFileAsync(IFormFile file, string folderShortPath);
+        bool DeleteFile(string fileURL);
         bool ValidateFileExtension(IFormFile file);
-        string GetFileFullPath(string fileName, string folderName);
     }
 }

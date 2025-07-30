@@ -1,9 +1,4 @@
 using GenericCRUDLibrary.GenericInterfaces;
-using GenericCRUDLibrary.CustomAttributes;
-using GenericCRUDLibrary.GenericModels;
-using Hoshi.Enums;
-using Hoshi.Models.PromotionModels;
-using Hoshi.Models.UserModels;
 
 namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
 {
@@ -18,11 +13,6 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
         public double? Longitude { get; set; }
         public DateTime? ServicingDateTime { get; set; }
 
-
-
-
-
-
         public int? ClientId { get; set; }
 
         public int? WorkerId { get; set; }
@@ -32,8 +22,5 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
         public int? ServiceId { get; set; }
 
         public int? AppliedPromotionId { get; set; }
-
-
-
     }
 }

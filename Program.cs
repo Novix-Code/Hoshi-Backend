@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Hoshi.Data.IdentitySeeders;
 using System.Text.Json.Serialization;
+using Hoshi.Repositories.OrderImageService;
 
 namespace Hoshi
 {
@@ -129,6 +130,8 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
           
 			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
+
+			builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
           
             builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
           

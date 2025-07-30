@@ -23,6 +23,7 @@ namespace Hoshi.Repositories.OrderService
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
         }
+
         public async Task<ResultDTO<SubmittedOrderDetailsDto>> GetSubmittedOrderDetailsAsync(int orderId)
         {
 
@@ -298,7 +299,6 @@ namespace Hoshi.Repositories.OrderService
             }
         }
 
-        
         public async Task<ResultDTO<object>> GetAssignedOrderAsync(int orderId)
         {
             var order = await _hoshiDbContext.Orders

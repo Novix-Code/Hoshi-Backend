@@ -4,7 +4,10 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
+using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.Enums;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.AuthService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.UserControllers.UserControllers
@@ -20,6 +23,9 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         UserPostDTO, 
         UserPutDTO>
     {
+        private readonly IMapper mapper;
+        private readonly IAuthService authService;
+
         public UserController(
             IMapper mapper,
             IGenericCRUDService<
@@ -31,9 +37,22 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             IGenericFSPService<
                 HoshiDbContext,
                 User,
-                UserGetDTO> genericFSPService
+                UserGetDTO> genericFSPService,
+            IAuthService authService
         ) : base(mapper, genericCRUDService, genericFSPService)
         {
+            this.mapper = mapper;
+            this.authService = authService;
+        }
+
+        public override async Task<IActionResult> Add(UserPostDTO postDTO)
+        {
+            var serviceResponse = await authService.Register(
+                postDTO.UserType, 
+                mapper.Map<ApplicationUserRegisterRequestDto>(postDTO)
+            );
+
+            return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
     }
 }

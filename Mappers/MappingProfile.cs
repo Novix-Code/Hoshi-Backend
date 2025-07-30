@@ -63,6 +63,7 @@ using Hoshi.DTOs.DashboardDTOs.AdminNotificationDTOs;
 using Hoshi.Models.DashboardModels;
 using GenericCRUDLibrary.GenericInterfaces;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
+using Hoshi.DTOs.UserDTOs.UserRegistiration;
 
 namespace Hoshi.Mappers
 {
@@ -174,7 +175,10 @@ namespace Hoshi.Mappers
 			GenericCreateBasicMaps<Archive, ArchivePostDTO, ArchivePutDTO, ArchiveGetDTO>();
 
 			GenericCreateBasicMaps<AdminNotification, AdminNotificationPostDTO, AdminNotificationPutDTO, AdminNotificationGetDTO>();
-      
+
+			CreateMap<UserPostDTO, ApplicationUserRegisterRequestDto>()
+				.ForMember(dest => dest.Password, opt => opt.MapFrom(_ => "Hoshi@00"));
+
 			CreateMap<Order, OrderGetAllDto>().ReverseMap();
 			
 			CreateMap<ClientSpecification, ClientDataDto>()

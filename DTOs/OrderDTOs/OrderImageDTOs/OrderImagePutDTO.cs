@@ -7,8 +7,6 @@ namespace Hoshi.DTOs.OrderDTOs.OrderImageDTOs
     {
         public int Id { get; set; }
         public string? ImageURL { get; set; }
-        public int? ImageNumber { get; set; }
-        public bool? IsDeleted { get; set; }
 
         public int? OrderId { get; set; }
 

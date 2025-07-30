@@ -1,16 +1,12 @@
+using GenericCRUDLibrary.GenericModels;
+using Hoshi.DTOs.GlobalDTOs.CityDTOs;
+using Hoshi.DTOs.OrderDTOs.OrderImageDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderStatusHistoryDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderImageDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
 using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
-using Hoshi.DTOs.GlobalDTOs.CityDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
-using Hoshi.DTOs.UserDTOs.UserDTOs;
-using GenericCRUDLibrary.CustomAttributes;
-using GenericCRUDLibrary.GenericModels;
 using Hoshi.Enums;
-using Hoshi.Models.PromotionModels;
-using Hoshi.Models.UserModels;
 
 namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
 {

@@ -15,7 +15,7 @@ namespace Hoshi.DTOs.UserDTOs.UserRegistiration
 
         [Required(ErrorMessage = "Phone must not be empty")]
         [DataType(DataType.PhoneNumber)]
-        public string Phone { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email must not be empty")]
         [DataType(DataType.EmailAddress, ErrorMessage = "Invalid email format")]

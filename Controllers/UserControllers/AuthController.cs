@@ -99,14 +99,6 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
-        [HttpGet("get-user/{id}")]
-        [Authorize]
-        public async Task<IActionResult> GetById([FromRoute] string id)
-        {
-            var serviceResponse = await authService.GetById(id);
-            return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
-        }
-
         [HttpGet("get-current-userId")]
         public IActionResult GetUserId()
         {

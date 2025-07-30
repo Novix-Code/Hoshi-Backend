@@ -137,12 +137,14 @@ namespace Hoshi.Repositories.AuthService
 
         public async Task<ResultDTO<string>> Edit(ApplicationUserEditRequestDto userEditRequestDto)
         {
-            var applicationUser = await _userManager.FindByEmailAsync(userEditRequestDto.Email);
+            var applicationUser = await _userManager.FindByIdAsync(userEditRequestDto.Id.ToString());
+
             if (applicationUser is null)
                 return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
 
-            applicationUser.UserName = userEditRequestDto.Name;
-            applicationUser.PhoneNumber = userEditRequestDto.Phone;
+            applicationUser.FullName = userEditRequestDto.FullName;
+            applicationUser.Email = userEditRequestDto.Email;
+            applicationUser.PhoneNumber = userEditRequestDto.PhoneNumber;
 
         
             var identityResult = await _userManager.UpdateAsync(applicationUser);
@@ -159,16 +161,6 @@ namespace Hoshi.Repositories.AuthService
             }
 
             return ResultDTO<string>.Success("successfully updated");
-        }
-
-        public async Task<ResultDTO<UserGetDTO>> GetById(string id)
-        {
-            var applicationUser = await _userManager.FindByIdAsync(id);
-            if (applicationUser is null)
-                return ResultDTO<UserGetDTO>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
-
-            var mappedUser = _mapper.Map<UserGetDTO>(applicationUser);
-            return ResultDTO<UserGetDTO>.Success(mappedUser);
         }
 
         public async Task<ResultDTO<object>> Login(ApplicationUserLoginRequestDto loginRequestDto)
@@ -235,7 +227,7 @@ namespace Hoshi.Repositories.AuthService
             {
                 UserName = GenerateUniqueUsername(registerRequestDto.FullName),
                 FullName = registerRequestDto.FullName,
-                PhoneNumber = registerRequestDto.Phone,
+                PhoneNumber = registerRequestDto.PhoneNumber,
                 Email = registerRequestDto.Email,
                 UserType = userType.ToString(),
                 CreatedAt = DateTime.UtcNow

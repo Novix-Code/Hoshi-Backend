@@ -11,18 +11,16 @@ namespace Hoshi.Repositories.FileServiceFold
             _environment = environment;
         }
 
-        public bool DeleteFile(string fileName, string folderName)
+        public bool DeleteFile(string fileURL)
         {
-            if (fileName == FileServiceResults.EmptyFile)
-                return true;
-
-            string fileFullPath = Path.Combine(_environment.WebRootPath, folderName, fileName);
+            string fileFullPath = Path.Combine(_environment.WebRootPath, fileURL);
+            string trashFolderPath = Path.Combine(_environment.WebRootPath, "trash");
+            if (!Directory.Exists(trashFolderPath)) 
+                Directory.CreateDirectory(trashFolderPath);
 
             if (File.Exists(fileFullPath))
             {
-                string trashFolderPath = Path.Combine(_environment.WebRootPath, "Trash", folderName);
-                Directory.CreateDirectory(trashFolderPath);
-                string trashFilePath = Path.Combine(trashFolderPath, fileName);
+                string trashFilePath = Path.Combine(trashFolderPath, fileURL);
                 File.Move(fileFullPath, trashFilePath);
 
                 return true;
@@ -31,21 +29,21 @@ namespace Hoshi.Repositories.FileServiceFold
             return false;
         }
         
-        public string GetFileFullPath(string fileName, string folderName)
-        {
-            return Path.Combine(_environment.WebRootPath, folderName, fileName);
-        }
-
-        public async Task<string> SaveFileAsync(IFormFile file, string folderName)
+        public async Task<Tuple<bool, string>> SaveFileAsync(IFormFile file, string folderShortPath)
         {
             if (file?.Length == 0 || file == null)
-                return FileServiceResults.EmptyFile;
+                return new Tuple<bool, string>(false, FileServiceResults.EmptyFile);
 
             if (!ValidateFileExtension(file))
-                return FileServiceResults.UnsupportedFileExtension;
+                return new Tuple<bool, string>(false, FileServiceResults.UnsupportedFileExtension);
 
             //Get Folder Full Path
-            string folderFullPath = Path.Combine(_environment.WebRootPath, folderName);
+            string folderFullPath = Path.Combine(_environment.WebRootPath, folderShortPath);
+
+            if (!File.Exists(folderFullPath))
+            {
+                Directory.CreateDirectory(folderFullPath);
+            }
 
             //Make unique name for the file
             string fileUniqueName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
@@ -59,7 +57,7 @@ namespace Hoshi.Repositories.FileServiceFold
                 await file.CopyToAsync(fileStream);
             }
 
-            return fileUniqueName;
+            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName));
         }
 
         public bool ValidateFileExtension(IFormFile file)
