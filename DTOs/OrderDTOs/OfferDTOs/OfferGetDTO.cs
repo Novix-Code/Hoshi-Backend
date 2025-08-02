@@ -7,7 +7,7 @@ using Hoshi.Enums;
 
 namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
 {
-    public class OfferGetDTO : TimestampedModel, ISoftDelete
+    public class OfferGetDTO : TimestampedModel
     {
         public double OfferedPrice { get; set; }
         public string Note { get; set; }

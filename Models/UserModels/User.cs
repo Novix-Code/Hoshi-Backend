@@ -15,6 +15,7 @@ namespace Hoshi.Models.UserModels
     {
         public string FullName { get; set; } = string.Empty;
         public string? UserCode { get; set; }
+        public string? ImageURL { get; set; }
         public bool IsDeleted { get; set; }
 
         public string UserType { get; set; } = string.Empty;

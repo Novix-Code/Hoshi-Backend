@@ -23,5 +23,8 @@ namespace Hoshi.DTOs.UserDTOs.UserDTOs
         public string Email { get; set; } = string.Empty;
 
         public UserType UserType { get; set; }
+
+        // Add image when adding a new user is optional
+        public IFormFile? Image { get; set; }
     }
 }

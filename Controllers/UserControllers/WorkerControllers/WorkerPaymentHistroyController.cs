@@ -1,19 +1,19 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using GenericCRUDLibrary.GenericControllers;
+using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
-using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPaymentHistroyDTOs;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.WorkerPaymentHistroyService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerPaymentHistroyControllers
 {
 
     [ApiController]
     [Route("api/[controller]")]
-	[EndpointGroupName("Worker")]
     public class WorkerPaymentHistroyController : GenericFSPController<
         HoshiDbContext, 
         WorkerPaymentHistroy, 
@@ -21,6 +21,8 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerPaymentHistr
         WorkerPaymentHistroyPostDTO, 
         WorkerPaymentHistroyPutDTO>
     {
+        private readonly IWorkerPaymentHistroyService paymentHistroyService;
+
         public WorkerPaymentHistroyController(
             IMapper mapper, 
             IGenericCRUDService<
@@ -32,7 +34,8 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerPaymentHistr
             IGenericFSPService<
                 HoshiDbContext, 
                 WorkerPaymentHistroy, 
-                WorkerPaymentHistroyGetDTO> genericFSPService 
+                WorkerPaymentHistroyGetDTO> genericFSPService,
+            IWorkerPaymentHistroyService paymentHistroyService
         ) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
@@ -40,6 +43,27 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerPaymentHistr
 			includes = [
 				$"{nameof(WorkerPaymentHistroy.Worker)}",
 			];
+            this.paymentHistroyService = paymentHistroyService;
+        }
+
+        [EndpointGroupName("Worker")]
+        public override async Task<IActionResult> Add(WorkerPaymentHistroyPostDTO postDTO)
+        {
+            var result = await paymentHistroyService.AddService(postDTO);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [EndpointGroupName("Worker")]
+        public override async Task<IActionResult> Update(WorkerPaymentHistroyPutDTO putDTO)
+        {
+            var result = await paymentHistroyService.UpdateService(putDTO);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [NonAction]
+        public override Task<IActionResult> AddList(List<WorkerPaymentHistroyPostDTO> postDTOsList)
+        {
+            return base.AddList(postDTOsList);
         }
 
         [NonAction]

@@ -1,7 +1,4 @@
-using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericInterfaces;
-using Hoshi.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Hoshi.DTOs.UserDTOs.UserDTOs
 {
@@ -13,6 +10,7 @@ namespace Hoshi.DTOs.UserDTOs.UserDTOs
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
+        public string? ImageURL { get; set; }
 
         public bool IsDeleted { get; set; }
 
