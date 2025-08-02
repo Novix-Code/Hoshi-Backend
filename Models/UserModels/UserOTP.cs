@@ -6,7 +6,8 @@ namespace Hoshi.Models.UserModels
     [NoController]
     public class UserOTP : TimestampedModel
     {
-        public int Code { get; set; }
+        public string Code { get; set; }
+        public byte[] SecreteKey { get; set; }
         public bool IsRevoked { get; set; } = false;
 
         public int UserId { get; set; }

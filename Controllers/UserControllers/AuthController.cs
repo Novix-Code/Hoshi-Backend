@@ -58,7 +58,7 @@ namespace Hoshi.Controllers.UserControllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto requestDto)
         {
             var response = await authService.ResetPasswordAsync(requestDto);
-            await emailService.SendVerifivationCode(requestDto.Email);
+            await emailService.ReSetOtp(requestDto.Email);
             return StatusCode((int)response.StatusCode, response);
         }
 
@@ -120,6 +120,18 @@ namespace Hoshi.Controllers.UserControllers
         {
             var serviceResponse = await authService.Delete(id);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
+        }
+        [HttpPost("CheckOTP")]
+        public async Task<IActionResult> otpResult(string otp, string id)
+        {
+            var response = await emailService.checkOTPVerfication(otp, id);
+            return StatusCode(response.StatusCode, response);
+        }
+        [HttpPost("reset-OTP")]
+        public async Task<IActionResult> resetOtp(string Email)
+        {
+            var repsonse = await emailService.ReSetOtp(Email);
+            return StatusCode(repsonse.StatusCode, Response);
         }
 
     }

@@ -9,6 +9,7 @@ using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.EmailServiceFold;
 using Hoshi.Repositories.FileServiceFold;
 using Hoshi.Repositories.TokenService;
 using Hoshi.Repositories.UserService;
@@ -33,6 +34,7 @@ namespace Hoshi.Repositories.AuthService
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             IMapper mapper,
@@ -43,7 +45,8 @@ namespace Hoshi.Repositories.AuthService
             SignInManager<User> signInManager,
             RoleManager<IdentityRole<int>> roleManager,
             ITokenService tokenService,
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor,
+            IEmailService emailService
         )
         {
             _mapper = mapper;
@@ -55,9 +58,9 @@ namespace Hoshi.Repositories.AuthService
             _roleManager = roleManager;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
-
+            _emailService = emailService;
         }
-        
+
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -181,7 +184,19 @@ namespace Hoshi.Repositories.AuthService
                     ErrorAr = ".الحساب او كلمة السر خاطئة",
                     ErrorEn = "Invalid email or password."
                 });
-
+                
+            // check if account is Suspended and the reason 
+            var checkSuspend = await _context.SuspendedUsers.Where(p => p.UserId == applicationUser.Id).FirstOrDefaultAsync();
+            if (checkSuspend is not null)
+            {
+                var getResoun = await _context.SuspendReasons.FindAsync(checkSuspend.SuspendReasonId);
+                return ResultDTO<object>.Failure(new ErrorDTO { 
+                        ErrorAr=$"الحساب معلق للسبب التالي : { getResoun.Reason}"
+                        ErrorEn=$"Acount is Suspended for : { getResoun.Reason}"
+                    }, 
+                    ResponseStatusCodes.BadRequest
+                );
+            }
 
             var token = await _tokenService.CreateTokenAsync(applicationUser);
             await _context.SaveChangesAsync();
@@ -294,6 +309,9 @@ namespace Hoshi.Repositories.AuthService
 
                 var token = await _tokenService.CreateTokenAsync(applicationUser);
                 await _context.SaveChangesAsync();
+                var otpResult = await _emailService.SendOTP(applicationUser.Email);
+
+
 
                 return ResultDTO<UserGetDTO>.Success(
                     _mapper.Map<UserGetDTO>(applicationUser),
