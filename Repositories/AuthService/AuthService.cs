@@ -190,11 +190,10 @@ namespace Hoshi.Repositories.AuthService
             if (checkSuspend is not null)
             {
                 var getResoun = await _context.SuspendReasons.FindAsync(checkSuspend.SuspendReasonId);
-                return ResultDTO<object>.Failure(new ErrorDTO { 
-                        ErrorAr=$"الحساب معلق للسبب التالي : { getResoun.Reason}"
-                        ErrorEn=$"Acount is Suspended for : { getResoun.Reason}"
-                    }, 
-                    ResponseStatusCodes.BadRequest
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO { 
+                        ErrorAr = $"الحساب معلق للسبب التالي : { getResoun.Reason}",
+                        ErrorEn = $"Acount is Suspended for : { getResoun.Reason}"
+                    }
                 );
             }
 
