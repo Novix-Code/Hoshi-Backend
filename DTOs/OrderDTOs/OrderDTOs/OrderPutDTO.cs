@@ -20,7 +20,5 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
         public int? CityId { get; set; }
 
         public int? ServiceId { get; set; }
-
-        public int? AppliedPromotionId { get; set; }
     }
 }

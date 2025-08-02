@@ -14,7 +14,7 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class OfferController : SoftDeleteGenericFSPController<
+    public class OfferController : GenericFSPController<
         HoshiDbContext, 
         Offer, 
         OfferGetDTO, 
@@ -64,10 +64,16 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
             return base.Add(postDTO);
         }
 
-        [EndpointGroupName("Worker")]
+        [NonAction]
         public override Task<IActionResult> Update(OfferPutDTO putDTO)
         {
             return base.Update(putDTO);
+        }
+
+        [NonAction]
+        public override Task<IActionResult> Delete(int id)
+        {
+            return base.Delete(id);
         }
 
         [EndpointGroupName("Worker")]
@@ -94,7 +100,6 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 	        return StatusCode(result.StatusCode, result);
         }
 
-        [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetById(int id)
         {
             var response = await clientOfferService.GetByIdAsync(id);
@@ -102,7 +107,7 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
         }
 
         [EndpointGroupName("Client")]
-        [HttpPost("AcceptOffer{id}")]
+        [HttpPost("AcceptOffer/{id}")]
         public async Task<IActionResult> AcceptOffer(int id)
         {
             var response = await clientOfferService.AcceptOfferAsync(id);

@@ -27,6 +27,11 @@ using Microsoft.OpenApi.Models;
 using Hoshi.Data.IdentitySeeders;
 using System.Text.Json.Serialization;
 using Hoshi.Repositories.OrderImageService;
+using Hoshi.Repositories.WorkerSpecificationService;
+using Hoshi.Repositories.ClientSpecificationService;
+using Hoshi.Repositories.WorkerPaymentHistroyService;
+using Hoshi.Repositories.PromotionService;
+using Hoshi.Repositories.ArchiveService;
 
 namespace Hoshi
 {
@@ -105,6 +110,8 @@ namespace Hoshi
 
             builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
 
+            builder.Services.AddTransient(typeof(IArchiveService), typeof(ArchiveService));
+
 			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
 			builder.Services.AddTransient(typeof(IClientOrderService), typeof(ClientOrderService));
@@ -114,6 +121,8 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IOrderService), typeof(OrderService));
 
 			builder.Services.AddTransient(typeof(IClientHomeService), typeof(ClientHomeService));
+
+			builder.Services.AddTransient(typeof(IClientSpecificationService), typeof(ClientSpecificationService));
 
 			builder.Services.AddTransient(typeof(IServiceService), typeof(ServiceService));
 
@@ -130,6 +139,12 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
           
 			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
+
+			builder.Services.AddTransient(typeof(IWorkerSpecificationService), typeof(WorkerSpecificationService));
+
+			builder.Services.AddTransient(typeof(IWorkerPaymentHistroyService), typeof(WorkerPaymentHistroyService));
+
+			builder.Services.AddTransient(typeof(IPromotionService), typeof(PromotionService));
 
 			builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
           

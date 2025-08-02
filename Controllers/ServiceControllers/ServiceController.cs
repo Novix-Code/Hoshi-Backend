@@ -1,16 +1,14 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using GenericCRUDLibrary.GenericControllers;
+using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
-using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
-using Hoshi.Repositories.ServiceService;
-
-using Hoshi.Repositories.ClientHomeService;
-
 using Hoshi.Models.ServiceModels;
+using Hoshi.Repositories.ClientHomeService;
+using Hoshi.Repositories.ServiceService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
 {
@@ -39,7 +37,7 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
                 Service, 
                 ServiceGetDTO> genericFSPService,
 			IClientHomeService clientHomeService,
-			IServiceService serviceService 
+			IServiceService serviceService
         ) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
@@ -51,22 +49,6 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
 			this.serviceService = serviceService;
         }
 
-        [NonAction]
-        public override IActionResult Pagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] bool ascending = true)
-        {
-            return base.Pagination(pageNumber, pageSize, ascending);
-        }
-
-        [NonAction]
-        public override IActionResult PaginationFilteredSearch(PaginationFilteredSearchDTO paginationFilteredSearchDTO)
-        {
-            return base.PaginationFilteredSearch(paginationFilteredSearchDTO);
-        }
-        [NonAction]
-        public override IActionResult FilteredSearch(List<FilteredSearchDTO> filters)
-        {
-            return base.FilteredSearch(filters);    
-        }
         [HttpPost("Search")]
         [EndpointGroupName("Client")]
         public async Task<IActionResult> ServiceSearch([FromForm] string serviceName)
@@ -75,12 +57,14 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
             return StatusCode((int)response.StatusCode, response);
 
         }
+        
         [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetById(int id)
         {
             var response = await clientHomeService.GetByIdServiceAsync(id);
             return StatusCode((int)response.StatusCode,response);
         }
+        
         [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetAll()
         {
@@ -91,21 +75,17 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
 
 
         [EndpointGroupName("Admin")]
-        public override Task<IActionResult> Add(ServicePostDTO postDTO)
+        public override async Task<IActionResult> Add(ServicePostDTO postDTO)
         {
-            return base.Add(postDTO);
+            var result = await serviceService.AddService(postDTO);
+            return StatusCode(result.StatusCode, result);
         }
 
         [EndpointGroupName("Admin")]
-        public override Task<IActionResult> AddList(List<ServicePostDTO> postDTOsList)
+        public override async Task<IActionResult> Update(ServicePutDTO putDTO)
         {
-            return base.AddList(postDTOsList);
-        }
-
-        [EndpointGroupName("Admin")]
-        public override Task<IActionResult> Update(ServicePutDTO putDTO)
-        {
-            return base.Update(putDTO);
+            var result = await serviceService.UpdateService(putDTO);
+            return StatusCode(result.StatusCode, result);
         }
 
         [EndpointGroupName("Admin")]
@@ -118,6 +98,24 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         public override Task<IActionResult> Restore(int id)
         {
             return base.Restore(id);
+        }
+
+        [NonAction]
+        public override Task<IActionResult> AddList(List<ServicePostDTO> postDTOsList)
+        {
+            return base.AddList(postDTOsList);
+        }
+
+        [NonAction]
+        public override IActionResult Pagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] bool ascending = true)
+        {
+            return base.Pagination(pageNumber, pageSize, ascending);
+        }
+
+        [NonAction]
+        public override IActionResult PaginationFilteredSearch(PaginationFilteredSearchDTO paginationFilteredSearchDTO)
+        {
+            return base.PaginationFilteredSearch(paginationFilteredSearchDTO);
         }
     }
 }

@@ -68,27 +68,27 @@ namespace Hoshi.Controllers.UserControllers
         /// <param name="request">Worker application details</param>
         /// <returns>Result of the application submission</returns>
         [HttpPost("be-worker")]
-        [Authorize]
-        public async Task<IActionResult> BeWorker([FromBody] BeWorkerRequestDTO request)
+        //[Authorize]
+        public async Task<IActionResult> BeWorker([FromForm] BeWorkerRequestDTO request)
         {
             // Get user ID from JWT token
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int tokenUserId))
-            {
-                return Unauthorized(new
-                {
-                    ErrorAr = "غير مصرح بالوصول.",
-                    ErrorEn = "Unauthorized access."
-                });
-            }
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int tokenUserId))
+            //{
+            //    return Unauthorized(new
+            //    {
+            //        ErrorAr = "غير مصرح بالوصول.",
+            //        ErrorEn = "Unauthorized access."
+            //    });
+            //}
 
-            // Ensure the user can only apply for themselves
-            if (request.UserId != tokenUserId)
-                return Forbid();
+            //// Ensure the user can only apply for themselves
+            //if (request.UserId != tokenUserId)
+            //    return Forbid();
             
 
             var result = await authService.BeWorkerAsync(request);
-            return StatusCode((int)result.StatusCode, result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("logout")]

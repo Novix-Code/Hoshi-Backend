@@ -12,7 +12,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderImageControllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class OrderImageController : SoftDeleteGenericController<
+    public class OrderImageController : GenericController<
         HoshiDbContext, 
         OrderImage, 
         OrderImageGetDTO, 
@@ -75,6 +75,12 @@ namespace Hoshi.Controllers.OrderControllers.OrderImageControllers
         public override Task<IActionResult> AddList(List<OrderImagePostDTO> postDTOsList)
         {
             return base.AddList(postDTOsList);
+        }
+
+        [NonAction]
+        public override Task<IActionResult> Delete(int id)
+        {
+            return base.Delete(id);
         }
     }
 }
