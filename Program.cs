@@ -157,19 +157,20 @@ namespace Hoshi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            //if (app.Environment.IsDevelopment())
-            //{
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+            {
                 app.UseSwagger();
                 app.UseSwaggerUI(op =>
                 {
-					op.SwaggerEndpoint("/swagger/Worker/swagger.json", "Worker APIs");
+                    op.SwaggerEndpoint("/swagger/Worker/swagger.json", "Worker APIs");
 
-					op.SwaggerEndpoint("/swagger/Client/swagger.json", "Client APIs");
+                    op.SwaggerEndpoint("/swagger/Client/swagger.json", "Client APIs");
 
-					op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
+                    op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
 
                     op.DocumentTitle = "Hoshi - Swagger";
-
+                    op.RoutePrefix = string.Empty;
                     // This options to make swagger more easy to use.
                     // Make all endpoints ready to use directly when it open, you don't need to press on "Try It Out" button any more.
                     op.EnableTryItOutByDefault();
@@ -178,7 +179,7 @@ namespace Hoshi
                     // Make all Endpoints and Controllers Collapse
                     op.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
                 });
-            //}
+            }
 
             app.UseHttpsRedirection();
 
@@ -191,7 +192,7 @@ namespace Hoshi
                 .SetIsOriginAllowed(origin => true));
 
             app.UseAuthentication();
-
+            app.UseStaticFiles();
             app.UseAuthorization();
 
             app.MapControllers();

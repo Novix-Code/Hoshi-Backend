@@ -57,7 +57,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var promotionTitle = string.Empty;
                 var promotionValue = 0.0;
 
-                var promotion = await _hoshiDbContext.Promotions.FirstAsync();
+                var promotion = await _hoshiDbContext.Promotions.FirstOrDefaultAsync();
                 if (promotion != null)
                 {
                     promotionTitle = $"{promotion.TitleFirstPart} {promotion.TitleSecondPart}";

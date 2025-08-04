@@ -8,8 +8,8 @@ namespace Hoshi.Repositories.FileServiceFold
 
         public FileService(IWebHostEnvironment environment)
         {
-            _environment = environment;
-        }
+            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+        }   
 
         public bool DeleteFile(string fileURL)
         {
@@ -38,19 +38,24 @@ namespace Hoshi.Repositories.FileServiceFold
         
         public async Task<Tuple<bool, string>> SaveFileAsync(IFormFile file, string folderShortPath)
         {
+           
             if (file?.Length == 0 || file == null)
                 return new Tuple<bool, string>(false, FileServiceResults.EmptyFile);
 
             if (!ValidateFileExtension(file))
                 return new Tuple<bool, string>(false, FileServiceResults.UnsupportedFileExtension);
+            if (string.IsNullOrEmpty(_environment.WebRootPath))
+                return new Tuple<bool, string>(false, "WebRootPath is null.");
 
-            //Get Folder Full Path
+
+            
             string folderFullPath = Path.Combine(_environment.WebRootPath, folderShortPath);
 
-            if (!File.Exists(folderFullPath))
+            if (!Directory.Exists(folderFullPath)) 
             {
                 Directory.CreateDirectory(folderFullPath);
             }
+
 
             //Make unique name for the file
             string fileUniqueName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
@@ -64,7 +69,9 @@ namespace Hoshi.Repositories.FileServiceFold
                 await file.CopyToAsync(fileStream);
             }
 
-            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName));
+            var relativePath = Path.Combine(folderShortPath, fileUniqueName).Replace("\\", "/");
+            return new Tuple<bool, string>(true, relativePath);
+
         }
 
         public bool ValidateFileExtension(IFormFile file)
