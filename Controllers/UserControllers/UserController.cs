@@ -26,7 +26,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         private readonly IMapper mapper;
         private readonly IAuthService authService;
         private readonly IUserService userService;
-
+        
         public UserController(
             IMapper mapper,
             IGenericCRUDService<
@@ -47,7 +47,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             this.authService = authService;
             this.userService = userService;
         }
-
+        
         public override async Task<IActionResult> Add(UserPostDTO postDTO)
         {
             // Update the other data anyware
@@ -85,6 +85,76 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
 
             // Update the other data anyware
             return await base.Update(putDTO);
+        }
+
+        [HttpGet("OverViewPage")]
+        public async Task<IActionResult> overView()
+        {
+            var reponse = await _userService.overViewPage();
+            return StatusCode((int)Response.StatusCode, reponse);
+        }
+        
+        [HttpGet("ClientPage")]
+        public async Task<IActionResult> clientpage()
+        {
+            var response = await _userService.Clientpage();
+            return StatusCode((int)Response.StatusCode, response);  
+        }
+        
+        [HttpGet("ClientDetails{id}")]
+        public async Task<IActionResult> clientDetails(int id)
+        {
+            var response = await _userService.ClientDetails(id);    
+            return StatusCode((int)response.StatusCode, response);  
+        }
+        
+        [HttpGet("WorkerPage")]
+        public async Task<IActionResult> workerPage()
+        {
+            var response = await _userService.WorkerPage();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        [HttpGet("BeWorkerRequest{id}")]
+        public async Task<IActionResult> beWorkerReq(int id)
+        {
+            var response   =  await _userService.WorkerDetails(id);
+            return StatusCode((int)response.StatusCode, response);   
+        }
+        
+        [HttpPost("BeWorkerApproved{id}")]
+        public async Task<IActionResult> beworkerapproved(int id)
+        {
+            var resonse  = await _userService.BeWorkerApproved(id);
+            return StatusCode((int)resonse.StatusCode, resonse);
+        }
+        
+        [HttpPost("BeWorkerRejected")]
+        public async Task<IActionResult> beworkerreject(int id , string RejectResoun)
+        {
+            var resonse  = await _userService.BeWorkerReject(id , RejectResoun);
+            return StatusCode((int)resonse.StatusCode, resonse);
+        }
+        
+        [HttpGet("DashbordWorkerDetails{id}")]
+        public async Task<IActionResult> dashWOrker(int id)
+        {
+            var response = await _userService.DashbordWorkerDetails(id);    
+            return StatusCode(response.StatusCode, response);   
+        }
+
+        [HttpGet("OrdersPage")]
+        public async Task<IActionResult> ordrsDetails()
+        {
+            var response = await _userService.OrderPage();
+            return StatusCode(response.StatusCode, response);
+        }
+        
+        [HttpGet("DashbordOrderDetails{id}")]
+        public async Task<IActionResult> dashorderDetls(int id)
+        {
+            var response = await _userService.OrderDetails(id);
+            return StatusCode(response.StatusCode, response);
         }
     }
 }

@@ -90,6 +90,8 @@ namespace Hoshi.Controllers.UserControllers
             var result = await authService.BeWorkerAsync(request);
             return StatusCode(result.StatusCode, result);
         }
+        
+        
 
         [HttpPost("logout")]
         [Authorize]
@@ -134,5 +136,11 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode(repsonse.StatusCode, Response);
         }
 
+        [HttpGet("get-all-admins-with-roles-and-permissions")]
+        public async Task<IActionResult> GetAllAdminsWithRolesAndPermissionsAsync()
+        {
+            var response = await userService.GetAllAdminsWithRolesAndPermissionsAsync();
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

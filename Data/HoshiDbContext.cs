@@ -1,4 +1,5 @@
 ﻿using Hoshi.Data.LookupSeeders;
+using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.DashboardModels.StatisticsModels;
 using Hoshi.Models.GlobalModels;
@@ -9,6 +10,7 @@ using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.AdminModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +40,51 @@ namespace Hoshi.Data
             LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
             FeesSeeder.SeedFees(modelBuilder);
+            modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
+            modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("ClientPageView4");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewClientView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllClientView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedUser");
+            modelBuilder.Entity<ClientDetailsModelView>().HasNoKey().ToView("ClientDetailsView");
+            modelBuilder.Entity<WorkerDetailsViewModel>().HasNoKey().ToView("WorkerDetailsView");
+            modelBuilder.Entity<CitiesViewModel>().HasNoKey().ToView("CitiesgetView");
+            modelBuilder.Entity<orderViewModelDetails>().HasNoKey().ToView("OrdersGetView");
+            modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("WorkerPageView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewWorkerView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllWorkertView");
+            modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedWorker");
+            modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
+            modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
+
+
+
         }
+
+
+
+
+
+        /// <summary>
+        /// this is View Models
+        /// </summary>
+        public DbSet<OverViewPage> OverviewView { get; set; }
+        public DbSet<clientPageModel> ClientPageView4 { get; set; }
+        public DbSet<NewClient> NewClientView { get; set; }
+        public DbSet<NewClient> AllClientView { get; set; }
+        public DbSet<NewClient> SuspendedUser { get; set; }
+        public DbSet<ClientDetailsModelView> ClientDetailsView { get; set; }
+        public DbSet<WorkerDetailsViewModel> WorkerDetailsView { get; set; }
+        public DbSet<CitiesViewModel> CitiesgetView { get; set; }
+        public DbSet<orderViewModelDetails> OrdersGetView { get; set; }
+        public DbSet<clientPageModel> WorkerPageView { get; set; }
+        public DbSet<NewClient> NewWorkerView { get; set; }
+        public DbSet<NewClient> AllWorkertView { get; set; }
+        public DbSet<NewClient> SuspendedWorker { get; set; }
+        public DbSet<JobViewModel> JobView { get; set; }
+        public DbSet<PortfolioViewModel> PortfolioView { get; set; }
+
+
+
 
         //---------------------------------------------------------------
         //--------------------------User Models--------------------------
