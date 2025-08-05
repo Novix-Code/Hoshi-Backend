@@ -19,7 +19,7 @@ namespace Hoshi.Repositories.FileServiceFold
             if (!Directory.Exists(trashFolderPath)) 
                 Directory.CreateDirectory(trashFolderPath);
 
-            if (File.Exists(fileFullPath))
+            if (Directory.Exists(fileFullPath))
             {
                 string trashFilePath = Path.Combine(trashFolderPath, fileURL);
 
