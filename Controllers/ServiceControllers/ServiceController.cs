@@ -5,6 +5,7 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
+using Hoshi.DTOs.DashboardDTOs.ComplaintDTOs;
 using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
 using Hoshi.Repositories.ServiceService;
 
@@ -119,5 +120,64 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         {
             return base.Restore(id);
         }
+        
+        
+        [HttpGet("get-services-page")]
+        public async Task<IActionResult> GetServicesPageAsync()
+        {
+            var response = await serviceService.GetServicesPageAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        [HttpGet("get-payments-page")]
+        public async Task<IActionResult> GetPaymentsPageAsync()
+        {
+            var response = await serviceService.GetPaymentsPageAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        [HttpGet("get-payment-details")]
+        public async Task<IActionResult> GetPaymentDetailsAsync([FromQuery ]int paymentId)
+        {
+            var response = await serviceService.GetPaymentDetailsAsync(paymentId);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        [HttpGet("get-complaints-page")]
+        public async Task<IActionResult> GetComplaintsPageAsync()
+        {
+            var response = await serviceService.GetComplaintsPageAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        [HttpGet("get-complaint-details")]
+        public async Task<IActionResult> GetComplaintDetailsAsync([FromQuery ]int complaintId)
+        {
+            var response = await serviceService.GetComplaintDetailsAsync(complaintId);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        [HttpPatch("complaint-response")]
+        public async Task<IActionResult> ComplaintResponse(ComplaintResponseDTO complaintCreateDto)
+        {
+            var response = await serviceService.ComplaintResponse(complaintCreateDto);
+            return StatusCode((int)response.StatusCode, response);
+        }
+
+        [HttpPatch("close-complaint")]
+        public async Task<IActionResult> CloseComplaintAsync([FromQuery] int complaintId)
+        {
+            var result = await serviceService.CloseComplaintAsync(complaintId);
+            return StatusCode((int)result.StatusCode, result);
+        }
+        
+        [HttpGet("get-statistic-page")]
+        public async Task<IActionResult> GetStatisticPageAsync()
+        {
+            var response = await serviceService.GetStatisticPageAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
+        
     }
 }

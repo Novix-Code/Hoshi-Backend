@@ -1,9 +1,12 @@
 using AutoMapper;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
+using Hoshi.DTOs.DashboardDTOs;
 using Hoshi.DTOs.OrderDTOs.InvoiceDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
+using Hoshi.DTOs.ServiceDTOs.JobDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
@@ -346,5 +349,104 @@ namespace Hoshi.Repositories.OrderService
             });
         }
 
+        public async Task<ResultDTO<DashboardOrderDetailsResponseDTO>> GetDashboardOrderDetailsAsync(int orderId)
+        {
+            var order = await _hoshiDbContext.Orders
+                .Include(o => o.Client)
+                .Include(o => o.Service)
+                .Include(o => o.City)
+                .Include(o => o.OrderImages)
+                .Include(o => o.Worker)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return ResultDTO<DashboardOrderDetailsResponseDTO>.NotFound(new ErrorDTO
+                {
+                    ErrorAr = "الطلب غير موجود.",
+                    ErrorEn = "Order not found."
+                });
+
+            var orderDto = _mapper.Map<OrderGetDTO>(order);
+            
+            // Client Data
+            var client = orderDto.Client;
+            
+            var getClientData = await _hoshiDbContext.ClientSpecifications
+                .Include(cs => cs.User)
+                .FirstOrDefaultAsync(cs => cs.UserId == client.Id);
+            
+            if (getClientData == null)
+                return ResultDTO<DashboardOrderDetailsResponseDTO>.NotFound(new ErrorDTO
+                {
+                    ErrorAr = "لا يوجد بيانات عن العميل.",
+                    ErrorEn = "No client data found."
+                });
+            
+            var clientData = _mapper.Map<ClientDataDto>(getClientData);
+
+            var getWorkerData = await _hoshiDbContext.WorkerSpecifications
+                .Include(ws => ws.User)
+                .Include(ws => ws.Job)
+                .Include(ws => ws.Services)
+                .FirstOrDefaultAsync(ws => ws.UserId == orderDto.WorkerId);
+            
+            if (getWorkerData == null)
+                return ResultDTO<DashboardOrderDetailsResponseDTO>.NotFound(new ErrorDTO
+                {
+                    ErrorAr = "لا يوجد بيانات عن العميل.",
+                    ErrorEn = "No client data found."
+                });
+            
+            var workerDataDto = _mapper.Map<WorkerSpecificationGetDTO>(getWorkerData);
+            
+            // // Get Worker Job Title
+            // string workerJob = string.Empty;
+            // if (workerDataDto?.Job != null && !string.IsNullOrEmpty(workerDataDto.Job.JobTitle))
+            // {
+            //     workerJob = workerDataDto.Job.JobTitle;
+            // }
+
+            // Get Worker Wallet Balance
+            double workerBalance = 0;
+            var workerWallet = await _hoshiDbContext.WorkerWallets
+                .FirstOrDefaultAsync(w => w.WorkerId == workerDataDto!.Id);
+            if (workerWallet != null)
+            {
+                workerBalance = workerWallet.Balance;
+            }
+
+            // Get Cancelled Offers Count
+            int cancelledOffers = await _hoshiDbContext.Offers
+                .CountAsync(o => o.WorkerId == workerDataDto!.Id && o.OfferStatus == OfferStatus.Cancelled);            
+            
+            var workerData = new WorkerDataDTO
+            {
+                ImageUrl = workerDataDto?.ImageURL,
+                Email = workerDataDto.User.Email,
+                FullName = workerDataDto.User.UserName,
+                Job = workerDataDto.Job,
+                IsCompany = workerDataDto?.IsCompany ?? false,
+                RateRatio = workerDataDto?.RateRito ?? 0,
+                CompletedOrders = workerDataDto?.CompletedOrders ?? 0,
+                CancelledOffers = cancelledOffers,
+                Balance = workerBalance
+            };
+            
+            var response = new DashboardOrderDetailsResponseDTO
+            {
+                OrderId = orderDto.Id,
+                ClientData = clientData,
+                Description = orderDto.Description,
+                OrderStatus = orderDto.OrderStatusHistory,
+                City = orderDto.City,
+                Location = order.Location,
+                ServicingDatetime = order.ServicingDateTime,
+                OfferedPrice = order.ProposalPrice,
+                OrderImages = orderDto.OrderImages,
+                WorkerData = workerData
+            };
+            
+            return ResultDTO<DashboardOrderDetailsResponseDTO>.Success(response);
+        }
     }
 }
