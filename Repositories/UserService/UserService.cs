@@ -29,24 +29,34 @@ using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
 using Hoshi.Enums;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Object = System.Object;
+using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 
 namespace Hoshi.Repositories.UserService
 {
     public class UserService : IUserService
     {
-        private readonly HoshiDbContext context;
-        private readonly IMapper mapper;
-        private readonly IFileService fileService;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly HoshiDbContext _context;
+        private readonly ITokenService _tokenService;
+        private readonly IFileService _fileService;
+        private readonly IMapper _mapper;
 
         public UserService(
-            HoshiDbContext context,
+            UserManager<User> userManager, 
+            SignInManager<User> signInManager, 
+            HoshiDbContext context, 
+            ITokenService tokenService,
             IMapper mapper,
             IFileService fileService
         )
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.fileService = fileService;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _context = context;
+            _tokenService = tokenService;
+            _fileService = fileService;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -60,7 +70,7 @@ namespace Hoshi.Repositories.UserService
             try
             {
                 // Fetch user data from its id
-                User? user = await context.Set<User>().FindAsync(id);
+                User? user = await _context.Set<User>().FindAsync(id);
 
                 // Check if this user is there or not
                 if(user == null)
@@ -68,11 +78,11 @@ namespace Hoshi.Repositories.UserService
 
                 if (isUpdate)
                 {
-                    fileService.DeleteFile(user.ImageURL!);
+                    _fileService.DeleteFile(user.ImageURL!);
                 }
 
                 // User FileService method to save the image to the images\personalimages folder in wwwroot
-                var imageResult = await fileService.SaveFileAsync(image, "images\\personalimages");
+                var imageResult = await _fileService.SaveFileAsync(image, "images\\personalimages");
 
                 // Check if the image saved successfuly
                 if (imageResult.Item1)
@@ -80,8 +90,8 @@ namespace Hoshi.Repositories.UserService
                     // Add image url to user object data
                     user.ImageURL = imageResult.Item2;
                     // Update it in db and save changes
-                    context.Update(user);
-                    await context.SaveChangesAsync();
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
                 }
 
                 // return the images result in all cases
@@ -410,23 +420,6 @@ namespace Hoshi.Repositories.UserService
                 SuspendedWorkers = suspendedWorkers,
             };
             return ResultDTO<object>.Success(result);
-        }
-    }
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly HoshiDbContext _context;
-        private readonly ITokenService _tokenService;
-        private readonly IFileService _fileService;
-        private readonly IMapper _mapper;
-
-        public UserService(IMapper mapper,UserManager<User> userManager, SignInManager<User> signInManager, HoshiDbContext context, ITokenService tokenService, IFileService fileService)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _context = context;
-            _tokenService = tokenService;
-            _fileService = fileService;
-            _mapper = mapper;
         }
         
         public async Task<ResultDTO<List<AdminWithRolesAndPermissionsDTO>>> GetAllAdminsWithRolesAndPermissionsAsync()

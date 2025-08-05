@@ -3591,6 +3591,10 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -3608,6 +3612,23 @@ namespace Hoshi.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("ClientDetailsView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.JobViewModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("JobView", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.NewClient", b =>
@@ -3659,13 +3680,42 @@ namespace Hoshi.Migrations
                     b.ToView("OverviewView", (string)null);
                 });
 
+            modelBuilder.Entity("Hoshi.Models.ViewModels.PortfolioViewModel", b =>
+                {
+                    b.Property<string>("FileURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("PortfolioView", (string)null);
+                });
+
             modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerDetailsViewModel", b =>
                 {
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompletedOrders")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdentityImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -3685,6 +3735,9 @@ namespace Hoshi.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -3715,12 +3768,18 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.orderViewModelDetails", b =>
                 {
+                    b.Property<int>("CityId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
@@ -3731,6 +3790,9 @@ namespace Hoshi.Migrations
 
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
 
                     b.Property<double>("ProposalPrice")
                         .HasColumnType("float");

@@ -40,6 +40,8 @@ namespace Hoshi.Data
             LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
             FeesSeeder.SeedFees(modelBuilder);
+
+            // Add Views
             modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
             modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("ClientPageView4");
             modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewClientView");
@@ -55,9 +57,6 @@ namespace Hoshi.Data
             modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedWorker");
             modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
             modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
-
-
-
         }
 
 
