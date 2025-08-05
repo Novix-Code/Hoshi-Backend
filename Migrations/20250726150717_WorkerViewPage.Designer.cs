@@ -4,6 +4,7 @@ using Hoshi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    partial class HoshiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250726150717_WorkerViewPage")]
+    partial class WorkerViewPage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3641,7 +3644,7 @@ namespace Hoshi.Migrations
 
                     b.ToTable((string)null);
 
-                    b.ToView("SuspendedWorker", (string)null);
+                    b.ToView("SuspendedUser", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.OverViewPage", b =>
@@ -3670,41 +3673,6 @@ namespace Hoshi.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("OverviewView", (string)null);
-                });
-
-            modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerDetailsViewModel", b =>
-                {
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCompany")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("JobId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LivingCityId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("WorkerDetailsView", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
@@ -3756,9 +3724,6 @@ namespace Hoshi.Migrations
 
                     b.Property<double?>("TotalWorkerCost")
                         .HasColumnType("float");
-
-                    b.Property<int?>("WorkerId")
-                        .HasColumnType("int");
 
                     b.ToTable((string)null);
 
