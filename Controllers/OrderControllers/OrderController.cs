@@ -133,5 +133,13 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
 	        var result = await orderService.GetAssignedOrderAsync(orderId);
 	        return StatusCode(result.StatusCode, result);
         }
+        
+        [HttpGet("get-dashboard-order-details")]
+        public async Task<IActionResult> GetDashboardOrderDetails([FromQuery] int orderId)
+        {
+	        var result = await orderService.GetDashboardOrderDetailsAsync(orderId);
+	        return StatusCode(result.StatusCode, result);
+        }
+        
     }
 }
