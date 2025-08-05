@@ -56,14 +56,12 @@ namespace Hoshi.Repositories.WorkerOfferService
                 // 4. Calculate promotion discount
                 var promotionTitle = string.Empty;
                 var promotionValue = 0.0;
-                if (dto.AppliedPromotionId.HasValue)
+
+                var promotion = await _hoshiDbContext.Promotions.FirstOrDefaultAsync();
+                if (promotion != null)
                 {
-                    var promotion = await _hoshiDbContext.Promotions.FindAsync(dto.AppliedPromotionId.Value);
-                    if (promotion != null)
-                    {
-                        promotionTitle = $"{promotion.TitleFirstPart} {promotion.TitleSecondPart}";
-                        promotionValue = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
-                    }
+                    promotionTitle = $"{promotion.TitleFirstPart} {promotion.TitleSecondPart}";
+                    promotionValue = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
                 }
 
                 // 5. Calculate final amounts
@@ -100,7 +98,7 @@ namespace Hoshi.Repositories.WorkerOfferService
             }
         }
 
-        public async Task<ResultDTO<bool>> ConfirmOfferAsync(int offerId)
+        public async Task<ResultDTO<string>> ConfirmOfferAsync(int offerId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
             try
@@ -108,7 +106,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var offer = await _hoshiDbContext.Offers.FindAsync(offerId);
                 if (offer == null)
                 {
-                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    return ResultDTO<string>.NotFound(new ErrorDTO
                     {
                         ErrorAr = "العرض غير موجود.",
                         ErrorEn = "Offer not found."
@@ -120,12 +118,12 @@ namespace Hoshi.Repositories.WorkerOfferService
                 _hoshiDbContext.Offers.Update(offer);
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
-                return ResultDTO<bool>.Success(true);
+                return ResultDTO<string>.Success("Offer Confirmed");
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return ResultDTO<bool>.InternalServerError(new ErrorDTO
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
                 {
                     ErrorAr = "حدث خطأ في الخادم.",
                     ErrorEn = $"Internal server error: {ex.Message}"
@@ -133,7 +131,7 @@ namespace Hoshi.Repositories.WorkerOfferService
             }
         }
 
-        public async Task<ResultDTO<bool>> CancelOfferAsync(int offerId)
+        public async Task<ResultDTO<string>> CancelOfferAsync(int offerId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
             try
@@ -141,7 +139,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var offer = await _hoshiDbContext.Offers.FindAsync(offerId);
                 if (offer == null)
                 {
-                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    return ResultDTO<string>.NotFound(new ErrorDTO
                     {
                         ErrorAr = "العرض غير موجود.",
                         ErrorEn = "Offer not found."
@@ -164,7 +162,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     var workerWallet = await _hoshiDbContext.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == order.WorkerId);
                     if (workerWallet == null)
                     {
-                        return ResultDTO<bool>.NotFound(new ErrorDTO
+                        return ResultDTO<string>.NotFound(new ErrorDTO
                         {
                             ErrorAr = "محفظة العامل غير موجودة.",
                             ErrorEn = "Worker wallet not found."
@@ -173,7 +171,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                     if (workerWallet.Balance < workerCancellationFee)
                     {
-                        return ResultDTO<bool>.NotFound(new ErrorDTO
+                        return ResultDTO<string>.NotFound(new ErrorDTO
                         {
                             ErrorAr = "رصيد المحفظة غير كافي.",
                             ErrorEn = "Worker wallet balance is not enough."
@@ -197,12 +195,12 @@ namespace Hoshi.Repositories.WorkerOfferService
                 _hoshiDbContext.Offers.Update(offer);
                 await transaction.CommitAsync();
                 await _hoshiDbContext.SaveChangesAsync();
-                return ResultDTO<bool>.Success(true);
+                return ResultDTO<string>.Success("Offer Cancelled");
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return ResultDTO<bool>.InternalServerError(new ErrorDTO
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
                 {
                     ErrorAr = "حدث خطأ في الخادم.",
                     ErrorEn = $"Internal server error: {ex.Message}"

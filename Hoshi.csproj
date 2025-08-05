@@ -36,7 +36,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Images\Users\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\trash\" />
   </ItemGroup>
 
 </Project>

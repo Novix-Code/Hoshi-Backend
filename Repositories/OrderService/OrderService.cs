@@ -13,7 +13,6 @@ using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Microsoft.EntityFrameworkCore;
-using ClientRateDataDto = Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs.ClientDataDto;
 
 namespace Hoshi.Repositories.OrderService
 {
@@ -26,6 +25,7 @@ namespace Hoshi.Repositories.OrderService
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
         }
+
         public async Task<ResultDTO<SubmittedOrderDetailsDto>> GetSubmittedOrderDetailsAsync(int orderId)
         {
 
@@ -77,10 +77,10 @@ namespace Hoshi.Repositories.OrderService
                 .Include(cs => cs.User)
                 .FirstOrDefaultAsync(cs => cs.UserId == order.ClientId);
             
-            var clientData = new ClientRateDataDto
+            var clientData = new ClientDataDto
             {
-                ImageUrl = clientSpec.ImageURL, 
-                Name = clientSpec.User.UserName,         
+                ImageUrl = clientSpec!.User!.ImageURL!, 
+                Name = clientSpec!.User!.UserName!,         
                 RateRatio = clientSpec.RateRito, 
             };
 
@@ -88,7 +88,7 @@ namespace Hoshi.Repositories.OrderService
                 .Where(r => r.ClientId == clientSpec.UserId)
                 .Select(r => new ClientRateDto
                 {
-                    WorkerName = r.Worker.UserName, 
+                    WorkerName = r.Worker!.UserName!, 
                     Rate = r.RateValue,
                     Comment = r.Description
                 })
@@ -126,7 +126,7 @@ namespace Hoshi.Repositories.OrderService
 
                 // 2. Change order status to Completed and add status history
                 order.OrderStatus = OrderStatus.Completed;
-                order.OrderStatusHistory.Add(new OrderStatusHistory
+                order.OrderStatusHistory!.Add(new OrderStatusHistory
                 {
                     OrderStatus = OrderStatus.Completed,
                     CreatedAt = DateTime.UtcNow,
@@ -301,7 +301,6 @@ namespace Hoshi.Repositories.OrderService
             }
         }
 
-        
         public async Task<ResultDTO<object>> GetAssignedOrderAsync(int orderId)
         {
             var order = await _hoshiDbContext.Orders
@@ -329,10 +328,10 @@ namespace Hoshi.Repositories.OrderService
                 .Include(cs => cs.User)
                 .FirstOrDefaultAsync(cs => cs.UserId == order.ClientId);
 
-            var clientData = clientSpec != null ? new ClientRateDataDto
+            var clientData = clientSpec != null ? new ClientDataDto
             {
-                ImageUrl = clientSpec.ImageURL,
-                Name = clientSpec.User.UserName,
+                ImageUrl = clientSpec!.User!.ImageURL!,
+                Name = clientSpec!.User!.UserName!,
                 RateRatio = clientSpec.RateRito,
             } : null;
 

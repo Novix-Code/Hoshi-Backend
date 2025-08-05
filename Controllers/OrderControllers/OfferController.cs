@@ -1,23 +1,20 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using GenericCRUDLibrary.GenericControllers;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
-using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OfferDTOs;
-using Hoshi.Repositories.WorkerOfferService;
-
-using Hoshi.Repositories.ClientOfferService;
-
 using Hoshi.Models.OrderModels;
+using Hoshi.Repositories.ClientOfferService;
+using Hoshi.Repositories.WorkerOfferService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.OrderControllers.OfferControllers
 {
 
     [ApiController]
     [Route("api/[controller]")]
-    public class OfferController : SoftDeleteGenericFSPController<
+    public class OfferController : GenericFSPController<
         HoshiDbContext, 
         Offer, 
         OfferGetDTO, 
@@ -46,14 +43,9 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 
 			includes = [
 				$"{nameof(Offer.Worker)}",
-				$"{nameof(Offer.Order)}.{nameof(Order.Client)}",
-				$"{nameof(Offer.Order)}.{nameof(Order.Worker)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.City)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.Service)}",
-				$"{nameof(Offer.Order)}.{nameof(Order.AppliedPromotion)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.OrderImages)}",
-				$"{nameof(Offer.Order)}.{nameof(Order.OrderVisits)}",
-				$"{nameof(Offer.Order)}.{nameof(Order.OrderStatusHistory)}",
 				$"{nameof(Offer.AppliedPromotion)}",
 			];
 			this.clientOfferService = clientOfferService;
@@ -66,18 +58,25 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
             return base.AddList(postDTOsList);
         }
 
-        [EndpointGroupName("Worker")]
+        [NonAction]
         public override Task<IActionResult> Add(OfferPostDTO postDTO)
         {
             return base.Add(postDTO);
         }
 
-        [EndpointGroupName("Worker")]
+        [NonAction]
         public override Task<IActionResult> Update(OfferPutDTO putDTO)
         {
             return base.Update(putDTO);
         }
-        
+
+        [NonAction]
+        public override Task<IActionResult> Delete(int id)
+        {
+            return base.Delete(id);
+        }
+
+        [EndpointGroupName("Worker")]
         [HttpPost("create-offer")]
         public async Task<IActionResult> CreateOffer([FromBody] OfferPostDTO dto)
         {
@@ -85,20 +84,22 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 	        return StatusCode(result.StatusCode, result);
         }
 
+        [EndpointGroupName("Worker")]
         [HttpPatch("confirm-offer")]
         public async Task<IActionResult> ConfirmOffer([FromQuery] int OfferId)
         {
 	        var result = await workerOfferService.ConfirmOfferAsync(OfferId);
 	        return StatusCode(result.StatusCode, result);
         }
-        
+
+        [EndpointGroupName("Worker")]
         [HttpDelete("cancel-offer")]
         public async Task<IActionResult> CancelOffer([FromQuery] int offerId)
         {
 	        var result = await workerOfferService.CancelOfferAsync(offerId);
 	        return StatusCode(result.StatusCode, result);
         }
-        [EndpointGroupName("Client")]
+
         public override async Task<IActionResult> GetById(int id)
         {
             var response = await clientOfferService.GetByIdAsync(id);
@@ -106,7 +107,7 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
         }
 
         [EndpointGroupName("Client")]
-        [HttpPost("AcceptOffer{id}")]
+        [HttpPost("AcceptOffer/{id}")]
         public async Task<IActionResult> AcceptOffer(int id)
         {
             var response = await clientOfferService.AcceptOfferAsync(id);

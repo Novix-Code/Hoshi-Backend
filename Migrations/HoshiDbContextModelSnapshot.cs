@@ -1615,9 +1615,6 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ImageNumber")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -2353,16 +2350,11 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("WorkerSpecificationId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("JobId");
 
                     b.HasIndex("ServiceCategoryId");
-
-                    b.HasIndex("WorkerSpecificationId");
 
                     b.ToTable("Services");
 
@@ -3051,15 +3043,8 @@ namespace Hoshi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double>("Indebtedness")
                         .HasColumnType("float");
-
-                    b.Property<int>("LivingCityId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
@@ -3071,8 +3056,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LivingCityId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -3189,6 +3172,9 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -3297,8 +3283,9 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Code")
-                        .HasColumnType("int");
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -3308,6 +3295,10 @@ namespace Hoshi.Migrations
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("SecreteKey")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -3459,10 +3450,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IdentityImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -4277,11 +4264,6 @@ namespace Hoshi.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", null)
-                        .WithMany("Services")
-                        .HasForeignKey("WorkerSpecificationId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("ServiceCategory");
                 });
 
@@ -4374,19 +4356,11 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.UserModels.ClientSpecification", b =>
                 {
-                    b.HasOne("Hoshi.Models.GlobalModels.City", "LivingCity")
-                        .WithMany()
-                        .HasForeignKey("LivingCityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Hoshi.Models.UserModels.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("LivingCity");
 
                     b.Navigation("User");
                 });
@@ -4610,11 +4584,6 @@ namespace Hoshi.Migrations
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.ServiceCategory", b =>
-                {
-                    b.Navigation("Services");
-                });
-
-            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
                 {
                     b.Navigation("Services");
                 });

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250724194008_AddWorkerServicesTableAndSomeUpdates")]
-    partial class AddWorkerServicesTableAndSomeUpdates
+    [Migration("20250802071656_UpdateWorkerSpecsTable")]
+    partial class UpdateWorkerSpecsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1618,9 +1618,6 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ImageNumber")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1772,7 +1769,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PromotionId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "PromotionId")
+                        .IsUnique();
 
                     b.ToTable("PromotionServices");
                 });
@@ -1994,7 +1992,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "JobId")
+                        .IsUnique();
 
                     b.ToTable("JobServices");
 
@@ -2354,16 +2353,11 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("WorkerSpecificationId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("JobId");
 
                     b.HasIndex("ServiceCategoryId");
-
-                    b.HasIndex("WorkerSpecificationId");
 
                     b.ToTable("Services");
 
@@ -2959,9 +2953,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PageId");
-
                     b.HasIndex("PermissionId");
+
+                    b.HasIndex("PageId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("PermissionPages");
                 });
@@ -2990,7 +2985,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("RolePermissions");
                 });
@@ -3019,7 +3015,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("UserPermissions");
                 });
@@ -3048,10 +3045,6 @@ namespace Hoshi.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Indebtedness")
                         .HasColumnType("float");
@@ -3187,6 +3180,9 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -3211,7 +3207,7 @@ namespace Hoshi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -3235,6 +3231,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -3242,6 +3242,10 @@ namespace Hoshi.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -3420,7 +3424,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId", "ServiceId")
+                        .IsUnique();
 
                     b.ToTable("WorkerServices");
                 });
@@ -3448,10 +3453,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IdentityImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -3519,7 +3520,8 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId")
+                        .IsUnique();
 
                     b.ToTable("WorkerWallets");
                 });
@@ -4070,11 +4072,6 @@ namespace Hoshi.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", null)
-                        .WithMany("Services")
-                        .HasForeignKey("WorkerSpecificationId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("ServiceCategory");
                 });
 
@@ -4403,11 +4400,6 @@ namespace Hoshi.Migrations
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.ServiceCategory", b =>
-                {
-                    b.Navigation("Services");
-                });
-
-            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
                 {
                     b.Navigation("Services");
                 });

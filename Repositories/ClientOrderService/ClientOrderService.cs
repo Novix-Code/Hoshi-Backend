@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
@@ -12,7 +12,9 @@ using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.PromotionModels;
 using Hoshi.Repositories.ClientHomeService;
+using Hoshi.Repositories.OrderImageService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Hoshi.Repositories.ClientOrderService
 {
@@ -21,50 +23,78 @@ namespace Hoshi.Repositories.ClientOrderService
         private readonly HoshiDbContext _Context;
         private readonly IMapper _mapper;
         private readonly IClientHomeService _clientHomeService;
-        public ClientOrderService(HoshiDbContext context, IMapper mapper, IClientHomeService clientHomeService)
+        private readonly IOrderImageService orderImageService;
+
+        public ClientOrderService(
+            HoshiDbContext context, 
+            IMapper mapper, 
+            IClientHomeService clientHomeService,
+            IOrderImageService orderImageService
+        )
         {
             _Context = context;
             _mapper = mapper;
             _clientHomeService = clientHomeService;
+            this.orderImageService = orderImageService;
         }
         public async Task<ResultDTO<string>> AddOrderAsync(OrderPostDTO dto)
         {
-            var orderMapper = _mapper.Map<Order>(dto);
-            _Context.Orders.Add(orderMapper);
-            await _Context.SaveChangesAsync();
-            var histOrder = new OrderStatusHistoryPostDTO
+            ErrorDTO error = new ErrorDTO();
+
+            try
             {
-                CreatedAt = DateTime.Now,
-                OrderId   = orderMapper.Id,
-                OrderStatus = orderMapper.OrderStatus
-            };
-            var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
-            var invoicMapper = new Invoice
+                var orderMapper = _mapper.Map<Order>(dto);
+                _Context.Orders.Add(orderMapper);
+                await _Context.SaveChangesAsync();
+
+                var histOrder = new OrderStatusHistoryPostDTO
+                {
+                    CreatedAt = DateTime.Now,
+                    OrderId = orderMapper.Id,
+                    OrderStatus = orderMapper.OrderStatus
+                };
+                var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
+
+                var invoicMapper = new Invoice
+                {
+                    OrderId = orderMapper.Id
+                };
+
+                _Context.Invoices.Add(invoicMapper);
+                _Context.OrderStatusHistory.Add(histMapper);
+
+                var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
+                var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
+
+                //var _offerId = await _Context.Offers.Where(p => p.OrderId == orderMapper.Id).Select(p => (int?)p.Id).FirstOrDefaultAsync();
+
+                if (slectedPromotionId is not 0)
+                {
+                    var promotionOrder = new PromotionTakenPostDTO
+                    {
+                        UserId = dto.ClientId,
+                        OrderId = orderMapper.Id,
+                        OfferId = null,
+                        PromotionId = slectedPromotionId
+                    };
+                    var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
+                    _Context.PromotionsTaken.Add(promotionMapper);
+                }
+
+                // Add order images
+                if (!dto.OrderImagesFiles.IsNullOrEmpty())
+                    await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
+
+                await _Context.SaveChangesAsync();
+                return ResultDTO<string>.Success(orderMapper.Id.ToString());
+            }
+            catch (Exception ex)
             {
-                OrderId = orderMapper.Id
-            };
-            _Context.Invoices.Add(invoicMapper);
-            _Context.OrderStatusHistory.Add(histMapper);
+                error.ErrorAr = "يوجد مشكلة في عملية الاضافة.";
+                error.ErrorEn = "There is a problem in Adding proccess.";
 
-            var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
-            var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
-
-            var _offerId = await _Context.Offers.Where(p => p.OrderId == orderMapper.Id).Select(p => (int?)p.Id).FirstOrDefaultAsync();
-
-
-            var promotionOrder = new PromotionTakenPostDTO
-            {
-                UserId = dto.ClientId,
-                OrderId = orderMapper.Id,
-                OfferId = _offerId,
-                PromotionId = slectedPromotionId
-            };
-            var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
-            _Context.PromotionsTaken.Add(promotionMapper);
-
-            await _Context.SaveChangesAsync();
-            return ResultDTO<string>.Success(orderMapper.Id.ToString());
-             
+                return ResultDTO<string>.InternalServerError(error, ex.InnerException!.Message);
+            }
         }
 
         public async Task<ResultDTO<string>> DeleteOrder(int orderId)
@@ -77,7 +107,14 @@ namespace Hoshi.Repositories.ClientOrderService
 
         public async Task<ResultDTO<List<OrderGetAllDto>>> GetAllClientsAsync()
         {
-            var AllOrders = await _Context.Orders.Where(p=>p.OrderStatus != Enums.OrderStatus.Cancelled).ProjectTo<OrderGetAllDto>(_mapper.ConfigurationProvider).ToListAsync();
+            var AllOrders = await _Context.Orders
+                .Include(nameof(Order.Service))
+                .Include(nameof(Order.City))
+                .Include(nameof(Order.OrderImages))
+                .Where(p => p.OrderStatus != Enums.OrderStatus.Cancelled)
+                .ProjectTo<OrderGetAllDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
             return ResultDTO<List<OrderGetAllDto>>.Success( AllOrders); 
         }
 
@@ -89,7 +126,7 @@ namespace Hoshi.Repositories.ClientOrderService
             var targetOffers = await _Context.Offers.Where(p => p.OrderId == orderId).ProjectTo<OfferGetDTO>(_mapper.ConfigurationProvider).ToListAsync();
             if (targetOffers.Count() > 0)
             {
-                var workerId = targetOffers[0].WorkerId;
+                var workerId = targetOffers[0].Worker!.Id;
                 var workerData = await _Context.WorkerPortfolios.FindAsync(workerId);
                 resultDto.WorkerData = _mapper.Map<WorkerPortfolioGetDTO>(workerData);
             }

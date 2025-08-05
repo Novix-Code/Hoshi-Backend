@@ -10,9 +10,8 @@ namespace Hoshi.Models.UserModels
     [EndpointGroupping("Client")]
     public class ClientSpecification : TimestampedModel
     {
-        public string ImageURL { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string Bio { get; set; } = string.Empty;
+        public string Address { get; set; } = "لم يتم الاضافة بعد";
+        public string Bio { get; set; } = "لم يتم الاضافة بعد";
         public int CompletedOrders { get; set; } = 0;
         public double RateRito { get; set; } = 0.0;
         public double Balance { get; set; } = 0.0;
@@ -20,8 +19,5 @@ namespace Hoshi.Models.UserModels
 
         public int UserId { get; set; }
         public User? User { get; set; }
-
-        public int LivingCityId { get; set; }
-        public City? LivingCity { get; set; }
     }
 }

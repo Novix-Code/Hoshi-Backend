@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250724204114_MakeUserEmailAndPhoneUnique")]
-    partial class MakeUserEmailAndPhoneUnique
+    [Migration("20250731145518_CollectAll")]
+    partial class CollectAll
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1618,9 +1618,6 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ImageNumber")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1772,7 +1769,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PromotionId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "PromotionId")
+                        .IsUnique();
 
                     b.ToTable("PromotionServices");
                 });
@@ -1994,7 +1992,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "JobId")
+                        .IsUnique();
 
                     b.ToTable("JobServices");
 
@@ -2959,9 +2958,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PageId");
-
                     b.HasIndex("PermissionId");
+
+                    b.HasIndex("PageId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("PermissionPages");
                 });
@@ -2990,7 +2990,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("RolePermissions");
                 });
@@ -3019,7 +3020,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("UserPermissions");
                 });
@@ -3428,7 +3430,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId", "ServiceId")
+                        .IsUnique();
 
                     b.ToTable("WorkerServices");
                 });
@@ -3527,7 +3530,8 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId")
+                        .IsUnique();
 
                     b.ToTable("WorkerWallets");
                 });

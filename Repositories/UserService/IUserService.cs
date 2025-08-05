@@ -8,6 +8,7 @@ namespace Hoshi.Repositories.UserService
 {
     public interface IUserService
     {
+        Task<Tuple<bool, string>> AddUserImage(int id, IFormFile image, bool isUpdate);
         Task<ResultDTO<object>> overViewPage();
         Task<ResultDTO<object>> Clientpage();
         Task<ResultDTO<object>> ClientDetails(int Id);

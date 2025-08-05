@@ -11,16 +11,9 @@ namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
         public required double OfferedPrice { get; set; }
         public required string Note { get; set; }
 
-
-        public required bool IsDeleted { get; set; }
-
-
-
         public required int WorkerId { get; set; }
 
         public required int OrderId { get; set; }
-
-        public int? AppliedPromotionId { get; set; }
 
     }
 }

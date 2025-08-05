@@ -1,20 +1,16 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using GenericCRUDLibrary.GenericControllers;
-using Hoshi.Models.ServiceModels;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
-using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
-using Hoshi.Repositories.OrderService;
-
-using Hoshi.Repositories.WorkerOrderService;
-
-using Hoshi.Repositories.ClientOrderService;
-
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.Models.OrderModels;
+using Hoshi.Models.ServiceModels;
+using Hoshi.Repositories.ClientOrderService;
+using Hoshi.Repositories.OrderService;
+using Hoshi.Repositories.WorkerOrderService;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.OrderControllers.OrderControllers
 {
@@ -31,6 +27,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
 		private readonly IClientOrderService clientOrderService;
 		private readonly IWorkerOrderService workerOrderService;
 		private readonly IOrderService orderService;
+
         public OrderController(
             IMapper mapper, 
             IGenericCRUDService<
@@ -45,7 +42,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
                 OrderGetDTO> genericFSPService,
 			IClientOrderService clientOrderService,
 			IWorkerOrderService workerOrderService,
-			IOrderService orderService 
+			IOrderService orderService
         ) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
@@ -72,19 +69,15 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
             return StatusCode((int)response.StatusCode, response);
         }
 
-        [NonAction]
-        public override Task<IActionResult> AddList(List<OrderPostDTO> postDTOsList)
-        {
-            return base.AddList(postDTOsList);
-        }
-
         [EndpointGroupName("Client")]
-        public override async Task<IActionResult> Add(OrderPostDTO postDTO)
+        public override async Task<IActionResult> Add([FromForm] OrderPostDTO postDTO)
         {
+
             var response = await clientOrderService.AddOrderAsync(postDTO);
             return StatusCode((int)response.StatusCode, response);
             
         }
+
         [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetAll()
         {
@@ -97,12 +90,6 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         {
             var response = await clientOrderService.GetOrderDetails(id);
             return StatusCode((int)response.StatusCode, response);
-        }
-
-        [EndpointGroupName("Client")]
-        public override Task<IActionResult> Update(OrderPutDTO putDTO)
-        {
-            return base.Update(putDTO);
         }
         
         [Authorize]
@@ -140,6 +127,17 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
 	        var result = await orderService.GetDashboardOrderDetailsAsync(orderId);
 	        return StatusCode(result.StatusCode, result);
         }
-        
+
+        [NonAction]
+        public override Task<IActionResult> AddList(List<OrderPostDTO> postDTOsList)
+        {
+            return base.AddList(postDTOsList);
+        }
+
+        [NonAction]
+        public override Task<IActionResult> Update(OrderPutDTO putDTO)
+        {
+            return base.Update(putDTO);
+        }
     }
 }

@@ -4,12 +4,15 @@ using Hoshi.DTOs.DashboardDTOs;
 using Hoshi.DTOs.DashboardDTOs.ComplaintDTOs;
 using Hoshi.DTOs.GlobalDTOs.ComplaintDTOs;
 using Hoshi.DTOs.ServiceDTOs.ServiceCategoryDTOs;
+using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
 
 namespace Hoshi.Repositories.ServiceService
 {
     public interface IServiceService
     {
         Task<ResultDTO<List<ServiceCategoryGetDTO>>> searchServiceAsyn(string serviceName);
+        Task<ResultDTO<ServiceGetDTO>> AddService(ServicePostDTO postDTO);
+        Task<ResultDTO<ServiceGetDTO>> UpdateService(ServicePutDTO putDTO);
         Task<ResultDTO<object>> GetServicesPageAsync();
         Task<ResultDTO<object>> GetPaymentsPageAsync();
         Task<ResultDTO<PaymentDetailsResponseDTO>> GetPaymentDetailsAsync(int paymentId);
@@ -18,6 +21,5 @@ namespace Hoshi.Repositories.ServiceService
         Task<ResultDTO<MessageDTO>> ComplaintResponse(ComplaintResponseDTO complaintCreateDto);
         Task<ResultDTO<bool>> CloseComplaintAsync(int complaintId);
         Task<ResultDTO<StatisticPageResponseDTO>> GetStatisticPageAsync();
-        
     }
 }
