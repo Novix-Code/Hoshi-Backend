@@ -47,7 +47,7 @@ namespace Hoshi.Repositories.FileServiceFold
             //Get Folder Full Path
             string folderFullPath = Path.Combine(_environment.WebRootPath, folderShortPath);
 
-            if (!File.Exists(folderFullPath))
+            if (!Directory.Exists(folderFullPath))
             {
                 Directory.CreateDirectory(folderFullPath);
             }

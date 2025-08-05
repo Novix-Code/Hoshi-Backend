@@ -386,7 +386,7 @@ namespace Hoshi.Repositories.OrderService
             var getWorkerData = await _hoshiDbContext.WorkerSpecifications
                 .Include(ws => ws.User)
                 .Include(ws => ws.Job)
-                .Include(ws => ws.Services)
+                .Include(ws => ws.LivingCity)
                 .FirstOrDefaultAsync(ws => ws.UserId == orderDto.WorkerId);
             
             if (getWorkerData == null)
@@ -420,10 +420,10 @@ namespace Hoshi.Repositories.OrderService
             
             var workerData = new WorkerDataDTO
             {
-                ImageUrl = workerDataDto?.ImageURL,
+                ImageUrl = workerDataDto.User!.ImageURL!,
                 Email = workerDataDto.User.Email,
                 FullName = workerDataDto.User.UserName,
-                Job = workerDataDto.Job,
+                Job = workerDataDto.Job!,
                 IsCompany = workerDataDto?.IsCompany ?? false,
                 RateRatio = workerDataDto?.RateRito ?? 0,
                 CompletedOrders = workerDataDto?.CompletedOrders ?? 0,
@@ -437,11 +437,11 @@ namespace Hoshi.Repositories.OrderService
                 ClientData = clientData,
                 Description = orderDto.Description,
                 OrderStatus = orderDto.OrderStatusHistory,
-                City = orderDto.City,
+                City = orderDto.City!,
                 Location = order.Location,
                 ServicingDatetime = order.ServicingDateTime,
                 OfferedPrice = order.ProposalPrice,
-                OrderImages = orderDto.OrderImages,
+                OrderImages = orderDto.OrderImages!,
                 WorkerData = workerData
             };
             

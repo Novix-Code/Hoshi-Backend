@@ -211,7 +211,7 @@ namespace Hoshi.Repositories.ServiceService
                         .Select(service =>
                         {
                             var totalRelatedOrders = allOrders.Count(o => o.ServiceId == service.Id);
-                            var totalRelatedWorkers = _context.WorkerSpecifications.Count(w => w.Services.Any(s => s.Id == service.Id));
+                            var totalRelatedWorkers = _context.WorkerServices.Count(s => s.Id == service.Id);
                             var incomeAvg = allOrders.Where(o => o.ServiceId == service.Id).Any()
                                 ? (int)allOrders.Where(o => o.ServiceId == service.Id).Average(o => o.ProposalPrice)
                                 : 0;
@@ -309,7 +309,6 @@ namespace Hoshi.Repositories.ServiceService
             var clientsUncollectedFees = await _context.ClientSpecifications
                 .AsNoTracking()
                 .Include(cs => cs.User)
-                .Include(cs => cs.LivingCity)
                 .Where(cs => cs.Indebtedness > 0)
                 .Select(cs => new
                 {
