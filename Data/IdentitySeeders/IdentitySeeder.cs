@@ -68,10 +68,10 @@ namespace Hoshi.Data.IdentitySeeders
             var context = scope.ServiceProvider.GetRequiredService<HoshiDbContext>();
 
             var notificationTypes = new List<NotificationType>
-    {
-        // notifications
-        new NotificationType { Title = "اشعار بإنشاء طلب", Type = "For_Admin", ForClient = false },
-        new NotificationType { Title = "اشعار للاختبار", Type = "For_Client", ForClient = true },
+            {
+                    // notifications
+                    new NotificationType { Title = "اشعار بإنشاء طلب", Type = "For_Worker", ForClient = false },
+                    new NotificationType { Title = "اشعار للاختبار", Type = "For_Client", ForClient = true },
    
             };
 

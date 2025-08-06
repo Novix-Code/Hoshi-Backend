@@ -5,13 +5,16 @@ using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
+using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.TokenService;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Security.Claims;
@@ -32,6 +35,8 @@ namespace Hoshi.Repositories.AuthService
         private readonly IMapper _mapper;
         private readonly HoshiDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+
         public AuthService(UserManager<User> userManager,
             SignInManager<User> signInManager,
             IFileService fileService,
@@ -39,7 +44,8 @@ namespace Hoshi.Repositories.AuthService
             HoshiDbContext context,
             IHttpContextAccessor httpContextAccessor,
             ITokenService tokenService,
-            RoleManager<IdentityRole<int>> roleManager)
+            RoleManager<IdentityRole<int>> roleManager,
+            IHubContext<NotificationHub, INotificationHub> hubContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -49,9 +55,9 @@ namespace Hoshi.Repositories.AuthService
             _httpContextAccessor = httpContextAccessor;
             _tokenService = tokenService;
             _roleManager = roleManager;
-
+            _hubContext = hubContext;
         }
-        
+
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -181,6 +187,7 @@ namespace Hoshi.Repositories.AuthService
 
             var token = await _tokenService.CreateTokenAsync(applicationUser);
             await _context.SaveChangesAsync();
+          
 
             return ResultDTO<object>.Success(new { UserId = applicationUser.Id, Token = token, Message = "Logged successfully" });
         }
@@ -200,6 +207,7 @@ namespace Hoshi.Repositories.AuthService
                     }
                 );
             }
+            
 
             if (registerRequestDto == null)
             {
@@ -270,6 +278,35 @@ namespace Hoshi.Repositories.AuthService
 
                 var token = await _tokenService.CreateTokenAsync(applicationUser);
                 await _context.SaveChangesAsync();
+                /// Handle Send Notification for admin that there are new worker registered
+                ///
+
+                if (userType is UserType.Worker)
+                {
+                    var allAdmins = await _context.UserRoles.Where(p => p.RoleId == 2)
+                        .Include(p => p.UserId).ToListAsync();
+                    if (allAdmins.Any()) 
+                    {
+                        foreach (var admin in allAdmins) 
+                        {
+                            await _context.AdminNotifications.AddAsync(new AdminNotification
+                            {
+                                Title = "عمليه تسجيل عامل جديد",
+                                Content = $"Worker Id : {applicationUser.Id} that registered Rigth Now",
+                                CreatedAt = DateTime.UtcNow,
+                                IsRead = false,
+                                AdminId = admin.UserId,
+                            });
+                            await _context.SaveChangesAsync();
+                        }
+                        await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه تسجيل عامل جديد");
+
+                    }
+
+                }
+
+
+
 
                 return ResultDTO<object>.Success(
                     new

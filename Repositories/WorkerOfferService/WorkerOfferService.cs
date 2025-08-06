@@ -3,8 +3,11 @@ using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OfferDTOs;
 using Hoshi.Enums;
+using Hoshi.Models.DashboardModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerOfferService
@@ -13,12 +16,15 @@ namespace Hoshi.Repositories.WorkerOfferService
     {
         private readonly HoshiDbContext _hoshiDbContext;
         private readonly IMapper _mapper;
-        public WorkerOfferService(HoshiDbContext hoshiDbContext, IMapper mapper)
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+
+        public WorkerOfferService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext)
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
-        
+
         public async Task<ResultDTO<CreateOfferResponseDto>> CreateOfferAsync(OfferPostDTO dto)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
@@ -85,6 +91,28 @@ namespace Hoshi.Repositories.WorkerOfferService
                 };
 
                 await transaction.CommitAsync();
+
+                var allAdmins = await _hoshiDbContext.UserRoles.Where(p => p.RoleId == 2)
+                                                               .Include(p => p.UserId).ToListAsync();
+                if (allAdmins.Any())
+                {
+                    foreach (var admin in allAdmins)
+                    {
+                        await _hoshiDbContext.AdminNotifications.AddAsync(new AdminNotification
+                        {
+                            Title = "عمليه اضافة عرض",
+                            Content = $"offer Id: {offer.Id}",
+                            CreatedAt = DateTime.UtcNow,
+                            IsRead = false,
+                            AdminId = admin.UserId,
+                        });
+                        await _hoshiDbContext.SaveChangesAsync();
+                    }
+                    await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه اضافة عرض");
+
+                }
+
+
                 return ResultDTO<CreateOfferResponseDto>.Success(response);
             }
             catch (Exception ex)
