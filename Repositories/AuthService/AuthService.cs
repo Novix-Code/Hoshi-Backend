@@ -5,15 +5,18 @@ using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
+using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.EmailServiceFold;
 using Hoshi.Repositories.FileServiceFold;
+using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.TokenService;
 using Hoshi.Repositories.UserService;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Security.Claims;
@@ -34,9 +37,17 @@ namespace Hoshi.Repositories.AuthService
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+
+        public AuthService(UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IFileService fileService,
+
         private readonly IEmailService _emailService;
 
         public AuthService(
+
             IMapper mapper,
             IFileService fileService,
             IUserService userService,
@@ -45,9 +56,14 @@ namespace Hoshi.Repositories.AuthService
             SignInManager<User> signInManager,
             RoleManager<IdentityRole<int>> roleManager,
             ITokenService tokenService,
+
+            RoleManager<IdentityRole<int>> roleManager,
+            IHubContext<NotificationHub, INotificationHub> hubContext)
+
             IHttpContextAccessor httpContextAccessor,
             IEmailService emailService
         )
+
         {
             _mapper = mapper;
             _fileService = fileService;
@@ -56,9 +72,12 @@ namespace Hoshi.Repositories.AuthService
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _hubContext = hubContext;
+
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+
         }
 
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
@@ -199,6 +218,7 @@ namespace Hoshi.Repositories.AuthService
 
             var token = await _tokenService.CreateTokenAsync(applicationUser);
             await _context.SaveChangesAsync();
+          
 
             return ResultDTO<UserGetDTO>.Success(
                 _mapper.Map<UserGetDTO>(applicationUser),
@@ -226,6 +246,7 @@ namespace Hoshi.Repositories.AuthService
                     }
                 );
             }
+            
 
             if (registerRequestDto == null)
             {
@@ -308,7 +329,36 @@ namespace Hoshi.Repositories.AuthService
 
                 var token = await _tokenService.CreateTokenAsync(applicationUser);
                 await _context.SaveChangesAsync();
+
+                /// Handle Send Notification for admin that there are new worker registered
+                ///
+
+                if (userType is UserType.Worker)
+                {
+                    var allAdmins = await _context.UserRoles.Where(p => p.RoleId == 2)
+                        .Include(p => p.UserId).ToListAsync();
+                    if (allAdmins.Any()) 
+                    {
+                        foreach (var admin in allAdmins) 
+                        {
+                            await _context.AdminNotifications.AddAsync(new AdminNotification
+                            {
+                                Title = "عمليه تسجيل عامل جديد",
+                                Content = $"Worker Id : {applicationUser.Id} that registered Rigth Now",
+                                CreatedAt = DateTime.UtcNow,
+                                IsRead = false,
+                                AdminId = admin.UserId,
+                            });
+                            await _context.SaveChangesAsync();
+                        }
+                        await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه تسجيل عامل جديد");
+
+                    }
+
+                }
+
                 var otpResult = await _emailService.SendOTP(applicationUser.Email);
+
 
 
 

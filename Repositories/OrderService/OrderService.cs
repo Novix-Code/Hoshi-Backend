@@ -12,6 +12,8 @@ using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.OrderService
@@ -20,10 +22,13 @@ namespace Hoshi.Repositories.OrderService
     {
         private readonly HoshiDbContext _hoshiDbContext;
         private readonly IMapper _mapper;
-        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper)
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+
+        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext)
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
 
         public async Task<ResultDTO<SubmittedOrderDetailsDto>> GetSubmittedOrderDetailsAsync(int orderId)
@@ -288,6 +293,26 @@ namespace Hoshi.Repositories.OrderService
 
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
+                var allAdmins = await _hoshiDbContext.UserRoles.Where(p => p.RoleId == 2)
+                        .Include(p => p.UserId).ToListAsync();
+                if (allAdmins.Any())
+                {
+                    foreach (var admin in allAdmins)
+                    {
+                        await _hoshiDbContext.AdminNotifications.AddAsync(new AdminNotification
+                        {
+                            Title = "عمليه استكمال اوردر",
+                            Content = $"Order Id: {orderId}",
+                            CreatedAt = DateTime.UtcNow,
+                            IsRead = false,
+                            AdminId = admin.UserId,
+                        });
+                        await _hoshiDbContext.SaveChangesAsync();
+                    }
+                    await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه استكمال اوردر");
+
+                }
+
                 return ResultDTO<bool>.Success();
             }
             catch (Exception ex)

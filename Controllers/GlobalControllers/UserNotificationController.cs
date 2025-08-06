@@ -7,6 +7,8 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.UserNotificationDTOs;
 using Hoshi.Models.GlobalModels;
+using Hoshi.Repositories.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
 {
@@ -20,26 +22,29 @@ namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
         UserNotificationPostDTO, 
         UserNotificationPutDTO>
     {
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
         public UserNotificationController(
-            IMapper mapper, 
+            IMapper mapper,
             IGenericCRUDService<
-                HoshiDbContext, 
-                UserNotification, 
-                UserNotificationGetDTO, 
-                UserNotificationPostDTO, 
-                UserNotificationPutDTO> genericCRUDService, 
+                HoshiDbContext,
+                UserNotification,
+                UserNotificationGetDTO,
+                UserNotificationPostDTO,
+                UserNotificationPutDTO> genericCRUDService,
             IGenericFSPService<
-                HoshiDbContext, 
-                UserNotification, 
-                UserNotificationGetDTO> genericFSPService 
-        ) : base(mapper, genericCRUDService, genericFSPService)
+                HoshiDbContext,
+                UserNotification,
+                UserNotificationGetDTO> genericFSPService
+,
+            IHubContext<NotificationHub, INotificationHub> hubContext) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
 
-			includes = [
-				$"{nameof(UserNotification.User)}",
-				$"{nameof(UserNotification.NotificationType)}",
-			];
+            includes = [
+                $"{nameof(UserNotification.User)}",
+                $"{nameof(UserNotification.NotificationType)}",
+            ];
+            _hubContext = hubContext;
         }
 
         [NonAction]
@@ -76,6 +81,16 @@ namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
         public override Task<IActionResult> Update(UserNotificationPutDTO putDTO)
         {
             return base.Update(putDTO);
+        }
+
+
+
+        [EndpointGroupName("Admin")]
+        [HttpPost("SendMS")]
+        public async Task<IActionResult> SendMessage([FromForm] string message)
+        {
+            await _hubContext.Clients.All.ReceiveMessage(message);
+            return Ok(new { Message = "Sent" });
         }
     }
 }

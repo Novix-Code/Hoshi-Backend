@@ -27,6 +27,10 @@ using Microsoft.OpenApi.Models;
 using Hoshi.Data.IdentitySeeders;
 using System.Text.Json.Serialization;
 using Hoshi.Repositories.OrderImageService;
+using Hoshi.Repositories.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Http.HttpResults;
+
 using Hoshi.Repositories.WorkerSpecificationService;
 using Hoshi.Repositories.ClientSpecificationService;
 using Hoshi.Repositories.WorkerPaymentHistroyService;
@@ -153,6 +157,7 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
           
 			builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
+            builder.Services.AddSignalR();
             
             var app = builder.Build();
 
@@ -201,8 +206,11 @@ namespace Hoshi
                 var services = scope.ServiceProvider;
                 await IdentitySeeder.SeedRolesAsync(services);
                 await IdentitySeeder.SeedAdminUserAsync(services);
+                await IdentitySeeder.SeedNotificationTypesAsync(services);
             }
-
+            
+           
+            app.MapHub<NotificationHub>("/notification-hub");
             app.Run();
         }
     }

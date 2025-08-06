@@ -9,10 +9,13 @@ using Hoshi.DTOs.OrderDTOs.OrderStatusHistoryDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionTakenDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
+using Hoshi.Models.DashboardModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.PromotionModels;
 using Hoshi.Repositories.ClientHomeService;
+using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.OrderImageService;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -24,18 +27,22 @@ namespace Hoshi.Repositories.ClientOrderService
         private readonly IMapper _mapper;
         private readonly IClientHomeService _clientHomeService;
         private readonly IOrderImageService orderImageService;
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+
 
         public ClientOrderService(
-            HoshiDbContext context, 
-            IMapper mapper, 
+            HoshiDbContext context,
+            IMapper mapper,
             IClientHomeService clientHomeService,
             IOrderImageService orderImageService
-        )
+,
+            IHubContext<NotificationHub, INotificationHub> hubContext)
         {
             _Context = context;
             _mapper = mapper;
             _clientHomeService = clientHomeService;
             this.orderImageService = orderImageService;
+            _hubContext = hubContext;
         }
         public async Task<ResultDTO<string>> AddOrderAsync(OrderPostDTO dto)
         {
@@ -84,8 +91,30 @@ namespace Hoshi.Repositories.ClientOrderService
                 // Add order images
                 if (!dto.OrderImagesFiles.IsNullOrEmpty())
                     await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
-
                 await _Context.SaveChangesAsync();
+
+                var allAdmins = await _Context.UserRoles.Where(p => p.RoleId == 2)
+                        .Include(p => p.UserId).ToListAsync();
+                if (allAdmins.Any())
+                {
+                    foreach (var admin in allAdmins)
+                    {
+                        await _Context.AdminNotifications.AddAsync(new AdminNotification
+                        {
+                            Title = "عمليه اضافة اوردر",
+                            Content = $"Order Id: {orderMapper.Id}",
+                            CreatedAt = DateTime.UtcNow,
+                            IsRead = false,
+                            AdminId = admin.UserId,
+                        });
+                        await _Context.SaveChangesAsync();
+                    }
+                    await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه اضافة اوردر");
+
+                }
+
+
+
                 return ResultDTO<string>.Success(orderMapper.Id.ToString());
             }
             catch (Exception ex)
@@ -102,6 +131,26 @@ namespace Hoshi.Repositories.ClientOrderService
             var targetOrder = await _Context.Orders.FindAsync(orderId);
             targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
             await _Context.SaveChangesAsync();
+            var allAdmins = await _Context.UserRoles.Where(p => p.RoleId == 2)
+                        .Include(p => p.UserId).ToListAsync();
+            if (allAdmins.Any())
+            {
+                foreach (var admin in allAdmins)
+                {
+                    await _Context.AdminNotifications.AddAsync(new AdminNotification
+                    {
+                        Title = "عمليه حذف اوردر",
+                        Content = $"Order Id: {orderId}",
+                        CreatedAt = DateTime.UtcNow,
+                        IsRead = false,
+                        AdminId = admin.UserId,
+                    });
+                    await _Context.SaveChangesAsync();
+                }
+                await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه حذف اوردر");
+
+            }
+
             return ResultDTO<string>.Success("Successfully deleted");
         }
 

@@ -7,8 +7,12 @@ using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.Models.UserModels;
 using Hoshi.Repositories.AuthService;
+using Hoshi.Repositories.Hubs;
+
 using Hoshi.Repositories.UserService;
+
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Hoshi.Controllers.UserControllers.UserControllers
 {
@@ -25,6 +29,9 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
     {
         private readonly IMapper mapper;
         private readonly IAuthService authService;
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+
+
         private readonly IUserService userService;
         
         public UserController(
@@ -39,6 +46,14 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
                 HoshiDbContext,
                 User,
                 UserGetDTO> genericFSPService,
+            IAuthService authService
+,
+            IHubContext<NotificationHub, INotificationHub> hubContext) : base(mapper, genericCRUDService, genericFSPService)
+        {
+            this.mapper = mapper;
+            this.authService = authService;
+            _hubContext = hubContext;
+
             IAuthService authService,
             IUserService userService
         ) : base(mapper, genericCRUDService, genericFSPService)
@@ -46,6 +61,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             this.mapper = mapper;
             this.authService = authService;
             this.userService = userService;
+
         }
         
         public override async Task<IActionResult> Add(UserPostDTO postDTO)
@@ -156,5 +172,8 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             var response = await userService.OrderDetails(id);
             return StatusCode(response.StatusCode, response);
         }
+
+
+       
     }
 }
