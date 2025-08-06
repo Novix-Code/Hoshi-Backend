@@ -87,8 +87,7 @@ namespace Hoshi.Repositories.ClientSpecificationService
 
             try
             {
-                ClientSpecification? clientSpecification = await context.Set<ClientSpecification>()
-                    .Include(nameof(ClientSpecification.User))
+                ClientSpecification? clientSpecification = await context.Set<ClientSpecification>().Include(p=>p.User)
                     .FirstOrDefaultAsync(x => x.Id == putDTO.Id);
 
                 if (clientSpecification == null)
