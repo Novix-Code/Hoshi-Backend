@@ -39,11 +39,6 @@ namespace Hoshi.Repositories.AuthService
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
-
-        public AuthService(UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            IFileService fileService,
-
         private readonly IEmailService _emailService;
 
         public AuthService(
@@ -55,14 +50,11 @@ namespace Hoshi.Repositories.AuthService
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             RoleManager<IdentityRole<int>> roleManager,
-            ITokenService tokenService,
-
-            RoleManager<IdentityRole<int>> roleManager,
-            IHubContext<NotificationHub, INotificationHub> hubContext)
-
-            IHttpContextAccessor httpContextAccessor,
-            IEmailService emailService
-        )
+            ITokenService tokenService
+,
+            IHubContext<NotificationHub, INotificationHub> hubContext,
+            IEmailService emailService,
+            IHttpContextAccessor httpContextAccessor)
 
         {
             _mapper = mapper;
@@ -72,12 +64,12 @@ namespace Hoshi.Repositories.AuthService
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
-            _hubContext = hubContext;
+
 
             _tokenService = tokenService;
-            _httpContextAccessor = httpContextAccessor;
+            _hubContext = hubContext;
             _emailService = emailService;
-
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)

@@ -33,7 +33,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
 
 
         private readonly IUserService userService;
-        
+
         public UserController(
             IMapper mapper,
             IGenericCRUDService<
@@ -48,22 +48,15 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
                 UserGetDTO> genericFSPService,
             IAuthService authService
 ,
-            IHubContext<NotificationHub, INotificationHub> hubContext) : base(mapper, genericCRUDService, genericFSPService)
+            IHubContext<NotificationHub, INotificationHub> hubContext,
+            IUserService userService) : base(mapper, genericCRUDService, genericFSPService)
         {
             this.mapper = mapper;
             this.authService = authService;
             _hubContext = hubContext;
-
-            IAuthService authService,
-            IUserService userService
-        ) : base(mapper, genericCRUDService, genericFSPService)
-        {
-            this.mapper = mapper;
-            this.authService = authService;
             this.userService = userService;
-
         }
-        
+
         public override async Task<IActionResult> Add(UserPostDTO postDTO)
         {
             // Update the other data anyware
