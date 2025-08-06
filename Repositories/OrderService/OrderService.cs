@@ -13,6 +13,7 @@ using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.Hubs;
+using Hoshi.Repositories.NotificationService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,12 +24,15 @@ namespace Hoshi.Repositories.OrderService
         private readonly HoshiDbContext _hoshiDbContext;
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+        private readonly INotificationServiceHandler notificationServiceHandler;
 
-        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext)
+
+        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationServiceHandler notificationServiceHandler)
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
             _hubContext = hubContext;
+            this.notificationServiceHandler = notificationServiceHandler;
         }
 
         public async Task<ResultDTO<SubmittedOrderDetailsDto>> GetSubmittedOrderDetailsAsync(int orderId)
@@ -293,26 +297,8 @@ namespace Hoshi.Repositories.OrderService
 
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
-                var allAdmins = await _hoshiDbContext.UserRoles.Where(p => p.RoleId == 2)
-                        .Include(p => p.UserId).ToListAsync();
-                if (allAdmins.Any())
-                {
-                    foreach (var admin in allAdmins)
-                    {
-                        await _hoshiDbContext.AdminNotifications.AddAsync(new AdminNotification
-                        {
-                            Title = "عمليه استكمال اوردر",
-                            Content = $"Order Id: {orderId}",
-                            CreatedAt = DateTime.UtcNow,
-                            IsRead = false,
-                            AdminId = admin.UserId,
-                        });
-                        await _hoshiDbContext.SaveChangesAsync();
-                    }
-                    await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه استكمال اوردر");
-
-                }
-
+                // send notification
+                await notificationServiceHandler.sendMessagetoAdmin("عمليه استكمال اوردر", orderId);
                 return ResultDTO<bool>.Success();
             }
             catch (Exception ex)

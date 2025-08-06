@@ -31,7 +31,7 @@ namespace Hoshi.Repositories.TokenService
             List<Claim> claimsList = new List<Claim>
             {
                 new Claim("email", applicationUser.Email),
-                new Claim("id", applicationUser.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 
             };

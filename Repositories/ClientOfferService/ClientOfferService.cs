@@ -1,8 +1,9 @@
-using AutoMapper;
+﻿using AutoMapper;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.InvoiceDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
+using Hoshi.Repositories.NotificationService;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.ClientOfferService
@@ -11,10 +12,12 @@ namespace Hoshi.Repositories.ClientOfferService
     {
         private readonly HoshiDbContext _context;
         private readonly IMapper _mapper;
-        public ClientOfferService(HoshiDbContext context, IMapper mapper)
+        private readonly INotificationServiceHandler _notificationServiceHandler;
+        public ClientOfferService(HoshiDbContext context, IMapper mapper, INotificationServiceHandler notificationServiceHandler)
         {
             _context = context;
             _mapper = mapper;
+            _notificationServiceHandler = notificationServiceHandler;
         }
 
         public async Task<ResultDTO<object>> AcceptOfferAsync(int id)
@@ -40,7 +43,7 @@ namespace Hoshi.Repositories.ClientOfferService
             var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).FirstOrDefaultAsync();
             if (workerSpecificationTarget == null)
             {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);
             }
             var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
             if (targetInvoice == null)
@@ -56,6 +59,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 RateRatio = workerSpecificationTarget.RateRito
             };
             InvoiceGetDTO invoiceData = _mapper.Map<InvoiceGetDTO>(targetInvoice);
+            await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
             return ResultDTO<object>.Success(new
             {
                 orderData,

@@ -7,6 +7,7 @@ using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.NotificationService;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerVisitService
@@ -15,10 +16,12 @@ namespace Hoshi.Repositories.WorkerVisitService
     {
         private readonly HoshiDbContext _hoshiDbContext;
         private readonly IMapper _mapper;
-        public WorkerVisitService(HoshiDbContext hoshiDbContext, IMapper mapper)
+        private readonly INotificationServiceHandler _notificationServiceHandler;
+        public WorkerVisitService(HoshiDbContext hoshiDbContext, IMapper mapper, INotificationServiceHandler notificationServiceHandler)
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
+            _notificationServiceHandler = notificationServiceHandler;
         }
         public async Task<ResultDTO<OrderVisitGetDTO>> AddVisitAsync(OrderVisitPostDTO dto)
         {
@@ -62,9 +65,9 @@ namespace Hoshi.Repositories.WorkerVisitService
                     .Include(v => v.Order)
                         .ThenInclude(o => o.Client)
                     .Include(v => v.Order)
-                        .ThenInclude(o => o.Worker)
+                        .ThenInclude(o => o.Worker).Include(p=>p.OrderId)
                     .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Completed);
-
+                var targetorder = await _hoshiDbContext.Orders.FindAsync(visit.OrderId);
                 if (visit == null)
                 {
                     return ResultDTO<bool>.NotFound(new ErrorDTO
@@ -189,6 +192,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                 _hoshiDbContext.ClientSpecifications.Update(client);
                 await transaction.CommitAsync();
                 await _hoshiDbContext.SaveChangesAsync();
+                await _notificationServiceHandler.sendMessagetoWorker("تم قبول طلب زيارتك", (int)targetorder.WorkerId);
 
                 return ResultDTO<bool>.Success(true);
             }

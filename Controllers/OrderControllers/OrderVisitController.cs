@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using GenericCRUDLibrary.GenericControllers;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
@@ -54,6 +54,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
         [NonAction]
         public override Task<IActionResult> Delete(int id)
         {
+
             return base.Delete(id);
         }
 
@@ -70,9 +71,11 @@ namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
         }
 
         [EndpointGroupName("Worker")]
-        public override Task<IActionResult> Add(OrderVisitPostDTO postDTO)
+        public override async Task<IActionResult> Add(OrderVisitPostDTO postDTO)
         {
-            return base.Add(postDTO);
+            await orderVisitService.sendNoificationforclient(postDTO.OrderId , "تم ارسال طلب زيارة");
+            
+            return await base.Add(postDTO);
         }
 
         [EndpointGroupName("Worker")]
@@ -91,6 +94,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
         [HttpPatch("complete-visit")]
         public async Task<IActionResult> CompleteVisit([FromQuery] int visitId)
         {
+            await orderVisitService.sendNoificationforclient2(visitId , "تم استكمال طلب الزيارة");
             var result = await workerVisitService.CompleteVisitAsync(visitId);
             return StatusCode(result.StatusCode, result);
         }

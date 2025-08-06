@@ -36,6 +36,10 @@ using Hoshi.Repositories.ClientSpecificationService;
 using Hoshi.Repositories.WorkerPaymentHistroyService;
 using Hoshi.Repositories.PromotionService;
 using Hoshi.Repositories.ArchiveService;
+using Hoshi.Repositories.NotificationService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Hoshi
 {
@@ -56,6 +60,7 @@ namespace Hoshi
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
 
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(op =>
@@ -95,6 +100,22 @@ namespace Hoshi
             // Dependence Injection of Generic CRUD Library Services:
 
             // Inject Generic CRUD Service to be used correctly in controllers.
+            var configuration = builder.Configuration;
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = configuration["Jwt:Issuer"],
+                        ValidAudience = configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+                    };
+                });
+
             builder.Services.AddTransient(
                 typeof(IGenericCRUDService<,,,,>),
                 typeof(GenericCRUDService<,,,,>)
@@ -157,6 +178,7 @@ namespace Hoshi
 			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
           
 			builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
+            builder.Services.AddTransient(typeof(INotificationServiceHandler), typeof(NotificationServiceHandler));
             builder.Services.AddSignalR();
             
             var app = builder.Build();

@@ -13,8 +13,10 @@ using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.EmailServiceFold;
 using Hoshi.Repositories.FileServiceFold;
 using Hoshi.Repositories.Hubs;
+using Hoshi.Repositories.NotificationService;
 using Hoshi.Repositories.TokenService;
 using Hoshi.Repositories.UserService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +39,7 @@ namespace Hoshi.Repositories.AuthService
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly INotificationServiceHandler notificationServiceHandler;
 
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
         private readonly IEmailService _emailService;
@@ -53,8 +56,10 @@ namespace Hoshi.Repositories.AuthService
             ITokenService tokenService
 ,
             IHubContext<NotificationHub, INotificationHub> hubContext,
+
             IEmailService emailService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            INotificationServiceHandler notificationServiceHandler)
 
         {
             _mapper = mapper;
@@ -70,6 +75,7 @@ namespace Hoshi.Repositories.AuthService
             _hubContext = hubContext;
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
+            this.notificationServiceHandler = notificationServiceHandler;
         }
 
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
@@ -327,26 +333,7 @@ namespace Hoshi.Repositories.AuthService
 
                 if (userType is UserType.Worker)
                 {
-                    var allAdmins = await _context.UserRoles.Where(p => p.RoleId == 2)
-                        .Include(p => p.UserId).ToListAsync();
-                    if (allAdmins.Any()) 
-                    {
-                        foreach (var admin in allAdmins) 
-                        {
-                            await _context.AdminNotifications.AddAsync(new AdminNotification
-                            {
-                                Title = "عمليه تسجيل عامل جديد",
-                                Content = $"Worker Id : {applicationUser.Id} that registered Rigth Now",
-                                CreatedAt = DateTime.UtcNow,
-                                IsRead = false,
-                                AdminId = admin.UserId,
-                            });
-                            await _context.SaveChangesAsync();
-                        }
-                        await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه تسجيل عامل جديد");
-
-                    }
-
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه تسجيل عامل جديد" ,applicationUser.Id);
                 }
 
                 var otpResult = await _emailService.SendOTP(applicationUser.Email);
@@ -387,6 +374,7 @@ namespace Hoshi.Repositories.AuthService
             return ResultDTO<object>.Success(usersQuery);
         }
 
+        [Authorize(Roles = "admin,client,worker")]
         public ResultDTO<object> GetCurrentUserId()
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -660,23 +648,10 @@ namespace Hoshi.Repositories.AuthService
                         }
                     }
                 }
-                
-                // Send notification to all admin users
-                var adminUsers = await _context.Users
-                    .Where(u => u.UserType == UserType.Admin.ToString())
-                    .ToListAsync();
 
-                foreach (var admin in adminUsers)
-                {
-                    _context.UserNotifications.Add(new UserNotification
-                    {
-                        UserId = admin.Id,
-                        Description =" Worker application submitted by user with ID " + request.UserId,
-                        CreatedAt = DateTime.UtcNow,
-                        NotificationTypeId = 1 , // may change this later
-                    });
-                }
-                
+                // Send notification to all admin users
+                await notificationServiceHandler.sendMessagetoAdmin(" Worker application submitted by user with ID ", request.UserId);
+                await notificationServiceHandler.sendMessagetoWorker("تم ارسال طلب ان تصبح عامل", request.UserId);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
