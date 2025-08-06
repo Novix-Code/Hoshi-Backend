@@ -1,5 +1,6 @@
 ﻿using Hoshi.Data.LookupSeeders;
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
+using Hoshi.Models.ChatModels;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.DashboardModels.StatisticsModels;
 using Hoshi.Models.GlobalModels;
@@ -166,5 +167,13 @@ namespace Hoshi.Data
         public DbSet<CategoryRequestRate> CategoryRequestRates { get; set; }
         public DbSet<ServiceRequestRate> ServiceRequestRates { get; set; }
         public DbSet<ComplaintSolvingRate> ComplaintSolvingRates { get; set; }
+
+
+        //--------------------------------------------------------------
+        //--------------------------Chat Models--------------------------
+        //--------------------------------------------------------------
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Connection> Connections { get; set; }
+
     }
 }
