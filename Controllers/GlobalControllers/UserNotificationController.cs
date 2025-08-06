@@ -9,6 +9,8 @@ using Hoshi.DTOs.GlobalDTOs.UserNotificationDTOs;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Repositories.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Hoshi.Repositories.NotificationService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
 {
@@ -23,6 +25,7 @@ namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
         UserNotificationPutDTO>
     {
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+        private readonly INotificationServiceHandler _notificationServiceHandler;
         public UserNotificationController(
             IMapper mapper,
             IGenericCRUDService<
@@ -36,7 +39,8 @@ namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
                 UserNotification,
                 UserNotificationGetDTO> genericFSPService
 ,
-            IHubContext<NotificationHub, INotificationHub> hubContext) : base(mapper, genericCRUDService, genericFSPService)
+            IHubContext<NotificationHub, INotificationHub> hubContext,
+            INotificationServiceHandler notificationServiceHandler) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
 
@@ -45,6 +49,7 @@ namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
                 $"{nameof(UserNotification.NotificationType)}",
             ];
             _hubContext = hubContext;
+            _notificationServiceHandler = notificationServiceHandler;
         }
 
         [NonAction]
@@ -84,13 +89,28 @@ namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
         }
 
 
+        [Authorize(Roles = "admin")]
+        [EndpointGroupName("Admin")]
+        [HttpGet("Get-Admin-Notifications")]
+        public async Task<IActionResult> adminNots()
+        {
+            var response = await _notificationServiceHandler.getNotificationsAdminAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [Authorize(Roles = "worker,client")]
 
         [EndpointGroupName("Admin")]
-        [HttpPost("SendMS")]
-        public async Task<IActionResult> SendMessage([FromForm] string message)
+        [HttpGet("Get-WorkerAndClient-Notifications")]
+        public async Task<IActionResult> WorkersClients()
         {
-            await _hubContext.Clients.All.ReceiveMessage(message);
-            return Ok(new { Message = "Sent" });
+            var response = await _notificationServiceHandler.getNotificationsClientAndWorkerAsync();
+            return StatusCode((int)response.StatusCode, response);
         }
+        //[HttpPost("SendMS")]
+        //public async Task<IActionResult> SendMessage([FromForm] string message)
+        //{
+        //    await _hubContext.Clients.All.ReceiveMessage(message);
+        //    return Ok(new { Message = "Sent" });
+        //}
     }
 }

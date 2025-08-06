@@ -7,6 +7,7 @@ using Hoshi.Models.DashboardModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.Hubs;
+using Hoshi.Repositories.NotificationService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,12 +18,15 @@ namespace Hoshi.Repositories.WorkerOfferService
         private readonly HoshiDbContext _hoshiDbContext;
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
+        private readonly INotificationServiceHandler notificationServiceHandler;
 
-        public WorkerOfferService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext)
+
+        public WorkerOfferService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationServiceHandler notificationServiceHandler)
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
             _hubContext = hubContext;
+            this.notificationServiceHandler = notificationServiceHandler;
         }
 
         public async Task<ResultDTO<CreateOfferResponseDto>> CreateOfferAsync(OfferPostDTO dto)
@@ -32,7 +36,6 @@ namespace Hoshi.Repositories.WorkerOfferService
             {
                 // 1. Validate order and worker existence
                 var order = await _hoshiDbContext.Orders
-                    .Include(o => o.Client)
                     .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
                 if (order == null)
                     return ResultDTO<CreateOfferResponseDto>.NotFound(new ErrorDTO
@@ -91,28 +94,9 @@ namespace Hoshi.Repositories.WorkerOfferService
                 };
 
                 await transaction.CommitAsync();
-
-                var allAdmins = await _hoshiDbContext.UserRoles.Where(p => p.RoleId == 2)
-                                                               .Include(p => p.UserId).ToListAsync();
-                if (allAdmins.Any())
-                {
-                    foreach (var admin in allAdmins)
-                    {
-                        await _hoshiDbContext.AdminNotifications.AddAsync(new AdminNotification
-                        {
-                            Title = "عمليه اضافة عرض",
-                            Content = $"offer Id: {offer.Id}",
-                            CreatedAt = DateTime.UtcNow,
-                            IsRead = false,
-                            AdminId = admin.UserId,
-                        });
-                        await _hoshiDbContext.SaveChangesAsync();
-                    }
-                    await _hubContext.Clients.Group("admin").ReceiveMessage("عمليه اضافة عرض");
-
-                }
-
-
+                // send notification
+                await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة عرض", offer.Id);
+                await notificationServiceHandler.sendMessagetoClient("تم اضافة عرض على الطلب الخاص بك" ,order.ClientId);
                 return ResultDTO<CreateOfferResponseDto>.Success(response);
             }
             catch (Exception ex)
@@ -218,11 +202,15 @@ namespace Hoshi.Repositories.WorkerOfferService
                     });
                     
                     await _hoshiDbContext.SaveChangesAsync();
+                    await notificationServiceHandler.sendMessagetoClient($"   قام العامل ب إلغاء الطلب والغرامه هي: {workerCancellationFee}",order.ClientId);
+
                 }
 
                 _hoshiDbContext.Offers.Update(offer);
                 await transaction.CommitAsync();
                 await _hoshiDbContext.SaveChangesAsync();
+
+
                 return ResultDTO<string>.Success("Offer Cancelled");
             }
             catch (Exception ex)
