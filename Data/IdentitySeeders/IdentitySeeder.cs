@@ -1,5 +1,7 @@
-﻿using Hoshi.Models.UserModels;
+﻿using Hoshi.Models.GlobalModels;
+using Hoshi.Models.UserModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Data.IdentitySeeders
 {
@@ -59,5 +61,33 @@ namespace Hoshi.Data.IdentitySeeders
                 }
             }
         }
+
+        public static async Task SeedNotificationTypesAsync(IServiceProvider serviceProvider)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<HoshiDbContext>();
+
+            var notificationTypes = new List<NotificationType>
+    {
+        // notifications
+        new NotificationType { Title = "اشعار بإنشاء طلب", Type = "For_Admin", ForClient = false },
+        new NotificationType { Title = "اشعار للاختبار", Type = "For_Client", ForClient = true },
+   
+            };
+
+            foreach (var notif in notificationTypes)
+            {
+                bool exists = await context.NotificationTypes
+                    .AnyAsync(n => n.Type == notif.Type);
+
+                if (!exists)
+                {
+                    context.NotificationTypes.Add(notif);
+                }
+            }
+
+            await context.SaveChangesAsync();
+        }
+
     }
 }

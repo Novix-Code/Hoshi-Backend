@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using GenericCRUDLibrary.GenericControllers;
 using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
@@ -8,7 +8,9 @@ using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.Enums;
 using Hoshi.Models.UserModels;
 using Hoshi.Repositories.AuthService;
+using Hoshi.Repositories.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Hoshi.Controllers.UserControllers.UserControllers
 {
@@ -25,6 +27,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
     {
         private readonly IMapper mapper;
         private readonly IAuthService authService;
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
 
         public UserController(
             IMapper mapper,
@@ -39,10 +42,12 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
                 User,
                 UserGetDTO> genericFSPService,
             IAuthService authService
-        ) : base(mapper, genericCRUDService, genericFSPService)
+,
+            IHubContext<NotificationHub, INotificationHub> hubContext) : base(mapper, genericCRUDService, genericFSPService)
         {
             this.mapper = mapper;
             this.authService = authService;
+            _hubContext = hubContext;
         }
 
         public override async Task<IActionResult> Add(UserPostDTO postDTO)
@@ -54,5 +59,8 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
 
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
+
+
+       
     }
 }
