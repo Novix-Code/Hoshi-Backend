@@ -15,12 +15,19 @@ namespace Hoshi.Repositories.FileServiceFold
         {
             string fileFullPath = Path.Combine(_environment.WebRootPath, fileURL);
             string trashFolderPath = Path.Combine(_environment.WebRootPath, "trash");
+
             if (!Directory.Exists(trashFolderPath)) 
                 Directory.CreateDirectory(trashFolderPath);
 
-            if (File.Exists(fileFullPath))
+            if (Directory.Exists(fileFullPath))
             {
                 string trashFilePath = Path.Combine(trashFolderPath, fileURL);
+
+                string fileTrashFolder = Path.Combine(trashFolderPath, Path.GetDirectoryName(fileURL)!);
+
+                if (!Directory.Exists(fileTrashFolder))
+                    Directory.CreateDirectory(fileTrashFolder);
+
                 File.Move(fileFullPath, trashFilePath);
 
                 return true;
@@ -40,7 +47,7 @@ namespace Hoshi.Repositories.FileServiceFold
             //Get Folder Full Path
             string folderFullPath = Path.Combine(_environment.WebRootPath, folderShortPath);
 
-            if (!File.Exists(folderFullPath))
+            if (!Directory.Exists(folderFullPath))
             {
                 Directory.CreateDirectory(folderFullPath);
             }
@@ -62,14 +69,16 @@ namespace Hoshi.Repositories.FileServiceFold
 
         public bool ValidateFileExtension(IFormFile file)
         {
-            List<string> allowedFileExtensions = new List<string> { ".jpeg", ".png", ".jpg", ".pdf", ".docx" };
+            List<string> allowedFileExtensions = 
+                new List<string> { ".jpeg", ".png", ".jpg", ".pdf", ".docx", ".xlsx" };
 
             //Get file extension
             string fileExtension = Path.GetExtension(file.FileName);
 
             if (!allowedFileExtensions.Contains(fileExtension))
                 return false;
-            return true;
+            else
+                return true;
         }
     }
 }

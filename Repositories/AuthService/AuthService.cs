@@ -10,9 +10,11 @@ using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.EmailServiceFold;
 using Hoshi.Repositories.FileServiceFold;
 using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.TokenService;
+using Hoshi.Repositories.UserService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -26,36 +28,56 @@ namespace Hoshi.Repositories.AuthService
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole<int>> _roleManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly ITokenService _tokenService;
-
-        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
+        private readonly IFileService _fileService;
+        private readonly IUserService _userService;
         private readonly HoshiDbContext _context;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
 
         public AuthService(UserManager<User> userManager,
             SignInManager<User> signInManager,
             IFileService fileService,
+
+        private readonly IEmailService _emailService;
+
+        public AuthService(
+
             IMapper mapper,
+            IFileService fileService,
+            IUserService userService,
             HoshiDbContext context,
-            IHttpContextAccessor httpContextAccessor,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            RoleManager<IdentityRole<int>> roleManager,
             ITokenService tokenService,
+
             RoleManager<IdentityRole<int>> roleManager,
             IHubContext<NotificationHub, INotificationHub> hubContext)
+
+            IHttpContextAccessor httpContextAccessor,
+            IEmailService emailService
+        )
+
         {
+            _mapper = mapper;
+            _fileService = fileService;
+            _userService = userService;
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
-            _fileService = fileService;
-            _mapper = mapper;
-            _context = context;
-            _httpContextAccessor = httpContextAccessor;
-            _tokenService = tokenService;
             _roleManager = roleManager;
             _hubContext = hubContext;
+
+            _tokenService = tokenService;
+            _httpContextAccessor = httpContextAccessor;
+            _emailService = emailService;
+
         }
 
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
@@ -169,37 +191,54 @@ namespace Hoshi.Repositories.AuthService
             return ResultDTO<string>.Success("successfully updated");
         }
 
-        public async Task<ResultDTO<object>> Login(ApplicationUserLoginRequestDto loginRequestDto)
+        public async Task<ResultDTO<UserGetDTO>> Login(ApplicationUserLoginRequestDto loginRequestDto)
         {
             var applicationUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
-            if (applicationUser is null)
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+           
+            var signInResult = await _signInManager.CheckPasswordSignInAsync(
+                applicationUser!, loginRequestDto.Password,false);
 
-
-            var signInResult = await _signInManager.CheckPasswordSignInAsync(applicationUser, loginRequestDto.Password,
-            false);
-
-            if (!signInResult.Succeeded)
+            if (applicationUser is null || !signInResult.Succeeded)
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO { 
+                    ErrorAr = ".الحساب او كلمة السر خاطئة",
+                    ErrorEn = "Invalid email or password."
+                });
+                
+            // check if account is Suspended and the reason 
+            var checkSuspend = await _context.SuspendedUsers.Where(p => p.UserId == applicationUser.Id).FirstOrDefaultAsync();
+            if (checkSuspend is not null)
             {
-                return ResultDTO<object>.BadRequest(new ErrorDTO { ErrorAr = "Invalid email or password." });
+                var getResoun = await _context.SuspendReasons.FindAsync(checkSuspend.SuspendReasonId);
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO { 
+                        ErrorAr = $"الحساب معلق للسبب التالي : { getResoun.Reason}",
+                        ErrorEn = $"Acount is Suspended for : { getResoun.Reason}"
+                    }
+                );
             }
-
 
             var token = await _tokenService.CreateTokenAsync(applicationUser);
             await _context.SaveChangesAsync();
           
 
-            return ResultDTO<object>.Success(new { UserId = applicationUser.Id, Token = token, Message = "Logged successfully" });
+            return ResultDTO<UserGetDTO>.Success(
+                _mapper.Map<UserGetDTO>(applicationUser),
+                token,
+                new MessageDTO
+                {
+                    MessageAr = "تم تسجيل الدخول بنجاح.",
+                    MessageEn = "Login successfully."
+                }
+            );
         }
 
-        public async Task<ResultDTO<object>> Register(
+        public async Task<ResultDTO<UserGetDTO>> Register(
             UserType userType, 
             ApplicationUserRegisterRequestDto registerRequestDto
         )
         {
             if(userType is UserType.Admin)
             {
-                return ResultDTO<object>.BadRequest(
+                return ResultDTO<UserGetDTO>.BadRequest(
                     new ErrorDTO 
                     { 
                         ErrorAr = "المشرف لا يمكنه انشاء حساب لنفسه.",
@@ -211,7 +250,7 @@ namespace Hoshi.Repositories.AuthService
 
             if (registerRequestDto == null)
             {
-                return ResultDTO<object>.BadRequest(
+                return ResultDTO<UserGetDTO>.BadRequest(
                     new ErrorDTO
                     {
                         ErrorAr = "البيانات غير مكتملة.",
@@ -222,7 +261,7 @@ namespace Hoshi.Repositories.AuthService
 
             if (string.IsNullOrWhiteSpace(registerRequestDto.Password))
             {
-                return ResultDTO<object>.BadRequest(
+                return ResultDTO<UserGetDTO>.BadRequest(
                     new ErrorDTO
                     {
                         ErrorAr = "كلمة السر مكتوبة بشكل غير صحيح.",
@@ -251,11 +290,12 @@ namespace Hoshi.Repositories.AuthService
                 // Update User to add the new value
                 _context.Set<User>().Update(applicationUser);
 
+                // Add main role to user
                 string role = userType.ToString().ToLower();
 
                 if (!await _roleManager.RoleExistsAsync(role))
                 {
-                    return ResultDTO<object>.InternalServerError(new ErrorDTO
+                    return ResultDTO<UserGetDTO>.InternalServerError(new ErrorDTO
                     {
                         ErrorAr = "هذا الدور غير متوفر.",
                         ErrorEn = "This Role not available."
@@ -266,7 +306,7 @@ namespace Hoshi.Repositories.AuthService
                 if (!roleResult.Succeeded)
                 {
                     var roleErrors = roleResult.Errors.Select(e => e.Description).ToList();
-                    return ResultDTO<object>.InternalServerError(
+                    return ResultDTO<UserGetDTO>.InternalServerError(
                         new ErrorDTO
                         {
                             ErrorAr = "فشل في اضافة الدور للمستخدم.",
@@ -275,9 +315,21 @@ namespace Hoshi.Repositories.AuthService
                     );
                 }
 
+                if(userType is UserType.Client)
+                {
+                    ClientSpecification clientSpecification = new ClientSpecification()
+                    {
+                        UserId = applicationUser.Id,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _context.Set<ClientSpecification>().AddAsync(clientSpecification);
+                }
+
 
                 var token = await _tokenService.CreateTokenAsync(applicationUser);
                 await _context.SaveChangesAsync();
+
                 /// Handle Send Notification for admin that there are new worker registered
                 ///
 
@@ -305,15 +357,14 @@ namespace Hoshi.Repositories.AuthService
 
                 }
 
+                var otpResult = await _emailService.SendOTP(applicationUser.Email);
 
 
 
-                return ResultDTO<object>.Success(
-                    new
-                    {
-                        UserId = applicationUser.Id,
-                        Token = token,
-                    },
+
+                return ResultDTO<UserGetDTO>.Success(
+                    _mapper.Map<UserGetDTO>(applicationUser),
+                    token,
                     new MessageDTO
                     {
                         MessageAr = "تم انشاء الحساب بنجاح.",
@@ -323,7 +374,7 @@ namespace Hoshi.Repositories.AuthService
             }
             catch (DbUpdateException ex)
             {
-                return ResultDTO<object>.InternalServerError(
+                return ResultDTO<UserGetDTO>.InternalServerError(
                     new ErrorDTO
                     {
                         ErrorAr = "رقم الهاتف او الحساب مكرر.",
@@ -374,6 +425,7 @@ namespace Hoshi.Repositories.AuthService
             {
                 // Validate user exists
                 var userExists = await _userManager.Users.AnyAsync(u => u.Id == request.UserId);
+
                 if (!userExists)
                 {
                     return ResultDTO<string>.NotFound(new ErrorDTO
@@ -423,10 +475,18 @@ namespace Hoshi.Repositories.AuthService
 
                 if (existingWorkerSpec != null)
                 {
+                    // Adding User personal image
+                    var perImgResult = await AddPersonalImage(
+                        existingWorkerSpec.UserId, 
+                        request.PersonalImage,
+                        new Tuple<bool, string?>(true, existingWorkerSpec.User!.ImageURL)
+                    );
+
+                    if (perImgResult.IsSuccess is false)
+                        return perImgResult;
+
                     // Update existing worker specification (re-application case)
                     existingWorkerSpec.Bio = request.Bio;
-                    existingWorkerSpec.ImageURL = request.PersonalImageURL;
-                    existingWorkerSpec.IdentityImageURL = request.IdentityImageURL;
                     existingWorkerSpec.IsCompany = request.IsCompany;
                     existingWorkerSpec.Address = request.Address;
                     existingWorkerSpec.Latitude = request.Latitude;
@@ -435,6 +495,17 @@ namespace Hoshi.Repositories.AuthService
                     existingWorkerSpec.LivingCityId = request.CityId;
                     existingWorkerSpec.IsApproved = null; // Reset approval status for re-review
                     existingWorkerSpec.ModifiedAt = DateTime.UtcNow;
+
+                    // Adding Identity image
+                    var idImgResult = await AddIdentityImage(
+                        request.IdentityImage,
+                        new Tuple<bool, string?>(true, existingWorkerSpec.IdentityImageURL)
+                    );
+
+                    if(idImgResult.IsSuccess)
+                        existingWorkerSpec.IdentityImageURL = idImgResult.Data!;
+                    else
+                        return idImgResult;
 
                     // Update services
                     var services = await _context.Services
@@ -464,7 +535,7 @@ namespace Hoshi.Repositories.AuthService
                     await _context.AddRangeAsync(workerServices);
 
                     // Update portfolio if provided
-                    if (request.PortfolioFilesURL != null && request.PortfolioFilesURL.Any())
+                    if (request.PortfolioFiles != null && request.PortfolioFiles.Any())
                     {
                         // Remove existing portfolio files
                         var existingPortfolio = await _context.WorkerPortfolios
@@ -472,28 +543,55 @@ namespace Hoshi.Repositories.AuthService
                             .ToListAsync();
                         _context.WorkerPortfolios.RemoveRange(existingPortfolio);
 
-                        // Add new portfolio files
-                        foreach (var fileUrl in request.PortfolioFilesURL)
+                        // Delete old portfolio files
+                        foreach (var portfolio in existingPortfolio)
                         {
-                            var portfolio = new WorkerPortfolio
+                            _fileService.DeleteFile(portfolio.FileURL);
+                        }
+
+                        // Add new portfolio files
+                        foreach (var file in request.PortfolioFiles)
+                        {
+                            Tuple<bool, string> fileResult =
+                                await _fileService.SaveFileAsync(file, "files\\portfolios");
+
+                            // Chekc if it done successfuly or not
+                            if (fileResult.Item1 is false)
+                                return ResultDTO<string>.BadRequest(new ErrorDTO
+                                {
+                                    ErrorAr = "يوجد مشكلة في اضافة الملف.",
+                                    ErrorEn = fileResult.Item2
+                                });
+                            else
                             {
-                                FileURL = fileUrl,
-                                WorkerId = request.UserId,
-                                CreatedAt = DateTime.UtcNow,
-                                ModifiedAt = DateTime.UtcNow
-                            };
-                            _context.WorkerPortfolios.Add(portfolio);
+                                var portfolio = new WorkerPortfolio
+                                {
+                                    FileURL = fileResult.Item2,
+                                    WorkerId = request.UserId,
+                                    CreatedAt = DateTime.UtcNow,
+                                    ModifiedAt = DateTime.UtcNow
+                                };
+                                _context.WorkerPortfolios.Add(portfolio);
+                            }
                         }
                     }
                 }
                 else
                 {
+                    // Adding User personal image
+                    var perImgResult = await AddPersonalImage(
+                        request.UserId,
+                        request.PersonalImage,
+                        new Tuple<bool, string?>(false, null)
+                    );
+
+                    if (perImgResult.IsSuccess is false)
+                        return perImgResult;
+
                     // Create new worker specification
                     var workerSpec = new WorkerSpecification
                     {
                         Bio = request.Bio,
-                        ImageURL = request.PersonalImageURL,
-                        IdentityImageURL = request.IdentityImageURL,
                         IsCompany = request.IsCompany,
                         Address = request.Address,
                         Latitude = request.Latitude,
@@ -507,6 +605,17 @@ namespace Hoshi.Repositories.AuthService
                         CreatedAt = DateTime.UtcNow,
                         ModifiedAt = DateTime.UtcNow
                     };
+
+                    // Adding Identity image
+                    var idImgResult = await AddIdentityImage(
+                        request.IdentityImage,
+                        new Tuple<bool, string?>(false, null)
+                    );
+
+                    if (idImgResult.IsSuccess)
+                        workerSpec.IdentityImageURL = idImgResult.Data!;
+                    else
+                        return idImgResult;
 
                     // Add services
                     var servicesIds = await _context.Services
@@ -532,17 +641,30 @@ namespace Hoshi.Repositories.AuthService
                     await _context.SaveChangesAsync(); // Save to get the ID
 
                     // Add portfolio files if provided
-                    if (request.PortfolioFilesURL != null && request.PortfolioFilesURL.Any())
+                    if (request.PortfolioFiles != null && request.PortfolioFiles.Any())
                     {
-                        foreach (var fileUrl in request.PortfolioFilesURL)
+                        foreach (var file in request.PortfolioFiles)
                         {
-                            var portfolio = new WorkerPortfolio
+                            Tuple<bool, string> fileResult =
+                                await _fileService.SaveFileAsync(file, "files\\portfolios");
+
+                            // Chekc if it done successfuly or not
+                            if (fileResult.Item1 is false)
+                                return ResultDTO<string>.BadRequest(new ErrorDTO
+                                {
+                                    ErrorAr = "يوجد مشكلة في اضافة الملف.",
+                                    ErrorEn = fileResult.Item2
+                                });
+                            else
                             {
-                                FileURL = fileUrl,
-                                WorkerId = request.UserId,
-                                CreatedAt = DateTime.UtcNow
-                            };
-                            _context.WorkerPortfolios.Add(portfolio);
+                                var portfolio = new WorkerPortfolio
+                                {
+                                    FileURL = fileResult.Item2,
+                                    WorkerId = request.UserId,
+                                    CreatedAt = DateTime.UtcNow
+                                };
+                                _context.WorkerPortfolios.Add(portfolio);
+                            }
                         }
                     }
                 }
@@ -581,6 +703,58 @@ namespace Hoshi.Repositories.AuthService
                     ErrorEn = "An error occurred while processing your request."
                 });
             }
+        }
+
+        private async Task<ResultDTO<string>> AddPersonalImage(
+            int id, 
+            IFormFile image, 
+            Tuple<bool, string?> isUpdate
+        )
+        {
+            // Check if this call to update user image and if true will remove last image and add the new one
+            if (isUpdate.Item1)
+            {
+                _fileService.DeleteFile(isUpdate.Item2!);
+            }
+
+            // Add personal image to user
+            Tuple<bool, string> imageResult =
+                await _userService.AddUserImage(id, image, true);
+
+            // Chekc if it done successfuly or not
+            if (imageResult.Item1 is false)
+                return ResultDTO<string>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "يوجد مشكلة في اضافة الصورة.",
+                    ErrorEn = imageResult.Item2
+                });
+            else
+                return ResultDTO<string>.Success();
+        }
+
+        private async Task<ResultDTO<string>> AddIdentityImage(
+            IFormFile image,
+            Tuple<bool, string?> isUpdate
+        )
+        {
+            // Check if this call to update identity image and if true will remove last image and add the new one
+            if (isUpdate.Item1)
+            {
+                _fileService.DeleteFile(isUpdate.Item2!);
+            }
+
+            Tuple<bool, string> identityImageResult =
+                await _fileService.SaveFileAsync(image, "images\\identityimages");
+
+            // Chekc if it done successfuly or not
+            if (identityImageResult.Item1 is false)
+                return ResultDTO<string>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "يوجد مشكلة في اضافة الصورة.",
+                    ErrorEn = identityImageResult.Item2
+                });
+            else
+                return ResultDTO<string>.Success(identityImageResult.Item2);
         }
 
         private string GenerateUniqueUsername(string fullName)

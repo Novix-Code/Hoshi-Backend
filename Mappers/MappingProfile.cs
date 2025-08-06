@@ -191,6 +191,13 @@ namespace Hoshi.Mappers
                 .ForMember(dest => dest.OrderNumber, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.ImagesUrl, opt => opt.MapFrom(src => src.OrderImages!.Select(img => img.ImageURL)));
 
+			// Basic DTO mappers
+			CreateMap<ServiceBasicDTO, Service>().ReverseMap();
+
+			CreateMap<ServiceCategoryBasicDTO, ServiceCategory>().ReverseMap();
+
+			CreateMap<WorkerPortfolioBasicDTO, WorkerPortfolio>().ReverseMap();
+
             // CreateMap<Order, OrderSearchResultDto>()
             //     .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.ServiveName))
             //     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
@@ -210,7 +217,13 @@ namespace Hoshi.Mappers
 
             CreateMap<PutDto, T>()
                 // Don't map the Null props in PutDTO and get its values from source model.
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember, context) =>
+                {
+                    if (srcMember == null) return false;
+
+                    var type = srcMember.GetType();
+                    return !(type.IsValueType && Activator.CreateInstance(type)?.Equals(srcMember) == true);
+                }));
 
             CreateMap<GetDto, T>().ReverseMap();
 
@@ -233,7 +246,13 @@ namespace Hoshi.Mappers
             CreateMap<PutDto, T>()
                 // Add current date time whithin updating a new Row
                 .ForMember(d => d.ModifiedAt, s => s.MapFrom(s => DateTime.Now))
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember, context) =>
+                {
+                    if (srcMember == null) return false;
+
+                    var type = srcMember.GetType();
+                    return !(type.IsValueType && Activator.CreateInstance(type)?.Equals(srcMember) == true);
+                }));
 
             CreateMap<GetDto, T>().ReverseMap();
 

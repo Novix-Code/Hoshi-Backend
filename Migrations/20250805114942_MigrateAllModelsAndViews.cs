@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateInitialMigrationForHoshiProject : Migration
+    public partial class MigrateAllModelsAndViews : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -81,7 +81,9 @@ namespace Hoshi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -94,7 +96,7 @@ namespace Hoshi.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
@@ -306,7 +308,7 @@ namespace Hoshi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ServiveName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CategoryName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -470,6 +472,53 @@ namespace Hoshi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ClientSpecifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CompletedOrders = table.Column<int>(type: "int", nullable: false),
+                    RateRito = table.Column<double>(type: "float", nullable: false),
+                    Balance = table.Column<double>(type: "float", nullable: false),
+                    Indebtedness = table.Column<double>(type: "float", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientSpecifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ClientSpecifications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PasswordResetRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ResetToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PasswordResetRequests_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rates",
                 columns: table => new
                 {
@@ -527,7 +576,8 @@ namespace Hoshi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<int>(type: "int", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SecreteKey = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     IsRevoked = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -630,39 +680,6 @@ namespace Hoshi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ClientSpecifications",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CompletedOrders = table.Column<int>(type: "int", nullable: false),
-                    RateRito = table.Column<double>(type: "float", nullable: false),
-                    Balance = table.Column<double>(type: "float", nullable: false),
-                    Indebtedness = table.Column<double>(type: "float", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    LivingCityId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ClientSpecifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ClientSpecifications_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ClientSpecifications_Cities_LivingCityId",
-                        column: x => x.LivingCityId,
-                        principalTable: "Cities",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ComplaintSolvingRates",
                 columns: table => new
                 {
@@ -693,7 +710,6 @@ namespace Hoshi.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IdentityImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Latitude = table.Column<double>(type: "float", nullable: false),
@@ -902,6 +918,35 @@ namespace Hoshi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Services",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ServiveName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    ServiceCategoryId = table.Column<int>(type: "int", nullable: false),
+                    JobId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Services", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Services_Jobs_JobId",
+                        column: x => x.JobId,
+                        principalTable: "Jobs",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Services_ServiceCategories_ServiceCategoryId",
+                        column: x => x.ServiceCategoryId,
+                        principalTable: "ServiceCategories",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SuspendedUsers",
                 columns: table => new
                 {
@@ -951,41 +996,6 @@ namespace Hoshi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Services",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ServiveName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    ServiceCategoryId = table.Column<int>(type: "int", nullable: false),
-                    JobId = table.Column<int>(type: "int", nullable: true),
-                    WorkerSpecificationId = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Services", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Services_Jobs_JobId",
-                        column: x => x.JobId,
-                        principalTable: "Jobs",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Services_ServiceCategories_ServiceCategoryId",
-                        column: x => x.ServiceCategoryId,
-                        principalTable: "ServiceCategories",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Services_WorkerSpecifications_WorkerSpecificationId",
-                        column: x => x.WorkerSpecificationId,
-                        principalTable: "WorkerSpecifications",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Fees",
                 columns: table => new
                 {
@@ -995,6 +1005,8 @@ namespace Hoshi.Migrations
                     MaxFees = table.Column<double>(type: "float", nullable: false),
                     MinFees = table.Column<double>(type: "float", nullable: false),
                     FeeType = table.Column<int>(type: "int", nullable: true),
+                    IsSpecial = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     ServiceId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -1133,6 +1145,32 @@ namespace Hoshi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WorkerServices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WorkerId = table.Column<int>(type: "int", nullable: false),
+                    ServiceId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkerServices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkerServices_AspNetUsers_WorkerId",
+                        column: x => x.WorkerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WorkerServices_Services_ServiceId",
+                        column: x => x.ServiceId,
+                        principalTable: "Services",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CompanyRevenues",
                 columns: table => new
                 {
@@ -1233,7 +1271,6 @@ namespace Hoshi.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageNumber = table.Column<int>(type: "int", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1276,9 +1313,9 @@ namespace Hoshi.Migrations
                     VisitNote = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     VisitPrice = table.Column<double>(type: "float", nullable: false),
                     VisitingDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
                     VisitStatus = table.Column<int>(type: "int", nullable: false),
                     VisitNumber = table.Column<int>(type: "int", nullable: false),
-                    OrderId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -1301,7 +1338,7 @@ namespace Hoshi.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     PromotionId = table.Column<int>(type: "int", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false),
-                    OfferId = table.Column<int>(type: "int", nullable: false),
+                    OfferId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -1413,6 +1450,20 @@ namespace Hoshi.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_Email",
+                table: "AspNetUsers",
+                column: "Email",
+                unique: true,
+                filter: "[Email] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_PhoneNumber",
+                table: "AspNetUsers",
+                column: "PhoneNumber",
+                unique: true,
+                filter: "[PhoneNumber] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -1423,11 +1474,6 @@ namespace Hoshi.Migrations
                 name: "IX_CategoryRequestRates_ServiceCategoryId",
                 table: "CategoryRequestRates",
                 column: "ServiceCategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientSpecifications_LivingCityId",
-                table: "ClientSpecifications",
-                column: "LivingCityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ClientSpecifications_UserId",
@@ -1481,9 +1527,10 @@ namespace Hoshi.Migrations
                 column: "JobId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobServices_ServiceId",
+                name: "IX_JobServices_ServiceId_JobId",
                 table: "JobServices",
-                column: "ServiceId");
+                columns: new[] { "ServiceId", "JobId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_NumericalStatisticsValues_LastValueId",
@@ -1556,9 +1603,15 @@ namespace Hoshi.Migrations
                 column: "ParentPageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PermissionPages_PageId",
+                name: "IX_PasswordResetRequests_UserId",
+                table: "PasswordResetRequests",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PermissionPages_PageId_PermissionId",
                 table: "PermissionPages",
-                column: "PageId");
+                columns: new[] { "PageId", "PermissionId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PermissionPages_PermissionId",
@@ -1571,9 +1624,10 @@ namespace Hoshi.Migrations
                 column: "PromotionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PromotionServices_ServiceId",
+                name: "IX_PromotionServices_ServiceId_PromotionId",
                 table: "PromotionServices",
-                column: "ServiceId");
+                columns: new[] { "ServiceId", "PromotionId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PromotionsTaken_OfferId",
@@ -1611,9 +1665,10 @@ namespace Hoshi.Migrations
                 column: "PermissionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RolePermissions_RoleId",
+                name: "IX_RolePermissions_RoleId_PermissionId",
                 table: "RolePermissions",
-                column: "RoleId");
+                columns: new[] { "RoleId", "PermissionId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ServiceRequestRates_ServiceId",
@@ -1629,11 +1684,6 @@ namespace Hoshi.Migrations
                 name: "IX_Services_ServiceCategoryId",
                 table: "Services",
                 column: "ServiceCategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Services_WorkerSpecificationId",
-                table: "Services",
-                column: "WorkerSpecificationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SuspendedUsers_SuspendReasonId",
@@ -1671,9 +1721,10 @@ namespace Hoshi.Migrations
                 column: "PermissionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserPermissions_UserId",
+                name: "IX_UserPermissions_UserId_PermissionId",
                 table: "UserPermissions",
-                column: "UserId");
+                columns: new[] { "UserId", "PermissionId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkerPaymentHistroys_WorkerId",
@@ -1689,6 +1740,17 @@ namespace Hoshi.Migrations
                 name: "IX_WorkerRejections_WorkerId",
                 table: "WorkerRejections",
                 column: "WorkerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkerServices_ServiceId",
+                table: "WorkerServices",
+                column: "ServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkerServices_WorkerId_ServiceId",
+                table: "WorkerServices",
+                columns: new[] { "WorkerId", "ServiceId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkerSpecifications_JobId",
@@ -1714,7 +1776,8 @@ namespace Hoshi.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_WorkerWallets_WorkerId",
                 table: "WorkerWallets",
-                column: "WorkerId");
+                column: "WorkerId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -1796,6 +1859,9 @@ namespace Hoshi.Migrations
                 name: "OrderStatusHistory");
 
             migrationBuilder.DropTable(
+                name: "PasswordResetRequests");
+
+            migrationBuilder.DropTable(
                 name: "PermissionPages");
 
             migrationBuilder.DropTable(
@@ -1841,6 +1907,12 @@ namespace Hoshi.Migrations
                 name: "WorkerRejections");
 
             migrationBuilder.DropTable(
+                name: "WorkerServices");
+
+            migrationBuilder.DropTable(
+                name: "WorkerSpecifications");
+
+            migrationBuilder.DropTable(
                 name: "WorkerWalletHistories");
 
             migrationBuilder.DropTable(
@@ -1874,25 +1946,22 @@ namespace Hoshi.Migrations
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "Promotions");
-
-            migrationBuilder.DropTable(
-                name: "Services");
-
-            migrationBuilder.DropTable(
-                name: "ServiceCategories");
-
-            migrationBuilder.DropTable(
-                name: "WorkerSpecifications");
-
-            migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Cities");
 
             migrationBuilder.DropTable(
+                name: "Promotions");
+
+            migrationBuilder.DropTable(
+                name: "Services");
+
+            migrationBuilder.DropTable(
                 name: "Jobs");
+
+            migrationBuilder.DropTable(
+                name: "ServiceCategories");
         }
     }
 }

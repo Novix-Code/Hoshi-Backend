@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250724194008_AddWorkerServicesTableAndSomeUpdates")]
-    partial class AddWorkerServicesTableAndSomeUpdates
+    [Migration("20250805115018_AddAllSeeders")]
+    partial class AddAllSeeders
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1618,9 +1618,6 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ImageNumber")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1772,7 +1769,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PromotionId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "PromotionId")
+                        .IsUnique();
 
                     b.ToTable("PromotionServices");
                 });
@@ -1994,7 +1992,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "JobId")
+                        .IsUnique();
 
                     b.ToTable("JobServices");
 
@@ -2354,16 +2353,11 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("WorkerSpecificationId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("JobId");
 
                     b.HasIndex("ServiceCategoryId");
-
-                    b.HasIndex("WorkerSpecificationId");
 
                     b.ToTable("Services");
 
@@ -2959,9 +2953,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PageId");
-
                     b.HasIndex("PermissionId");
+
+                    b.HasIndex("PageId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("PermissionPages");
                 });
@@ -2990,7 +2985,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("RolePermissions");
                 });
@@ -3019,7 +3015,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("UserPermissions");
                 });
@@ -3049,15 +3046,8 @@ namespace Hoshi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double>("Indebtedness")
                         .HasColumnType("float");
-
-                    b.Property<int>("LivingCityId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
@@ -3069,8 +3059,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LivingCityId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -3187,6 +3175,9 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -3211,7 +3202,7 @@ namespace Hoshi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -3235,6 +3226,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -3242,6 +3237,10 @@ namespace Hoshi.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -3287,8 +3286,9 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Code")
-                        .HasColumnType("int");
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -3298,6 +3298,10 @@ namespace Hoshi.Migrations
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("SecreteKey")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -3420,7 +3424,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId", "ServiceId")
+                        .IsUnique();
 
                     b.ToTable("WorkerServices");
                 });
@@ -3448,10 +3453,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IdentityImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -3519,7 +3520,8 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId")
+                        .IsUnique();
 
                     b.ToTable("WorkerWallets");
                 });
@@ -3556,6 +3558,263 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerWalletId");
 
                     b.ToTable("WorkerWalletHistories");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.CitiesViewModel", b =>
+                {
+                    b.Property<string>("CityCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("CitiesgetView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.ClientDetailsModelView", b =>
+                {
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LivingCityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("ClientDetailsView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.JobViewModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("JobView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.NewClient", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("SuspendedWorker", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.OverViewPage", b =>
+                {
+                    b.Property<int>("TotalClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalCompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalOrderIncome")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TotalOrderPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TotalOrders")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalWorkers")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("OverviewView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.PortfolioViewModel", b =>
+                {
+                    b.Property<string>("FileURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("PortfolioView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerDetailsViewModel", b =>
+                {
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdentityImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompany")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LivingCityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("WorkerDetailsView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
+                {
+                    b.Property<double>("AverageOrdering")
+                        .HasColumnType("float");
+
+                    b.Property<int>("totalActiveClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("totalClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("totalNewClients")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("WorkerPageView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.orderViewModelDetails", b =>
+                {
+                    b.Property<int>("CityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<double>("ProposalPrice")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("ServicingDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("TotalClientCost")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("TotalWorkerCost")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("OrdersGetView", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
@@ -4070,11 +4329,6 @@ namespace Hoshi.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", null)
-                        .WithMany("Services")
-                        .HasForeignKey("WorkerSpecificationId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("ServiceCategory");
                 });
 
@@ -4167,19 +4421,11 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.UserModels.ClientSpecification", b =>
                 {
-                    b.HasOne("Hoshi.Models.GlobalModels.City", "LivingCity")
-                        .WithMany()
-                        .HasForeignKey("LivingCityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Hoshi.Models.UserModels.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("LivingCity");
 
                     b.Navigation("User");
                 });
@@ -4403,11 +4649,6 @@ namespace Hoshi.Migrations
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.ServiceCategory", b =>
-                {
-                    b.Navigation("Services");
-                });
-
-            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
                 {
                     b.Navigation("Services");
                 });

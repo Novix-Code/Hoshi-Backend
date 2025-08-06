@@ -1,4 +1,5 @@
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
@@ -7,11 +8,11 @@ namespace Hoshi.Repositories.AuthService
 {
     public interface IAuthService
     {
-        Task<ResultDTO<object>> Register(
+        Task<ResultDTO<UserGetDTO>> Register(
             UserType userType,
             ApplicationUserRegisterRequestDto registerRequestDto
         );
-        Task<ResultDTO<object>> Login(ApplicationUserLoginRequestDto loginRequestDto);
+        Task<ResultDTO<UserGetDTO>> Login(ApplicationUserLoginRequestDto loginRequestDto);
         Task<ResultDTO<string>> Delete(string id);
         Task<ResultDTO<string>> Edit(ApplicationUserEditRequestDto userEditRequestDto);
         Task<ResultDTO<object>> GetAllUsers();

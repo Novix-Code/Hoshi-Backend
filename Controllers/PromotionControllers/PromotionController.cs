@@ -5,6 +5,7 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using Hoshi.Data;
 using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
 using Hoshi.Models.PromotionModels;
+using Hoshi.Repositories.PromotionService;
 
 namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
 {
@@ -18,6 +19,8 @@ namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
         PromotionPostDTO, 
         PromotionPutDTO>
     {
+        private readonly IPromotionService promotionService;
+
         public PromotionController(
             IMapper mapper, 
             IGenericCRUDService<
@@ -25,27 +28,25 @@ namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
                 Promotion, 
                 PromotionGetDTO, 
                 PromotionPostDTO, 
-                PromotionPutDTO> genericCRUDService
+                PromotionPutDTO> genericCRUDService,
+            IPromotionService promotionService
         ) : base(mapper, genericCRUDService)
         {
+            this.promotionService = promotionService;
         }
 
         [EndpointGroupName("Admin")]
-        public override Task<IActionResult> Add(PromotionPostDTO postDTO)
+        public override async Task<IActionResult> Add(PromotionPostDTO postDTO)
         {
-            return base.Add(postDTO);
+            var result = await promotionService.AddPromotion(postDTO);
+            return StatusCode(result.StatusCode, result);
         }
 
         [EndpointGroupName("Admin")]
-        public override Task<IActionResult> AddList(List<PromotionPostDTO> postDTOsList)
+        public override async Task<IActionResult> Update(PromotionPutDTO putDTO)
         {
-            return base.AddList(postDTOsList);
-        }
-
-        [EndpointGroupName("Admin")]
-        public override Task<IActionResult> Update(PromotionPutDTO putDTO)
-        {
-            return base.Update(putDTO);
+            var result = await promotionService.UpdatePromotion(putDTO);
+            return StatusCode(result.StatusCode, result);
         }
 
         [EndpointGroupName("Admin")]
@@ -58,6 +59,12 @@ namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
         public override Task<IActionResult> Restore(int id)
         {
             return base.Restore(id);
+        }
+
+        [NonAction]
+        public override Task<IActionResult> AddList(List<PromotionPostDTO> postDTOsList)
+        {
+            return base.AddList(postDTOsList);
         }
     }
 }

@@ -12,7 +12,6 @@ namespace Hoshi.Models.UserModels.WorkerModels
     public class WorkerSpecification : TimestampedModel
     {
         public string Bio { get; set; } = string.Empty;
-        public string ImageURL { get; set; } = string.Empty;
         public string IdentityImageURL { get; set; } = string.Empty;
 
         public string Address { get; set; } = string.Empty;
@@ -33,7 +32,5 @@ namespace Hoshi.Models.UserModels.WorkerModels
 
         public int JobId { get; set; }
         public Job? Job { get; set; }
-
-        public List<Service>? Services { get; set; }
     }
 }

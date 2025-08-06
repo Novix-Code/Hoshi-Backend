@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250714220237_CreateInitialMigrationForHoshiProject")]
-    partial class CreateInitialMigrationForHoshiProject
+    [Migration("20250805114942_MigrateAllModelsAndViews")]
+    partial class MigrateAllModelsAndViews
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace Hoshi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.AdminNotification", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -57,7 +57,7 @@ namespace Hoshi.Migrations
                     b.ToTable("AdminNotifications");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.AdminNotificationFlag", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotificationFlag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -86,7 +86,7 @@ namespace Hoshi.Migrations
                     b.ToTable("AdminNotificationFlags");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.Archive", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.Archive", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,7 +106,7 @@ namespace Hoshi.Migrations
                     b.ToTable("Archives");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.ArchiveSettings", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.ArchiveSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -125,7 +125,7 @@ namespace Hoshi.Migrations
                     b.ToTable("ArchiveSettings");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.CompanyRevenue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.CompanyRevenue", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -149,7 +149,7 @@ namespace Hoshi.Migrations
                     b.ToTable("CompanyRevenues");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.CategoryRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CategoryRequestRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -173,7 +173,7 @@ namespace Hoshi.Migrations
                     b.ToTable("CategoryRequestRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ComplaintSolvingRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ComplaintSolvingRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -209,7 +209,7 @@ namespace Hoshi.Migrations
                     b.ToTable("ComplaintSolvingRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.CustomerGrowthRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CustomerGrowthRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -231,7 +231,7 @@ namespace Hoshi.Migrations
                     b.ToTable("CustomerGrowthRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.IncomeGrowthRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.IncomeGrowthRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,7 +250,7 @@ namespace Hoshi.Migrations
                     b.ToTable("IncomeGrowthRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatistics", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatistics", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -270,7 +270,7 @@ namespace Hoshi.Migrations
                     b.ToTable("NumericalStatistics");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatisticsValue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -300,7 +300,7 @@ namespace Hoshi.Migrations
                     b.ToTable("NumericalStatisticsValues");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.OrderComplaetionRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.OrderComplaetionRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -330,7 +330,7 @@ namespace Hoshi.Migrations
                     b.ToTable("OrderComplaetionRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ServiceRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ServiceRequestRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -354,7 +354,7 @@ namespace Hoshi.Migrations
                     b.ToTable("ServiceRequestRates");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.TermsAndCondetions", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.TermsAndCondetions", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -500,6 +500,12 @@ namespace Hoshi.Migrations
 
                     b.Property<int?>("FeeType")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSpecial")
+                        .HasColumnType("bit");
 
                     b.Property<double>("MainFees")
                         .HasColumnType("float");
@@ -815,9 +821,6 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ImageNumber")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -873,7 +876,7 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("OrderId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<string>("VisitNote")
@@ -969,7 +972,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PromotionId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "PromotionId")
+                        .IsUnique();
 
                     b.ToTable("PromotionServices");
                 });
@@ -988,7 +992,7 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OfferId")
+                    b.Property<int?>("OfferId")
                         .HasColumnType("int");
 
                     b.Property<int>("OrderId")
@@ -1063,7 +1067,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceId", "JobId")
+                        .IsUnique();
 
                     b.ToTable("JobServices");
                 });
@@ -1099,16 +1104,11 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("WorkerSpecificationId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("JobId");
 
                     b.HasIndex("ServiceCategoryId");
-
-                    b.HasIndex("WorkerSpecificationId");
 
                     b.ToTable("Services");
                 });
@@ -1121,6 +1121,10 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1129,10 +1133,6 @@ namespace Hoshi.Migrations
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("ServiveName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -1247,9 +1247,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PageId");
-
                     b.HasIndex("PermissionId");
+
+                    b.HasIndex("PageId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("PermissionPages");
                 });
@@ -1278,7 +1279,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("RolePermissions");
                 });
@@ -1307,7 +1309,8 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "PermissionId")
+                        .IsUnique();
 
                     b.ToTable("UserPermissions");
                 });
@@ -1337,15 +1340,8 @@ namespace Hoshi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double>("Indebtedness")
                         .HasColumnType("float");
-
-                    b.Property<int>("LivingCityId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
@@ -1358,12 +1354,38 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LivingCityId");
-
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("ClientSpecifications");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.UserModels.Resets.PasswordResetRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ResetToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetRequests");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.SuspendReason", b =>
@@ -1443,6 +1465,13 @@ namespace Hoshi.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1467,7 +1496,7 @@ namespace Hoshi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -1479,7 +1508,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UserCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
@@ -1492,6 +1520,10 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -1499,6 +1531,10 @@ namespace Hoshi.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -1544,8 +1580,9 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Code")
-                        .HasColumnType("int");
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -1555,6 +1592,10 @@ namespace Hoshi.Migrations
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("SecreteKey")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -1653,6 +1694,36 @@ namespace Hoshi.Migrations
                     b.ToTable("WorkerRejections");
                 });
 
+            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("WorkerId", "ServiceId")
+                        .IsUnique();
+
+                    b.ToTable("WorkerServices");
+                });
+
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
                 {
                     b.Property<int>("Id")
@@ -1676,10 +1747,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IdentityImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -1747,7 +1814,8 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerId")
+                        .IsUnique();
 
                     b.ToTable("WorkerWallets");
                 });
@@ -1784,6 +1852,263 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerWalletId");
 
                     b.ToTable("WorkerWalletHistories");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.CitiesViewModel", b =>
+                {
+                    b.Property<string>("CityCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("CitiesgetView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.ClientDetailsModelView", b =>
+                {
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LivingCityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("ClientDetailsView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.JobViewModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("JobView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.NewClient", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("SuspendedWorker", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.OverViewPage", b =>
+                {
+                    b.Property<int>("TotalClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalCompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalOrderIncome")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TotalOrderPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TotalOrders")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalWorkers")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("OverviewView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.PortfolioViewModel", b =>
+                {
+                    b.Property<string>("FileURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("PortfolioView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerDetailsViewModel", b =>
+                {
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdentityImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompany")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LivingCityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("WorkerDetailsView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
+                {
+                    b.Property<double>("AverageOrdering")
+                        .HasColumnType("float");
+
+                    b.Property<int>("totalActiveClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("totalClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("totalNewClients")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("WorkerPageView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.orderViewModelDetails", b =>
+                {
+                    b.Property<int>("CityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<double>("ProposalPrice")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("ServicingDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("TotalClientCost")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("TotalWorkerCost")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("OrdersGetView", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
@@ -1944,7 +2269,7 @@ namespace Hoshi.Migrations
                     b.HasDiscriminator().HasValue("Role");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.AdminNotification", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotification", b =>
                 {
                     b.HasOne("Hoshi.Models.UserModels.User", "Admin")
                         .WithMany()
@@ -1955,7 +2280,7 @@ namespace Hoshi.Migrations
                     b.Navigation("Admin");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.CompanyRevenue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.CompanyRevenue", b =>
                 {
                     b.HasOne("Hoshi.Models.OrderModels.Order", "Order")
                         .WithMany()
@@ -1966,7 +2291,7 @@ namespace Hoshi.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.CategoryRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CategoryRequestRate", b =>
                 {
                     b.HasOne("Hoshi.Models.ServiceModels.ServiceCategory", "ServiceCategory")
                         .WithMany()
@@ -1977,7 +2302,7 @@ namespace Hoshi.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ComplaintSolvingRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ComplaintSolvingRate", b =>
                 {
                     b.HasOne("Hoshi.Models.GlobalModels.ComplaintType", "ComplaintType")
                         .WithMany()
@@ -1988,9 +2313,9 @@ namespace Hoshi.Migrations
                     b.Navigation("ComplaintType");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatisticsValue", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", b =>
                 {
-                    b.HasOne("Hoshi.Models.DashboardMdoels.StatisticsModels.NumericalStatisticsValue", "LastValue")
+                    b.HasOne("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", "LastValue")
                         .WithMany()
                         .HasForeignKey("LastValueId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -1998,7 +2323,7 @@ namespace Hoshi.Migrations
                     b.Navigation("LastValue");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.OrderComplaetionRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.OrderComplaetionRate", b =>
                 {
                     b.HasOne("Hoshi.Models.ServiceModels.ServiceCategory", "ServiceCategory")
                         .WithMany()
@@ -2009,7 +2334,7 @@ namespace Hoshi.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("Hoshi.Models.DashboardMdoels.StatisticsModels.ServiceRequestRate", b =>
+            modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ServiceRequestRate", b =>
                 {
                     b.HasOne("Hoshi.Models.ServiceModels.Service", "Service")
                         .WithMany()
@@ -2204,10 +2529,13 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.OrderVisit", b =>
                 {
-                    b.HasOne("Hoshi.Models.OrderModels.Order", null)
+                    b.HasOne("Hoshi.Models.OrderModels.Order", "Order")
                         .WithMany("OrderVisits")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.PromotionService", b =>
@@ -2234,8 +2562,7 @@ namespace Hoshi.Migrations
                     b.HasOne("Hoshi.Models.OrderModels.Offer", "Offer")
                         .WithMany()
                         .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Hoshi.Models.OrderModels.Order", "Order")
                         .WithMany()
@@ -2295,11 +2622,6 @@ namespace Hoshi.Migrations
                         .HasForeignKey("ServiceCategoryId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.HasOne("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", null)
-                        .WithMany("Services")
-                        .HasForeignKey("WorkerSpecificationId")
-                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("ServiceCategory");
                 });
@@ -2393,19 +2715,22 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.UserModels.ClientSpecification", b =>
                 {
-                    b.HasOne("Hoshi.Models.GlobalModels.City", "LivingCity")
-                        .WithMany()
-                        .HasForeignKey("LivingCityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Hoshi.Models.UserModels.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("LivingCity");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.UserModels.Resets.PasswordResetRequest", b =>
+                {
+                    b.HasOne("Hoshi.Models.UserModels.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -2480,6 +2805,25 @@ namespace Hoshi.Migrations
                         .HasForeignKey("WorkerId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Worker");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerService", b =>
+                {
+                    b.HasOne("Hoshi.Models.ServiceModels.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Hoshi.Models.UserModels.User", "Worker")
+                        .WithMany()
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Service");
 
                     b.Navigation("Worker");
                 });
@@ -2599,11 +2943,6 @@ namespace Hoshi.Migrations
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.ServiceCategory", b =>
-                {
-                    b.Navigation("Services");
-                });
-
-            modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
                 {
                     b.Navigation("Services");
                 });

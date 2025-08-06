@@ -58,7 +58,7 @@ namespace Hoshi.Controllers.UserControllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto requestDto)
         {
             var response = await authService.ResetPasswordAsync(requestDto);
-            await emailService.SendVerifivationCode(requestDto.Email);
+            await emailService.ReSetOtp(requestDto.Email);
             return StatusCode((int)response.StatusCode, response);
         }
 
@@ -68,28 +68,30 @@ namespace Hoshi.Controllers.UserControllers
         /// <param name="request">Worker application details</param>
         /// <returns>Result of the application submission</returns>
         [HttpPost("be-worker")]
-        [Authorize]
-        public async Task<IActionResult> BeWorker([FromBody] BeWorkerRequestDTO request)
+        //[Authorize]
+        public async Task<IActionResult> BeWorker([FromForm] BeWorkerRequestDTO request)
         {
             // Get user ID from JWT token
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int tokenUserId))
-            {
-                return Unauthorized(new
-                {
-                    ErrorAr = "غير مصرح بالوصول.",
-                    ErrorEn = "Unauthorized access."
-                });
-            }
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int tokenUserId))
+            //{
+            //    return Unauthorized(new
+            //    {
+            //        ErrorAr = "غير مصرح بالوصول.",
+            //        ErrorEn = "Unauthorized access."
+            //    });
+            //}
 
-            // Ensure the user can only apply for themselves
-            if (request.UserId != tokenUserId)
-                return Forbid();
+            //// Ensure the user can only apply for themselves
+            //if (request.UserId != tokenUserId)
+            //    return Forbid();
             
 
             var result = await authService.BeWorkerAsync(request);
-            return StatusCode((int)result.StatusCode, result);
+            return StatusCode(result.StatusCode, result);
         }
+        
+        
 
         [HttpPost("logout")]
         [Authorize]
@@ -121,6 +123,24 @@ namespace Hoshi.Controllers.UserControllers
             var serviceResponse = await authService.Delete(id);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
+        [HttpPost("CheckOTP")]
+        public async Task<IActionResult> otpResult(string otp, string id)
+        {
+            var response = await emailService.checkOTPVerfication(otp, id);
+            return StatusCode(response.StatusCode, response);
+        }
+        [HttpPost("reset-OTP")]
+        public async Task<IActionResult> resetOtp(string Email)
+        {
+            var repsonse = await emailService.ReSetOtp(Email);
+            return StatusCode(repsonse.StatusCode, Response);
+        }
 
+        [HttpGet("get-all-admins-with-roles-and-permissions")]
+        public async Task<IActionResult> GetAllAdminsWithRolesAndPermissionsAsync()
+        {
+            var response = await userService.GetAllAdminsWithRolesAndPermissionsAsync();
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
