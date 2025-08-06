@@ -45,9 +45,9 @@ namespace Hoshi.Repositories.WorkerSpecificationService
             try
             {
                 WorkerSpecification? workerSpecification = await context.Set<WorkerSpecification>()
-                    .Include(nameof(WorkerSpecification.User))
-                    .Include(nameof(WorkerSpecification.Job))
-                    .Include(nameof(WorkerSpecification.LivingCity))
+                    .Include(p=>p.User)
+                    .Include(j=>j.Job)
+                    .Include(l=>l.LivingCity)
                     .FirstOrDefaultAsync( x => x.UserId == userId);
 
                 if (workerSpecification == null)

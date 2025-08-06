@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250805115018_AddAllSeeders")]
-    partial class AddAllSeeders
+    [Migration("20250806213059_createAllModels")]
+    partial class createAllModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

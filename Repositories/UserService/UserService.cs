@@ -78,6 +78,7 @@ namespace Hoshi.Repositories.UserService
 
                 if (isUpdate)
                 {
+                    if(user.ImageURL !=null)
                     _fileService.DeleteFile(user.ImageURL!);
                 }
 
@@ -227,7 +228,7 @@ namespace Hoshi.Repositories.UserService
         }
 
         public async Task<ResultDTO<object>> DashbordWorkerDetails(int id)
-        {
+            {
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == id);
             if (workerDetails == null)
             {
