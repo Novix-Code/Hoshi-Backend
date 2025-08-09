@@ -187,9 +187,9 @@ namespace Hoshi.Repositories.UserService
         {
             var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
             if (targetClient == null)
-                return ResultDTO<object>.Failure(new ErrorDTO() , ResponseStatusCodes.NotFound);
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "client not found"} , ResponseStatusCodes.NotFound);
 
-            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == targetClient.LivingCityId);
+           
             var targetOrders = await _context.OrdersGetView
                 .Where(p => p.ClientId == Id)
                 .ToListAsync();
@@ -200,7 +200,6 @@ namespace Hoshi.Repositories.UserService
                 Email = targetClient.Email,
                 Phone = targetClient.PhoneNumber,
                 Location = targetClient.Address,
-                City = targetCity,
                 Orders = targetOrders,
             };
             return ResultDTO<object>.Success(result);
@@ -272,12 +271,7 @@ namespace Hoshi.Repositories.UserService
             var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.ClientId);
             if (targetClient == null)
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr="Client Not Found"}, ResponseStatusCodes.NotFound);
-            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == targetClient.LivingCityId);
-            if (targetCity == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "City Not Found" }, ResponseStatusCodes.NotFound);
-
-            }
+        
             var targetOffer = await _context.Offers.FirstOrDefaultAsync(p=>p.OrderId == id);
             var targetimages = await _context.Orders.Where(p => p.Id == id).Select(p => p.OrderImages).ToListAsync();
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.WorkerId);
@@ -296,7 +290,7 @@ namespace Hoshi.Repositories.UserService
                 ClientData = clientData,
                 Description= TargetOrder.Description , 
                 OrderStatus= TargetOrder.OrderStatus , 
-                City       = targetCity,
+                Adress       = targetClient.Address,
                 Location   = TargetOrder.Location ,
                 ServicingDatetime = TargetOrder.ServicingDateTime ,
                 OfferedPrice        = targetOffer.OfferedPrice,
