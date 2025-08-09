@@ -13,10 +13,13 @@ namespace Hoshi.Repositories.FileServiceFold
 
         public bool DeleteFile(string fileURL)
         {
+            // get correct path
+            fileURL = fileURL.Replace("/", Path.DirectorySeparatorChar.ToString());
+
             string fileFullPath = Path.Combine(_environment.WebRootPath, fileURL);
             string trashFolderPath = Path.Combine(_environment.WebRootPath, "trash");
 
-            if (!Directory.Exists(trashFolderPath)) 
+            if (!Directory.Exists(trashFolderPath))
                 Directory.CreateDirectory(trashFolderPath);
 
             if (File.Exists(fileFullPath))
@@ -33,10 +36,10 @@ namespace Hoshi.Repositories.FileServiceFold
                 return true;
             }
 
-
             return false;
         }
-        
+
+
         public async Task<Tuple<bool, string>> SaveFileAsync(IFormFile file, string folderShortPath)
         {
             if (file?.Length == 0 || file == null)
@@ -65,7 +68,7 @@ namespace Hoshi.Repositories.FileServiceFold
                 await file.CopyToAsync(fileStream);
             }
 
-            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName));
+            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName).Replace("\\" ,"/"));
         }
 
         public bool ValidateFileExtension(IFormFile file)

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class createAllModels : Migration
+    public partial class createAllModelsfortet : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -145,6 +145,21 @@ namespace Hoshi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Connections",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ConnectionId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ConnectedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Connections", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CustomerGrowthRates",
                 columns: table => new
                 {
@@ -187,6 +202,23 @@ namespace Hoshi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Jobs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SenderId = table.Column<int>(type: "int", nullable: false),
+                    ReceiverId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -2083,6 +2115,9 @@ namespace Hoshi.Migrations
                 name: "ComplaintSolvingRates");
 
             migrationBuilder.DropTable(
+                name: "Connections");
+
+            migrationBuilder.DropTable(
                 name: "CustomerGrowthRates");
 
             migrationBuilder.DropTable(
@@ -2096,6 +2131,9 @@ namespace Hoshi.Migrations
 
             migrationBuilder.DropTable(
                 name: "JobServices");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "NumericalStatistics");

@@ -9,6 +9,7 @@ using Hoshi.DTOs.OrderDTOs.OrderStatusHistoryDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionTakenDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
+using Hoshi.Enums;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.PromotionModels;
@@ -112,13 +113,101 @@ namespace Hoshi.Repositories.ClientOrderService
         public async Task<ResultDTO<string>> DeleteOrder(int orderId)
         {
             var targetOrder = await _Context.Orders.FindAsync(orderId);
-            targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
-            await _Context.SaveChangesAsync();
-            // send Notification
-            await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-            await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+            // check if order is published
 
-            return ResultDTO<string>.Success("Successfully deleted");
+            if (targetOrder.OrderStatus == Enums.OrderStatus.Cancelled)
+            {
+                return ResultDTO<string>.Failure(new ErrorDTO { ErrorEn = "this order is already deleted" ,
+                                                                ErrorAr = "العرض تم حذفه بالفعل"} , ResponseStatusCodes.BadRequest);
+
+            }
+            
+            if(targetOrder.OrderStatus == Enums.OrderStatus.Assigned)
+            {
+                var befor12H = targetOrder.ServicingDateTime.AddHours(-12);
+                var after12H = targetOrder.ServicingDateTime.AddHours(12);
+                // check if the time before 12 hours of working
+                if(DateTime.UtcNow <= befor12H)
+                {
+                    targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
+                    _Context.Orders.Update(targetOrder);
+                    await _Context.SaveChangesAsync();
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
+                    await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+                    return ResultDTO<string>.Success("Successfully deleted");
+                }
+                // here check if after 12 hours from data of work the we will calculate the 
+                if (DateTime.UtcNow >= after12H) 
+                {
+
+                    double ClientIndebtFee = await _Context.Fees
+                        .Where(f => f.ServiceId == targetOrder.ServiceId && f.FeeType == FeeType.ClientIndebtednessFee && !f.IsSpecial)
+                        .Select(f => f.MainFees)
+                        .FirstOrDefaultAsync();
+                    var clientDetails = await _Context.ClientSpecifications.
+                        FirstOrDefaultAsync(p => p.UserId == targetOrder.ClientId);
+                    if (clientDetails == null) 
+                    {
+                        return ResultDTO<string>.Failure(new ErrorDTO { ErrorEn = "client Specification not found", 
+                            ErrorAr = "بيانات العميل لم يتم ادخالها بعد" }, ResponseStatusCodes.NotFound);
+                    }
+                    var workerWallet = await _Context.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == targetOrder.WorkerId);
+                    if (workerWallet == null)
+                    {
+                        return ResultDTO<string>.NotFound(new ErrorDTO
+                        {
+                            ErrorAr = "محفظة العامل غير موجودة.",
+                            ErrorEn = "Worker wallet not found."
+                        });
+                    }
+                    if (clientDetails.Balance < ClientIndebtFee)
+                    {
+                        // the balance is not enough
+                        // first add the amount in indept of client
+                        clientDetails.Indebtedness += ClientIndebtFee;
+                    }
+                    else
+                    {
+                        clientDetails.Balance -= ClientIndebtFee;
+                    }
+                    // add the amount to worker wallet
+                    workerWallet.Balance += ClientIndebtFee;
+                    _Context.WorkerWallets.Update(workerWallet);
+                    _Context.ClientSpecifications.Update(clientDetails);
+                    targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
+                    _Context.Orders.Update(targetOrder);    
+                    await _Context.SaveChangesAsync();
+                    // send notification with indept
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
+                    await notificationServiceHandler.sendMessagetoWorker($"قام العميل بإلغاء الطلب وقيمه الغرامه هي : {ClientIndebtFee}", (int)targetOrder.WorkerId);
+                    return ResultDTO<string>.Success("Successfully deleted");
+
+                }
+                else
+                {
+                    targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
+                    _Context.Orders.Update(targetOrder);
+                    await _Context.SaveChangesAsync();
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
+                    await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+                    return ResultDTO<string>.Success("Successfully deleted");
+                }
+
+
+              
+
+            }
+            else
+            {
+                
+                targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
+                await _Context.SaveChangesAsync();
+                await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
+                await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+                return ResultDTO<string>.Success("Successfully deleted");
+
+                
+            }
         }
 
         public async Task<ResultDTO<List<OrderGetAllDto>>> GetAllClientsAsync()

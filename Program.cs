@@ -103,8 +103,6 @@ public class Program
 
         builder.Services.AddIdentity<User, IdentityRole<int>>().AddEntityFrameworkStores<HoshiDbContext>();
 
-
-        // Configure JWT Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -126,10 +124,8 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ClockSkew = TimeSpan.Zero,
                 NameClaimType = ClaimTypes.NameIdentifier
-
             };
 
-            // Configure SignalR to use JWT tokens
             options.Events = new JwtBearerEvents
             {
                 OnMessageReceived = context =>
@@ -146,26 +142,8 @@ public class Program
             };
         });
 
-        // Dependence Injection of Generic CRUD Library Services:
 
-            // Inject Generic CRUD Service to be used correctly in controllers.
-            var configuration = builder.Configuration;
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = configuration["Jwt:Issuer"],
-                        ValidAudience = configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
-                    };
-                });
-
-            builder.Services.AddTransient(
+        builder.Services.AddTransient(
                 typeof(IGenericCRUDService<,,,,>),
                 typeof(GenericCRUDService<,,,,>)
             );
