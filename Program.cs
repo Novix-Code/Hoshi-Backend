@@ -103,8 +103,6 @@ public class Program
 
         builder.Services.AddIdentity<User, IdentityRole<int>>().AddEntityFrameworkStores<HoshiDbContext>();
 
-
-        // Configure JWT Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -126,10 +124,8 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ClockSkew = TimeSpan.Zero,
                 NameClaimType = ClaimTypes.NameIdentifier
-
             };
 
-            // Configure SignalR to use JWT tokens
             options.Events = new JwtBearerEvents
             {
                 OnMessageReceived = context =>
@@ -146,26 +142,8 @@ public class Program
             };
         });
 
-        // Dependence Injection of Generic CRUD Library Services:
 
-            // Inject Generic CRUD Service to be used correctly in controllers.
-            var configuration = builder.Configuration;
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = configuration["Jwt:Issuer"],
-                        ValidAudience = configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
-                    };
-                });
-
-            builder.Services.AddTransient(
+        builder.Services.AddTransient(
                 typeof(IGenericCRUDService<,,,,>),
                 typeof(GenericCRUDService<,,,,>)
             );
@@ -233,19 +211,19 @@ public class Program
             var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        //if (app.Environment.IsDevelopment())
-        //{
+        if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+        {
             app.UseSwagger();
             app.UseSwaggerUI(op =>
             {
-					op.SwaggerEndpoint("/swagger/Worker/swagger.json", "Worker APIs");
+                op.SwaggerEndpoint("/swagger/Worker/swagger.json", "Worker APIs");
 
-					op.SwaggerEndpoint("/swagger/Client/swagger.json", "Client APIs");
+                op.SwaggerEndpoint("/swagger/Client/swagger.json", "Client APIs");
 
-					op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
+                op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
 
                 op.DocumentTitle = "Hoshi - Swagger";
-
+                op.RoutePrefix = string.Empty;
                 // This options to make swagger more easy to use.
                 // Make all endpoints ready to use directly when it open, you don't need to press on "Try It Out" button any more.
                 op.EnableTryItOutByDefault();
@@ -254,7 +232,8 @@ public class Program
                 // Make all Endpoints and Controllers Collapse
                 op.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
             });
-        //}
+        }
+
 
         app.UseHttpsRedirection();
 

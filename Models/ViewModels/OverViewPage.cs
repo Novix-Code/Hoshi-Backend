@@ -11,7 +11,7 @@ namespace Hoshi.Models.ViewModels
         public int TotalWorkers { get; set; }
         public int TotalOrders { get; set; }
         public int TotalCompletedOrders { get; set; }
-        public decimal? TotalOrderIncome { get; set; }
-        public decimal? TotalOrderPrice { get; set; }
+        public double? TotalOrderIncome { get; set; }
+        public double? TotalOrderPrice { get; set; }
     }
 }
