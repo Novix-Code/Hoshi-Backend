@@ -108,6 +108,11 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> BeWorkerApproved(int Id)
         {
             var tergetWorkerSpecif = await _context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
+            if( tergetWorkerSpecif == null)
+            {
+                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn = "worker Specification not found" 
+                    ,ErrorAr="لم يتم اضافة بيانات للعامل بعد"});
+            }
             tergetWorkerSpecif.IsApproved = true;
             // handle add notifications 
             var checkexcist = await _context.NotificationTypes.Where(p=>p.Type == "Success Message").Select(p=>p.Id).FirstOrDefaultAsync(); 
@@ -126,6 +131,7 @@ namespace Hoshi.Repositories.UserService
                     Description = "success Message",
                     UserId = Id
                 });
+                _context.WorkerSpecifications.Update(tergetWorkerSpecif);
                 await _context.SaveChangesAsync();
                 return ResultDTO<object>.Success("Worker is now approved");
 
@@ -138,6 +144,7 @@ namespace Hoshi.Repositories.UserService
                     Description = "success Message",
                     UserId = Id
                 });
+                _context.WorkerSpecifications.Update(tergetWorkerSpecif);
                 await _context.SaveChangesAsync();
                 return ResultDTO<object>.Success("Worker is now approved");
             }
@@ -147,6 +154,15 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> BeWorkerReject(int Id, string rejectResoun)
         {
             var tergetWorkerSpecif = await _context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
+            if (tergetWorkerSpecif == null)
+            {
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker Specification not found"
+                    ,
+                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
+                });
+            }
             tergetWorkerSpecif.IsApproved = false;
             await _context.SaveChangesAsync();
             var checkexcist = await _context.NotificationTypes.Where(p => p.Type == "Reject Message").Select(p => p.Id).FirstOrDefaultAsync();
@@ -166,6 +182,7 @@ namespace Hoshi.Repositories.UserService
                     Description = rejectResoun,
                     UserId = Id
                 });
+                _context.WorkerSpecifications.Update(tergetWorkerSpecif);
                 await _context.SaveChangesAsync();
                 return ResultDTO<object>.Success("Worker is now Rejected");
 
@@ -178,6 +195,7 @@ namespace Hoshi.Repositories.UserService
                     Description = rejectResoun,
                     UserId = Id
                 });
+                _context.WorkerSpecifications.Update(tergetWorkerSpecif);
                 await _context.SaveChangesAsync();
                 return ResultDTO<object>.Success("Worker is now Rejected");
             }
@@ -229,9 +247,17 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> DashbordWorkerDetails(int id)
             {
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == id);
+
             if (workerDetails == null)
             {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker Specification not found"
+                    ,
+                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
+                });
+                
             }
             var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
             var targetPortfolios = await _context.PortfolioView.Where(p => p.WorkerId == id).ToListAsync();
@@ -273,11 +299,38 @@ namespace Hoshi.Repositories.UserService
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr="Client Not Found"}, ResponseStatusCodes.NotFound);
         
             var targetOffer = await _context.Offers.FirstOrDefaultAsync(p=>p.OrderId == id);
+            if (targetOffer == null)
+                return ResultDTO<object>.NotFound(new ErrorDTO {ErrorEn="offered Not Found",
+                                                                ErrorAr="لا يوجد عروض على هذا الطلب"});
             var targetimages = await _context.Orders.Where(p => p.Id == id).Select(p => p.OrderImages).ToListAsync();
+            if(targetimages == null)
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "Order Image Not Found",
+                    ErrorAr = "لا يوجد صور لهذا الطلب"
+                });
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.WorkerId);
+            if (workerDetails == null)
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "Worker Not Found",
+                    ErrorAr = "لم يتم تحديد عامل لهذا العرض"
+                });
             var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
+            if (targetJob == null)
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker Job Not Found",
+                    ErrorAr = "لم يتم  اضافة وظيفة للعامل بعد"
+                });
             var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled).CountAsync();
             var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == TargetOrder.WorkerId);
+            if (targetwallet == null)
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker wallet not found",
+                    ErrorAr = "لم يتم اضافة محفظه للعالم"
+                });
             var clientData = new
             {
                 ImageURL = targetClient.ImageURL,
@@ -465,5 +518,7 @@ namespace Hoshi.Repositories.UserService
             }
             return ResultDTO<List<AdminWithRolesAndPermissionsDTO>>.Success(result);
         }
+
+
     }
 }
