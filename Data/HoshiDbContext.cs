@@ -132,6 +132,7 @@ namespace Hoshi.Data
         public DbSet<OrderVisit> OrderVisits { get; set; }
         public DbSet<Offer> Offers { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<TempInvoice> TempInvoices { get; set; }
 
         // Promotion Models
         public DbSet<Promotion> Promotions { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace Hoshi.Data.ChatDTOs;
+﻿namespace Hoshi.DTOs.ChatDTOs;
 
 /// <summary>
 /// DTO for chat messages
@@ -18,7 +18,7 @@ public class MessageChatDTO
     /// <summary>
     /// The ID of the user who should receive the message
     /// </summary>
-    public int ReceiverId { get; set; } 
+    public int ReceiverId { get; set; }
 
     /// <summary>
     /// The content of the message

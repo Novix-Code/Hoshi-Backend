@@ -1,5 +1,5 @@
 ﻿using Hoshi.Data;
-using Hoshi.Data.ChatDTOs;
+using Hoshi.DTOs.ChatDTOs;
 using Hoshi.Models.ChatModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
