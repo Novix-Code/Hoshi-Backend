@@ -323,9 +323,19 @@ namespace Hoshi.Repositories.AuthService
 
                     await _context.Set<ClientSpecification>().AddAsync(clientSpecification);
                 }
+                if (userType is UserType.Worker)
+                {
+                    WorkerSpecification workerSpecification = new WorkerSpecification
+                    {
+                        UserId = applicationUser.Id
+                        
+                    };
+                    await _context.Set<WorkerSpecification>().AddAsync(workerSpecification);
+
+                }
 
 
-                var token = await _tokenService.CreateTokenAsync(applicationUser);
+                    var token = await _tokenService.CreateTokenAsync(applicationUser);
                 await _context.SaveChangesAsync();
 
                 /// Handle Send Notification for admin that there are new worker registered

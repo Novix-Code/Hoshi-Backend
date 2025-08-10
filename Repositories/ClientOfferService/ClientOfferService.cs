@@ -40,7 +40,7 @@ namespace Hoshi.Repositories.ClientOfferService
             {
                 return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
             }
-            var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).FirstOrDefaultAsync();
+            var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).Include(p=>p.Job).FirstOrDefaultAsync();
             if (workerSpecificationTarget == null)
             {
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);

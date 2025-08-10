@@ -15,8 +15,8 @@ namespace Hoshi.Models.UserModels.WorkerModels
         public string IdentityImageURL { get; set; } = string.Empty;
 
         public string Address { get; set; } = string.Empty;
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public double Latitude { get; set; } = 0.0;
+        public double Longitude { get; set; } = 0.0;
 
         public int CompletedOrders { get; set; } = 0;
         public double RateRito { get; set; } = 0.0;
@@ -27,10 +27,10 @@ namespace Hoshi.Models.UserModels.WorkerModels
         public int UserId { get; set; }
         public User? User { get; set; }
 
-        public int LivingCityId { get; set; }
+        public int LivingCityId { get; set; } = 1;
         public City? LivingCity { get; set; }
 
-        public int JobId { get; set; }
+        public int JobId { get; set; } = 1;
         public Job? Job { get; set; }
     }
 }
