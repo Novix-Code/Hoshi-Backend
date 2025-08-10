@@ -49,65 +49,64 @@ namespace Hoshi.Repositories.ClientOrderService
             _hubContext = hubContext;
             this.notificationServiceHandler = notificationServiceHandler;
         }
-        public async Task<ResultDTO<string>> AddOrderAsync(OrderPostDTO dto)
+        public async Task<ResultDTO<object>> AddOrderAsync(OrderPostDTO dto)
         {
-            ErrorDTO error = new ErrorDTO();
 
-            try
+            var orderMapper = _mapper.Map<Order>(dto);
+            await _Context.Orders.AddAsync(orderMapper);
+            var clientSpecificationDetails = await _Context.ClientSpecifications.FirstOrDefaultAsync(p => p.UserId == dto.ClientId);
+            if (clientSpecificationDetails is null)
             {
-                var orderMapper = _mapper.Map<Order>(dto);
-                _Context.Orders.Add(orderMapper);
-                await _Context.SaveChangesAsync();
+                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "بيانات العميل لم يتم ادخالها"
+                                                                , ErrorEn = "Client specification not found" });
+            }    
+            await _Context.SaveChangesAsync();
+                
+            var histOrder = new OrderStatusHistoryPostDTO
+            {
+                CreatedAt = DateTime.Now,
+                OrderId = orderMapper.Id,
+                OrderStatus = orderMapper.OrderStatus
+            };
+            var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
+            var invoicMapper = new Invoice
+            {
+                OrderId = orderMapper.Id
+            };
+            if (clientSpecificationDetails.Indebtedness >0)
+                invoicMapper.ClientIndebtednessFee = clientSpecificationDetails.Indebtedness;
+            if (clientSpecificationDetails.Balance>0)
+                invoicMapper.ClientPromotionFee = clientSpecificationDetails.Balance;
 
-                var histOrder = new OrderStatusHistoryPostDTO
+            _Context.Invoices.Add(invoicMapper);
+            _Context.OrderStatusHistory.Add(histMapper);
+
+            var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
+            var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
+
+            //var _offerId = await _Context.Offers.Where(p => p.OrderId == orderMapper.Id).Select(p => (int?)p.Id).FirstOrDefaultAsync();
+
+            if (slectedPromotionId is not 0)
+            {
+                var promotionOrder = new PromotionTakenPostDTO
                 {
-                    CreatedAt = DateTime.Now,
+                    UserId = dto.ClientId,
                     OrderId = orderMapper.Id,
-                    OrderStatus = orderMapper.OrderStatus
+                    OfferId = null,
+                    PromotionId = slectedPromotionId
                 };
-                var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
-
-                var invoicMapper = new Invoice
-                {
-                    OrderId = orderMapper.Id
-                };
-
-                _Context.Invoices.Add(invoicMapper);
-                _Context.OrderStatusHistory.Add(histMapper);
-
-                var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
-                var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
-
-                //var _offerId = await _Context.Offers.Where(p => p.OrderId == orderMapper.Id).Select(p => (int?)p.Id).FirstOrDefaultAsync();
-
-                if (slectedPromotionId is not 0)
-                {
-                    var promotionOrder = new PromotionTakenPostDTO
-                    {
-                        UserId = dto.ClientId,
-                        OrderId = orderMapper.Id,
-                        OfferId = null,
-                        PromotionId = slectedPromotionId
-                    };
-                    var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
-                    _Context.PromotionsTaken.Add(promotionMapper);
-                }
-
-                // Add order images
-                if (!dto.OrderImagesFiles.IsNullOrEmpty())
-                    await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
-                await _Context.SaveChangesAsync();
-                // send Notification
-                await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة اوردر" , orderMapper.Id);
-                return ResultDTO<string>.Success(orderMapper.Id.ToString());
+                var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
+                _Context.PromotionsTaken.Add(promotionMapper);
             }
-            catch (Exception ex)
-            {
-                error.ErrorAr = "يوجد مشكلة في عملية الاضافة.";
-                error.ErrorEn = "There is a problem in Adding proccess.";
 
-                return ResultDTO<string>.InternalServerError(error, ex.InnerException!.Message);
-            }
+            // Add order images
+            if (!dto.OrderImagesFiles.IsNullOrEmpty())
+                await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
+            await _Context.SaveChangesAsync();
+            // send Notification
+            await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة اوردر" , orderMapper.Id);
+            return ResultDTO<object>.Success(orderMapper.Id.ToString());
+            
         }
 
         public async Task<ResultDTO<string>> DeleteOrder(int orderId)
