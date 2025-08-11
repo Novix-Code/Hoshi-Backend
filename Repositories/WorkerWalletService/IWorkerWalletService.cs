@@ -7,5 +7,7 @@ namespace Hoshi.Repositories.WorkerWalletService
     {
         Task<ResultDTO<WorkerWalletResponseDTO>> GetWorkerWalletAsync(int workerId);
         Task<ResultDTO<string>> AddPaymentAsync(int workerId, AddPaymentRequestDTO request);
+        Task AddToWalletAsync(int workerId, double amount, string title);
+        Task DeductFromWalletAsync(int workerId, double amount, string title);
     }
 }

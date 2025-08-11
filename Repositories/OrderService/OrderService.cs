@@ -14,6 +14,7 @@ using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.NotificationService;
+using Hoshi.Repositories.WorkerWalletService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,13 +26,15 @@ namespace Hoshi.Repositories.OrderService
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
         private readonly INotificationServiceHandler notificationServiceHandler;
+        private readonly IWorkerWalletService WalletService;
 
 
-        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationServiceHandler notificationServiceHandler)
+        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationServiceHandler notificationServiceHandler, IWorkerWalletService walletService)
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
             _hubContext = hubContext;
+            WalletService = walletService;
             this.notificationServiceHandler = notificationServiceHandler;
         }
 
@@ -183,6 +186,9 @@ namespace Hoshi.Repositories.OrderService
 
                 double totalClientCost = invoices.Sum(i => i.ClientTotalPrice);
                 double totalWorkerCost = invoices.Sum(i => i.WorkerTotalPrice);
+
+
+
                 double totalCommission = invoices.Sum(i => i.CommissionFee);
                 double totalIndebtednessFee = invoices.Sum(i => i.ClientIndebtednessFee);
 
@@ -293,6 +299,18 @@ namespace Hoshi.Repositories.OrderService
                         client.Balance = 0;
                         client.Indebtedness += remaining;
                     }
+                }
+
+                //  Wallet difference adjustment
+                if (totalClientCost > totalWorkerCost)
+                {
+                    var diff = totalClientCost - totalWorkerCost;
+                    await WalletService.DeductFromWalletAsync(worker.Id, diff, "فرق بين العميل والعامل");
+                }
+                else if (totalWorkerCost > totalClientCost)
+                {
+                    var diff = totalWorkerCost - totalClientCost;
+                    await WalletService.AddToWalletAsync(worker.Id, diff, "فرق بين العامل والعميل");
                 }
 
                 await _hoshiDbContext.SaveChangesAsync();

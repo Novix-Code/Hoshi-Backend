@@ -22,50 +22,88 @@ namespace Hoshi.Repositories.ClientOfferService
 
         public async Task<ResultDTO<object>> AcceptOfferAsync(int id)
         {
-            var targetOffer = await _context.Offers.FindAsync(id);
-            if (targetOffer == null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-            }
-            targetOffer.OfferStatus = Enums.OfferStatus.Accepted;
-            await _context.SaveChangesAsync();
-            var targetOrder = await _context.Orders.FindAsync(targetOffer.OrderId);
-            if (targetOrder == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                var targetOffer = await _context.Offers.FindAsync(id);
+                if (targetOffer == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                }
+                targetOffer.OfferStatus = Enums.OfferStatus.Accepted;
+                await _context.SaveChangesAsync();
+                var targetOrder = await _context.Orders.FindAsync(targetOffer.OrderId);
+                if (targetOrder == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
 
+                }
+                var targetWorker = await _context.Users.FindAsync(targetOffer.WorkerId);
+                if (targetWorker == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                }
+                var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).FirstOrDefaultAsync();
+                if (workerSpecificationTarget == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);
+                }
+
+                // Convert TempInvoice -> Invoice
+                var temp = await _context.TempInvoices.FirstOrDefaultAsync(t => t.OfferId == targetOffer.Id);
+                if (temp == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "الفاتورة المؤقتة غير موجودة", ErrorEn = "Temp invoice not found" }, ResponseStatusCodes.NotFound);
+                }
+
+                var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
+                if (targetInvoice == null)
+                {
+                    targetInvoice = new Models.OrderModels.Invoice
+                    {
+                        OrderId = targetOffer.OrderId
+                    };
+                    _context.Invoices.Add(targetInvoice);
+                }
+
+                targetInvoice.OrderPrice = temp.OrderPrice;
+                targetInvoice.CommissionFee = temp.CommissionFee;
+                targetInvoice.VisitingFee = temp.VisitingFee;
+                targetInvoice.CancellationFee = temp.CancellationFee;
+                targetInvoice.WorkerPromotionFee = temp.WorkerPromotionFee;
+                targetInvoice.ClientPromotionFee = temp.ClientPromotionFee;
+                targetInvoice.ClientIndebtednessFee = temp.ClientIndebtednessFee;
+                targetInvoice.ClientTotalPrice = temp.ClientTotalPrice;
+                targetInvoice.WorkerTotalPrice = temp.WorkerTotalPrice;
+                await _context.SaveChangesAsync();
+
+                _context.TempInvoices.Remove(temp);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                OrderGetDTO orderData = _mapper.Map<OrderGetDTO>(targetOrder);
+                var workerData = new
+                {
+                    Name = targetWorker.UserName,
+                    workerJobTitle = workerSpecificationTarget.Job.JobTitle,
+                    imageUrl = workerSpecificationTarget.IdentityImageURL,
+                    RateRatio = workerSpecificationTarget.RateRito
+                };
+                InvoiceGetDTO invoiceData = _mapper.Map<InvoiceGetDTO>(targetInvoice);
+                await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
+                return ResultDTO<object>.Success(new
+                {
+                    orderData,
+                    workerData,
+                    invoiceData
+                });
             }
-            var targetWorker = await _context.Users.FindAsync(targetOffer.WorkerId);
-            if (targetWorker == null)
+            catch (Exception ex)
             {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                await transaction.RollbackAsync();
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = ex.Message }, ResponseStatusCodes.InternalServerError);
             }
-            var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).FirstOrDefaultAsync();
-            if (workerSpecificationTarget == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);
-            }
-            var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
-            if (targetInvoice == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-            }
-            OrderGetDTO orderData = _mapper.Map<OrderGetDTO>(targetOrder);
-            var workerData = new
-            {
-                Name = targetWorker.UserName,
-                workerJobTitle = workerSpecificationTarget.Job.JobTitle,
-                imageUrl = workerSpecificationTarget.IdentityImageURL,
-                RateRatio = workerSpecificationTarget.RateRito
-            };
-            InvoiceGetDTO invoiceData = _mapper.Map<InvoiceGetDTO>(targetInvoice);
-            await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
-            return ResultDTO<object>.Success(new
-            {
-                orderData,
-                workerData,
-                invoiceData
-            });
         }
 
         public async Task<ResultDTO<object>> GetByIdAsync(int id)
