@@ -50,10 +50,11 @@ namespace Hoshi.Repositories.WorkerVisitService
                 var cancellationFeeValue = Clamp(cancelMain, cancelMin, cancelMax);
                 var commissionFeeValue = Clamp(commissionMain, commissionMin, commissionMax);
 
+                var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
                 var commissionAfterWorkerPromo = Math.Max(commissionFeeValue - 0, 0.0);
                 var workerRevenue = visit.VisitPrice - commissionAfterWorkerPromo;
-                var clientWillPay = visit.VisitPrice + visitingFeeValue - 0;
+                var clientWillPay = visit.VisitPrice + (invoice?.ClientPromotionFee ?? 0) - 0;
 
                 var existingTemp = await _hoshiDbContext.TempInvoices.FirstOrDefaultAsync(t => t.OrderVisitId == visit.Id);
                 if (existingTemp == null)

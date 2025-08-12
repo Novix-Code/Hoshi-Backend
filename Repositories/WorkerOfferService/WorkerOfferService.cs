@@ -38,6 +38,7 @@ namespace Hoshi.Repositories.WorkerOfferService
             {
                 // 1. Validate order and worker existence
                 var order = await _hoshiDbContext.Orders
+                    .Include(p=>p.AppliedPromotion)
                     .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
                 if (order == null)
                     return ResultDTO<CreateOfferResponseDto>.NotFound(new ErrorDTO
@@ -45,7 +46,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                         ErrorAr = "الطلب غير موجود.",
                         ErrorEn = "Order not found."
                     });
-
+                
                 var worker = await _hoshiDbContext.Users.FindAsync(dto.WorkerId);
                 if (worker == null)
                     return ResultDTO<CreateOfferResponseDto>.NotFound(new ErrorDTO
@@ -80,7 +81,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 string promotionTitle = string.Empty;
                 double workerPromotionFee = 0.0;
-                double clientPromotionFee = 0.0;
+                double clientPromotionFee = order.AppliedPromotion?.Value ?? 0.0;
 
                 if (promotion != null)
                 {
@@ -89,21 +90,15 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                     if (promotion.PromotionFor == PromotionFor.Worker)
                         workerPromotionFee = promotionAmount;
-                    else if (promotion.PromotionFor == PromotionFor.Client)
-                        clientPromotionFee = promotionAmount;
-                    else // All
-                    {
-                        // split equally if All
-                        workerPromotionFee = promotionAmount / 2.0;
-                        clientPromotionFee = promotionAmount - workerPromotionFee;
-                    }
                 }
 
                 var commissionAfterWorkerPromo = Math.Max(commissionFeeValue - workerPromotionFee, 0.0);
 
                 double workerTotalPrice = dto.OfferedPrice - commissionAfterWorkerPromo;
 
-                var clientTotalPrice = dto.OfferedPrice + visitFeeValue - clientPromotionFee;
+                var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
+
+                var clientTotalPrice = dto.OfferedPrice + ( invoice?.ClientPromotionFee ?? 0 ) - clientPromotionFee;
 
                 // 7. Upsert TempInvoice for this offer
                 var existingTemp = await _hoshiDbContext.TempInvoices
@@ -150,7 +145,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     CancellationFee = cancellationFeeValue,
                     ServiceFee = commissionFeeValue,
                     PromotionTitle = promotionTitle,
-                    PromotionValue = clientPromotionFee + workerPromotionFee,
+                    PromotionValue = workerPromotionFee,
                     WorkerRevenue = workerTotalPrice,
                     ClientWillPay = clientTotalPrice
                 };

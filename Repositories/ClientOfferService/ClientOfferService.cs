@@ -71,8 +71,6 @@ namespace Hoshi.Repositories.ClientOfferService
                 targetInvoice.VisitingFee = temp.VisitingFee;
                 targetInvoice.CancellationFee = temp.CancellationFee;
                 targetInvoice.WorkerPromotionFee = temp.WorkerPromotionFee;
-                targetInvoice.ClientPromotionFee = temp.ClientPromotionFee;
-                targetInvoice.ClientIndebtednessFee = temp.ClientIndebtednessFee;
                 targetInvoice.ClientTotalPrice = temp.ClientTotalPrice;
                 targetInvoice.WorkerTotalPrice = temp.WorkerTotalPrice;
                 await _context.SaveChangesAsync();
