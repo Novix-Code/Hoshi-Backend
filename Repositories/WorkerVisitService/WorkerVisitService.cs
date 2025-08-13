@@ -54,7 +54,7 @@ namespace Hoshi.Repositories.WorkerVisitService
 
                 var commissionAfterWorkerPromo = Math.Max(commissionFeeValue - 0, 0.0);
                 var workerRevenue = visit.VisitPrice - commissionAfterWorkerPromo;
-                var clientWillPay = visit.VisitPrice + (invoice?.ClientPromotionFee ?? 0) - 0;
+                var clientWillPay = visit.VisitPrice + (invoice?.ClientIndebtednessFee ?? 0) - 0;
 
                 var existingTemp = await _hoshiDbContext.TempInvoices.FirstOrDefaultAsync(t => t.OrderVisitId == visit.Id);
                 if (existingTemp == null)

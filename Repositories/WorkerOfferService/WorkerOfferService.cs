@@ -98,7 +98,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
-                var clientTotalPrice = dto.OfferedPrice + ( invoice?.ClientPromotionFee ?? 0 ) - clientPromotionFee;
+                var clientTotalPrice = dto.OfferedPrice + ( invoice?.ClientIndebtednessFee ?? 0 ) - clientPromotionFee;
 
                 // 7. Upsert TempInvoice for this offer
                 var existingTemp = await _hoshiDbContext.TempInvoices
