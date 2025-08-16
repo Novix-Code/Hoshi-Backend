@@ -97,7 +97,21 @@ namespace Hoshi.Repositories.ClientOfferService
                     invoiceData
                 });
             }
+
+            var targetWorker = await _context.Users.FindAsync(targetOffer.WorkerId);
+            if (targetWorker == null)
+            {
+                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+            }
+            var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).Include(p=>p.Job).FirstOrDefaultAsync();
+            if (workerSpecificationTarget == null)
+            {
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);
+            }
+            var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
+            if (targetInvoice == null)
             catch (Exception ex)
+
             {
                 await transaction.RollbackAsync();
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = ex.Message }, ResponseStatusCodes.InternalServerError);

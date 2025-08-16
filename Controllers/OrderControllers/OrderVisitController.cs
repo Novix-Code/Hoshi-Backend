@@ -73,9 +73,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
         [EndpointGroupName("Worker")]
         public override async Task<IActionResult> Add(OrderVisitPostDTO postDTO)
         {
+            var response = await orderVisitService.addVisitAsync(postDTO);
             await orderVisitService.sendNoificationforclient(postDTO.OrderId , "تم ارسال طلب زيارة");
-            
-            return await base.Add(postDTO);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [EndpointGroupName("Worker")]
