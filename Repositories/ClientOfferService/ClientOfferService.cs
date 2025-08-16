@@ -28,7 +28,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 var targetOffer = await _context.Offers.FindAsync(id);
                 if (targetOffer == null)
                 {
-                    return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn="target offer not found",ErrorAr="العرض غير موجود"}, ResponseStatusCodes.NotFound);
                 }
                 targetOffer.OfferStatus = Enums.OfferStatus.Accepted;
                 await _context.SaveChangesAsync();
@@ -97,19 +97,6 @@ namespace Hoshi.Repositories.ClientOfferService
                     invoiceData
                 });
             }
-
-            var targetWorker = await _context.Users.FindAsync(targetOffer.WorkerId);
-            if (targetWorker == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-            }
-            var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).Include(p=>p.Job).FirstOrDefaultAsync();
-            if (workerSpecificationTarget == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);
-            }
-            var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
-            if (targetInvoice == null)
             catch (Exception ex)
 
             {
