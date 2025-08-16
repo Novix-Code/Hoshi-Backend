@@ -5,9 +5,8 @@
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateViews : Migration
+    public partial class CreateMIGForViews : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"CREATE VIEW AllClientView AS

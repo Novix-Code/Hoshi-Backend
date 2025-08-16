@@ -43,7 +43,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Connections", (string)null);
+                    b.ToTable("Connections");
                 });
 
             modelBuilder.Entity("Hoshi.Models.ChatModels.Message", b =>
@@ -73,7 +73,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Messages", (string)null);
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotification", b =>
@@ -105,7 +105,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("AdminId");
 
-                    b.ToTable("AdminNotifications", (string)null);
+                    b.ToTable("AdminNotifications");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.AdminNotificationFlag", b =>
@@ -134,7 +134,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdminNotificationFlags", (string)null);
+                    b.ToTable("AdminNotificationFlags");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.Archive", b =>
@@ -154,7 +154,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Archives", (string)null);
+                    b.ToTable("Archives");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.ArchiveSettings", b =>
@@ -173,7 +173,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ArchiveSettings", (string)null);
+                    b.ToTable("ArchiveSettings");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.CompanyRevenue", b =>
@@ -197,7 +197,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("CompanyRevenues", (string)null);
+                    b.ToTable("CompanyRevenues");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CategoryRequestRate", b =>
@@ -221,7 +221,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("CategoryRequestRates", (string)null);
+                    b.ToTable("CategoryRequestRates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ComplaintSolvingRate", b =>
@@ -257,7 +257,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ComplaintTypeId");
 
-                    b.ToTable("ComplaintSolvingRates", (string)null);
+                    b.ToTable("ComplaintSolvingRates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.CustomerGrowthRate", b =>
@@ -279,7 +279,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CustomerGrowthRates", (string)null);
+                    b.ToTable("CustomerGrowthRates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.IncomeGrowthRate", b =>
@@ -298,7 +298,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("IncomeGrowthRates", (string)null);
+                    b.ToTable("IncomeGrowthRates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatistics", b =>
@@ -318,7 +318,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NumericalStatistics", (string)null);
+                    b.ToTable("NumericalStatistics");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.NumericalStatisticsValue", b =>
@@ -348,7 +348,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("LastValueId");
 
-                    b.ToTable("NumericalStatisticsValues", (string)null);
+                    b.ToTable("NumericalStatisticsValues");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.OrderComplaetionRate", b =>
@@ -378,7 +378,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("OrderComplaetionRates", (string)null);
+                    b.ToTable("OrderComplaetionRates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.StatisticsModels.ServiceRequestRate", b =>
@@ -402,7 +402,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("ServiceRequestRates", (string)null);
+                    b.ToTable("ServiceRequestRates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.DashboardModels.TermsAndCondetions", b =>
@@ -429,7 +429,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TermsAndCondetions", (string)null);
+                    b.ToTable("TermsAndCondetions");
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.City", b =>
@@ -462,7 +462,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cities", (string)null);
+                    b.ToTable("Cities");
 
                     b.HasData(
                         new
@@ -1213,7 +1213,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Complaints", (string)null);
+                    b.ToTable("Complaints");
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.ComplaintType", b =>
@@ -1239,7 +1239,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ComplaintTypes", (string)null);
+                    b.ToTable("ComplaintTypes");
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.Fee", b =>
@@ -1281,7 +1281,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("Fees", (string)null);
+                    b.ToTable("Fees");
 
                     b.HasData(
                         new
@@ -1404,7 +1404,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes", (string)null);
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.Rate", b =>
@@ -1443,7 +1443,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("Rates", (string)null);
+                    b.ToTable("Rates");
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.UserNotification", b =>
@@ -1476,7 +1476,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserNotifications", (string)null);
+                    b.ToTable("UserNotifications");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.Invoice", b =>
@@ -1532,7 +1532,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("OrderVisitId");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.Offer", b =>
@@ -1585,7 +1585,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("Offers", (string)null);
+                    b.ToTable("Offers");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.Order", b =>
@@ -1658,7 +1658,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.OrderImage", b =>
@@ -1683,7 +1683,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderImages", (string)null);
+                    b.ToTable("OrderImages");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.OrderStatusHistory", b =>
@@ -1707,7 +1707,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderStatusHistory", (string)null);
+                    b.ToTable("OrderStatusHistory");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.OrderVisit", b =>
@@ -1747,7 +1747,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderVisits", (string)null);
+                    b.ToTable("OrderVisits");
                 });
 
             modelBuilder.Entity("Hoshi.Models.OrderModels.TempInvoice", b =>
@@ -1803,7 +1803,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("OrderVisitId");
 
-                    b.ToTable("TempInvoices", (string)null);
+                    b.ToTable("TempInvoices");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.Promotion", b =>
@@ -1855,7 +1855,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Promotions", (string)null);
+                    b.ToTable("Promotions");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.PromotionService", b =>
@@ -1879,7 +1879,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("ServiceId", "PromotionId")
                         .IsUnique();
 
-                    b.ToTable("PromotionServices", (string)null);
+                    b.ToTable("PromotionServices");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.PromotionTaken", b =>
@@ -1918,7 +1918,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PromotionsTaken", (string)null);
+                    b.ToTable("PromotionsTaken");
                 });
 
             modelBuilder.Entity("Hoshi.Models.ServiceModels.Job", b =>
@@ -1944,7 +1944,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Jobs", (string)null);
+                    b.ToTable("Jobs");
 
                     b.HasData(
                         new
@@ -2102,7 +2102,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("ServiceId", "JobId")
                         .IsUnique();
 
-                    b.ToTable("JobServices", (string)null);
+                    b.ToTable("JobServices");
 
                     b.HasData(
                         new
@@ -2466,7 +2466,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
 
                     b.HasData(
                         new
@@ -2863,7 +2863,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ServiceCategories", (string)null);
+                    b.ToTable("ServiceCategories");
 
                     b.HasData(
                         new
@@ -2978,7 +2978,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AdminPages", (string)null);
+                    b.ToTable("AdminPages");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.AdminModels.Page", b =>
@@ -3009,7 +3009,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("ParentPageId");
 
-                    b.ToTable("Pages", (string)null);
+                    b.ToTable("Pages");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.AdminModels.Permission", b =>
@@ -3035,7 +3035,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.AdminModels.PermissionPage", b =>
@@ -3065,7 +3065,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("PageId", "PermissionId")
                         .IsUnique();
 
-                    b.ToTable("PermissionPages", (string)null);
+                    b.ToTable("PermissionPages");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.AdminModels.RolePermission", b =>
@@ -3095,7 +3095,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("RoleId", "PermissionId")
                         .IsUnique();
 
-                    b.ToTable("RolePermissions", (string)null);
+                    b.ToTable("RolePermissions");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.AdminModels.UserPermission", b =>
@@ -3125,7 +3125,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("UserId", "PermissionId")
                         .IsUnique();
 
-                    b.ToTable("UserPermissions", (string)null);
+                    b.ToTable("UserPermissions");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.ClientSpecification", b =>
@@ -3170,7 +3170,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("ClientSpecifications", (string)null);
+                    b.ToTable("ClientSpecifications");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.Resets.PasswordResetRequest", b =>
@@ -3198,7 +3198,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetRequests", (string)null);
+                    b.ToTable("PasswordResetRequests");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.SuspendReason", b =>
@@ -3221,7 +3221,7 @@ namespace Hoshi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SuspendReasons", (string)null);
+                    b.ToTable("SuspendReasons");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.SuspendedUser", b =>
@@ -3250,7 +3250,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SuspendedUsers", (string)null);
+                    b.ToTable("SuspendedUsers");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.User", b =>
@@ -3382,7 +3382,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserCollectionAlerts", (string)null);
+                    b.ToTable("UserCollectionAlerts");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.UserOTP", b =>
@@ -3417,7 +3417,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserOTPs", (string)null);
+                    b.ToTable("UserOTPs");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerPaymentHistroy", b =>
@@ -3448,7 +3448,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerPaymentHistroys", (string)null);
+                    b.ToTable("WorkerPaymentHistroys");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerPortfolio", b =>
@@ -3476,7 +3476,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerPortfolios", (string)null);
+                    b.ToTable("WorkerPortfolios");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerRejection", b =>
@@ -3504,7 +3504,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerRejections", (string)null);
+                    b.ToTable("WorkerRejections");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerService", b =>
@@ -3534,7 +3534,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerId", "ServiceId")
                         .IsUnique();
 
-                    b.ToTable("WorkerServices", (string)null);
+                    b.ToTable("WorkerServices");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerSpecification", b =>
@@ -3599,7 +3599,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("WorkerSpecifications", (string)null);
+                    b.ToTable("WorkerSpecifications");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerWallet", b =>
@@ -3630,7 +3630,7 @@ namespace Hoshi.Migrations
                     b.HasIndex("WorkerId")
                         .IsUnique();
 
-                    b.ToTable("WorkerWallets", (string)null);
+                    b.ToTable("WorkerWallets");
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.WorkerModels.WorkerWalletHistory", b =>
@@ -3664,7 +3664,7 @@ namespace Hoshi.Migrations
 
                     b.HasIndex("WorkerWalletId");
 
-                    b.ToTable("WorkerWalletHistories", (string)null);
+                    b.ToTable("WorkerWalletHistories");
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.CitiesViewModel", b =>
@@ -3694,29 +3694,21 @@ namespace Hoshi.Migrations
             modelBuilder.Entity("Hoshi.Models.ViewModels.ClientDetailsModelView", b =>
                 {
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LivingCityId")
-                        .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.ToTable((string)null);
@@ -3770,11 +3762,11 @@ namespace Hoshi.Migrations
                     b.Property<int>("TotalCompletedOrders")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("TotalOrderIncome")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double?>("TotalOrderIncome")
+                        .HasColumnType("float");
 
-                    b.Property<decimal?>("TotalOrderPrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double?>("TotalOrderPrice")
+                        .HasColumnType("float");
 
                     b.Property<int>("TotalOrders")
                         .HasColumnType("int");

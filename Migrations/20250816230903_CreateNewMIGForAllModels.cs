@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class createAllModelsfortet : Migration
+    public partial class CreateNewMIGForAllModels : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1436,6 +1436,41 @@ namespace Hoshi.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TempInvoices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderPrice = table.Column<double>(type: "float", nullable: false),
+                    CommissionFee = table.Column<double>(type: "float", nullable: false),
+                    VisitingFee = table.Column<double>(type: "float", nullable: false),
+                    CancellationFee = table.Column<double>(type: "float", nullable: false),
+                    WorkerPromotionFee = table.Column<double>(type: "float", nullable: false),
+                    ClientPromotionFee = table.Column<double>(type: "float", nullable: false),
+                    ClientIndebtednessFee = table.Column<double>(type: "float", nullable: false),
+                    ClientTotalPrice = table.Column<double>(type: "float", nullable: false),
+                    WorkerTotalPrice = table.Column<double>(type: "float", nullable: false),
+                    OfferId = table.Column<int>(type: "int", nullable: true),
+                    OrderVisitId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TempInvoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TempInvoices_Offers_OfferId",
+                        column: x => x.OfferId,
+                        principalTable: "Offers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TempInvoices_OrderVisits_OrderVisitId",
+                        column: x => x.OrderVisitId,
+                        principalTable: "OrderVisits",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "Cities",
                 columns: new[] { "Id", "CityCode", "CityName", "CreatedAt", "Latitude", "Longitude", "ModifiedAt" },
@@ -1982,6 +2017,16 @@ namespace Hoshi.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TempInvoices_OfferId",
+                table: "TempInvoices",
+                column: "OfferId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TempInvoices_OrderVisitId",
+                table: "TempInvoices",
+                column: "OrderVisitId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserCollectionAlerts_UserId",
                 table: "UserCollectionAlerts",
                 column: "UserId");
@@ -2175,6 +2220,9 @@ namespace Hoshi.Migrations
                 name: "SuspendedUsers");
 
             migrationBuilder.DropTable(
+                name: "TempInvoices");
+
+            migrationBuilder.DropTable(
                 name: "TermsAndCondetions");
 
             migrationBuilder.DropTable(
@@ -2211,19 +2259,19 @@ namespace Hoshi.Migrations
                 name: "ComplaintTypes");
 
             migrationBuilder.DropTable(
-                name: "OrderVisits");
-
-            migrationBuilder.DropTable(
                 name: "Pages");
-
-            migrationBuilder.DropTable(
-                name: "Offers");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "SuspendReasons");
+
+            migrationBuilder.DropTable(
+                name: "Offers");
+
+            migrationBuilder.DropTable(
+                name: "OrderVisits");
 
             migrationBuilder.DropTable(
                 name: "NotificationTypes");

@@ -228,7 +228,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                         .Select(f => f.MainFees)
                         .FirstOrDefaultAsync();
 
-                    var workerWallet = await _hoshiDbContext.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == order.WorkerId);
+                    var workerWallet = await _hoshiDbContext.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == offer.WorkerId);
                     if (workerWallet == null)
                     {
                         return ResultDTO<string>.NotFound(new ErrorDTO

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250809145738_createAllModelsfortet")]
-    partial class createAllModelsfortet
+    [Migration("20250816230903_CreateNewMIGForAllModels")]
+    partial class CreateNewMIGForAllModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1751,6 +1751,62 @@ namespace Hoshi.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("OrderVisits");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.OrderModels.TempInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("CancellationFee")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ClientIndebtednessFee")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ClientPromotionFee")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ClientTotalPrice")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CommissionFee")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("OfferId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("OrderPrice")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("OrderVisitId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("VisitingFee")
+                        .HasColumnType("float");
+
+                    b.Property<double>("WorkerPromotionFee")
+                        .HasColumnType("float");
+
+                    b.Property<double>("WorkerTotalPrice")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfferId");
+
+                    b.HasIndex("OrderVisitId");
+
+                    b.ToTable("TempInvoices");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.Promotion", b =>
@@ -3641,29 +3697,21 @@ namespace Hoshi.Migrations
             modelBuilder.Entity("Hoshi.Models.ViewModels.ClientDetailsModelView", b =>
                 {
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LivingCityId")
-                        .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.ToTable((string)null);
@@ -3717,11 +3765,11 @@ namespace Hoshi.Migrations
                     b.Property<int>("TotalCompletedOrders")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("TotalOrderIncome")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double?>("TotalOrderIncome")
+                        .HasColumnType("float");
 
-                    b.Property<decimal?>("TotalOrderPrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double?>("TotalOrderPrice")
+                        .HasColumnType("float");
 
                     b.Property<int>("TotalOrders")
                         .HasColumnType("int");
@@ -4296,6 +4344,23 @@ namespace Hoshi.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Hoshi.Models.OrderModels.TempInvoice", b =>
+                {
+                    b.HasOne("Hoshi.Models.OrderModels.Offer", "Offer")
+                        .WithMany()
+                        .HasForeignKey("OfferId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Hoshi.Models.OrderModels.OrderVisit", "OrderVisit")
+                        .WithMany()
+                        .HasForeignKey("OrderVisitId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Offer");
+
+                    b.Navigation("OrderVisit");
                 });
 
             modelBuilder.Entity("Hoshi.Models.PromotionModels.PromotionService", b =>
