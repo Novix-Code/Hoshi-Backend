@@ -130,5 +130,51 @@ namespace Hoshi.Repositories.WorkerWalletService
                 });
             }
         }
+
+        public async Task AddToWalletAsync(int workerId, double amount, string title)
+        {
+            var wallet = await _context.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == workerId);
+            if (wallet == null)
+            {
+                wallet = new WorkerWallet
+                {
+                    WorkerId = workerId,
+                    Balance = 0
+                };
+                _context.WorkerWallets.Add(wallet);
+                await _context.SaveChangesAsync();
+            }
+
+            wallet.Balance += amount;
+
+            _context.WorkerWalletHistories.Add(new WorkerWalletHistory
+            {
+                WorkerWalletId = wallet.Id,
+                Title = title,
+                Value = amount,
+                IsIncome = true
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeductFromWalletAsync(int workerId, double amount, string title)
+        {
+            var wallet = await _context.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == workerId);
+            if (wallet == null)
+                throw new Exception("Worker wallet not found.");
+
+            wallet.Balance -= amount;
+
+            _context.WorkerWalletHistories.Add(new WorkerWalletHistory
+            {
+                WorkerWalletId = wallet.Id,
+                Title = title,
+                Value = amount,
+                IsIncome = false
+            });
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

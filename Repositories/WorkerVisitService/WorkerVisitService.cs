@@ -41,6 +41,50 @@ namespace Hoshi.Repositories.WorkerVisitService
                 var visit = _mapper.Map<OrderVisit>(dto);
                 _hoshiDbContext.OrderVisits.Add(visit);
                 await _hoshiDbContext.SaveChangesAsync();
+
+                var (visitMain, visitMin, visitMax) = await GetFeeAsync(FeeType.VisitingFee, order);
+                var (cancelMain, cancelMin, cancelMax) = await GetFeeAsync(FeeType.CancellationFee, order);
+                var (commissionMain, commissionMin, commissionMax) = await GetFeeAsync(FeeType.CommissionFee, order);
+
+                var visitingFeeValue = Clamp(visitMain, visitMin, visitMax);
+                var cancellationFeeValue = Clamp(cancelMain, cancelMin, cancelMax);
+                var commissionFeeValue = Clamp(commissionMain, commissionMin, commissionMax);
+
+                var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
+
+                var commissionAfterWorkerPromo = Math.Max(commissionFeeValue - 0, 0.0);
+                var workerRevenue = visit.VisitPrice - commissionAfterWorkerPromo;
+                var clientWillPay = visit.VisitPrice + (invoice?.ClientIndebtednessFee ?? 0) - 0;
+
+                var existingTemp = await _hoshiDbContext.TempInvoices.FirstOrDefaultAsync(t => t.OrderVisitId == visit.Id);
+                if (existingTemp == null)
+                {
+                    _hoshiDbContext.TempInvoices.Add(new TempInvoice
+                    {
+                        OrderPrice = visit.VisitPrice,
+                        CommissionFee = commissionFeeValue,
+                        VisitingFee = visitingFeeValue,
+                        CancellationFee = cancellationFeeValue,
+                        WorkerPromotionFee = 0,
+                        ClientPromotionFee = 0,
+                        ClientIndebtednessFee = 0.0,
+                        ClientTotalPrice = clientWillPay,
+                        WorkerTotalPrice = workerRevenue,
+                        OrderVisitId = visit.Id
+                    });
+                }
+                else
+                {
+                    existingTemp.OrderPrice = visit.VisitPrice;
+                    existingTemp.CommissionFee = commissionFeeValue;
+                    existingTemp.VisitingFee = visitingFeeValue;
+                    existingTemp.CancellationFee = cancellationFeeValue;
+                    existingTemp.ClientIndebtednessFee = 0.0;
+                    existingTemp.ClientTotalPrice = clientWillPay;
+                    existingTemp.WorkerTotalPrice = workerRevenue;
+                    _hoshiDbContext.TempInvoices.Update(existingTemp);
+                }
+                await _hoshiDbContext.SaveChangesAsync();
                 var visitDto = _mapper.Map<OrderVisitGetDTO>(visit);
                 await transaction.CommitAsync();
                 return ResultDTO<OrderVisitGetDTO>.Success(visitDto);
@@ -294,6 +338,32 @@ namespace Hoshi.Repositories.WorkerVisitService
                 });
             }
         }
-        
+
+
+        // Create/Update TempInvoice for the visit with full fee and promotion logic
+        public async Task<(double main, double min, double max)> GetFeeAsync(FeeType type,Order order)
+        {
+            var special = await _hoshiDbContext.Fees
+                .Where(f => f.ServiceId == order.ServiceId && f.FeeType == type && f.IsSpecial)
+                .Select(f => new { f.MainFees, f.MinFees, f.MaxFees })
+                .FirstOrDefaultAsync();
+            if (special != null)
+                return (special.MainFees, special.MinFees, special.MaxFees);
+
+            var basic = await _hoshiDbContext.Fees
+                .Where(f => f.FeeType == type && !f.IsSpecial)
+                .Select(f => new { f.MainFees, f.MinFees, f.MaxFees })
+                .FirstOrDefaultAsync();
+            if (basic == null)
+                return (0, 0, 0);
+            return (basic.MainFees, basic.MinFees, basic.MaxFees);
+        }
+
+        public double Clamp(double value, double min, double max)
+        {
+            if (max > 0 && value > max) return max;
+            if (min > 0 && value < min) return min;
+            return value;
+        }
     }
 }
