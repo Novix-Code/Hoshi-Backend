@@ -32,7 +32,7 @@ namespace Hoshi.Repositories.PromotionService
             {
                 Promotion promotion = mapper.Map<Promotion>(postDTO);
 
-                var imageResult = await fileService.SaveFileAsync(postDTO.Image, "images\\promotions");
+                var imageResult = await fileService.SaveFileAsync(postDTO.Image, "images/promotions");
 
                 if (imageResult.Item1 is false)
                     return ResultDTO<PromotionGetDTO>.BadRequest(new ErrorDTO()

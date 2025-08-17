@@ -77,6 +77,13 @@ namespace Hoshi.Repositories.WorkerOfferService
                     .ToListAsync();
 
                 var promotion = await _hoshiDbContext.Promotions.FirstOrDefaultAsync(p => !promotionsUsed.Contains(p.Id));
+                if (promotion != null)
+                   {
+                    offer.AppliedPromotionId = promotion.Id;
+                    _hoshiDbContext.Offers.Update(offer);
+                    await _hoshiDbContext.SaveChangesAsync();
+                }
+
 
 
                 string promotionTitle = string.Empty;

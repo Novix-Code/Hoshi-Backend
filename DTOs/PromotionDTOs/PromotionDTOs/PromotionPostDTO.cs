@@ -12,7 +12,7 @@ namespace Hoshi.DTOs.PromotionDTOs.PromotionDTOs
         public required string TitleSecondPart { get; set; }
         public required IFormFile Image { get; set; }
 
-        public DateTime? StartDate { get; set; }
+        public DateTime? StartDate { get; set; } = DateTime.UtcNow;
         public DateTime? EndDate { get; set; }
 
         public required bool IsPercentage { get; set; } = true;
