@@ -83,7 +83,7 @@ namespace Hoshi.Repositories.UserService
                 }
 
                 // User FileService method to save the image to the images\personalimages folder in wwwroot
-                var imageResult = await _fileService.SaveFileAsync(image, "images\\personalimages");
+                var imageResult = await _fileService.SaveFileAsync(image, "images/personalimages");
 
                 // Check if the image saved successfuly
                 if (imageResult.Item1)
@@ -309,7 +309,7 @@ namespace Hoshi.Repositories.UserService
                     ErrorEn = "Order Image Not Found",
                     ErrorAr = "لا يوجد صور لهذا الطلب"
                 });
-            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.WorkerId);
+            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
             if (workerDetails == null)
                 return ResultDTO<object>.NotFound(new ErrorDTO
                 {
@@ -324,7 +324,7 @@ namespace Hoshi.Repositories.UserService
                     ErrorAr = "لم يتم  اضافة وظيفة للعامل بعد"
                 });
             var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled).CountAsync();
-            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == TargetOrder.WorkerId);
+            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == targetOffer.WorkerId);
             if (targetwallet == null)
                 return ResultDTO<object>.NotFound(new ErrorDTO
                 {

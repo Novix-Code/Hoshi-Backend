@@ -43,14 +43,14 @@ namespace Hoshi.Repositories.ClientOfferService
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
                 }
-                var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).FirstOrDefaultAsync();
+                var workerSpecificationTarget = await _context.WorkerSpecifications.Include(p=>p.Job).FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
                 if (workerSpecificationTarget == null)
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled"}, ResponseStatusCodes.NotFound);
                 }
 
                 // Convert TempInvoice -> Invoice
-                var temp = await _context.TempInvoices.FirstOrDefaultAsync(t => t.OfferId == targetOffer.Id);
+                var temp = await _context.TempInvoices.FirstOrDefaultAsync(t => t.OfferId == id);
                 if (temp == null)
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "الفاتورة المؤقتة غير موجودة", ErrorEn = "Temp invoice not found" }, ResponseStatusCodes.NotFound);

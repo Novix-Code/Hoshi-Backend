@@ -460,7 +460,7 @@ namespace Hoshi.Repositories.AuthService
                 }
 
                 // Check if worker specification already exists
-                var existingWorkerSpec = await _context.WorkerSpecifications
+                var existingWorkerSpec = await _context.WorkerSpecifications.Include(p=>p.User)
                     .FirstOrDefaultAsync(ws => ws.UserId == request.UserId);
 
                 if (existingWorkerSpec != null)
@@ -694,7 +694,7 @@ namespace Hoshi.Repositories.AuthService
                 _fileService.DeleteFile(isUpdate.Item2!);
             }
 
-            // Add personal image to user
+            // Add personal image to user   
             Tuple<bool, string> imageResult =
                 await _userService.AddUserImage(id, image, true);
 
