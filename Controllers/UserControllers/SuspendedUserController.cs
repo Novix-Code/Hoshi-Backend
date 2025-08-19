@@ -7,6 +7,7 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.SuspendedUserDTOs;
 using Hoshi.Models.UserModels;
+using Hoshi.Repositories.UserService;
 
 namespace Hoshi.Controllers.UserControllers.SuspendedUserControllers
 {
@@ -20,6 +21,8 @@ namespace Hoshi.Controllers.UserControllers.SuspendedUserControllers
         SuspendedUserPostDTO, 
         SuspendedUserPutDTO>
     {
+        private readonly IUserService userService;
+
         public SuspendedUserController(
             IMapper mapper, 
             IGenericCRUDService<
@@ -31,7 +34,8 @@ namespace Hoshi.Controllers.UserControllers.SuspendedUserControllers
             IGenericFSPService<
                 HoshiDbContext, 
                 SuspendedUser, 
-                SuspendedUserGetDTO> genericFSPService 
+                SuspendedUserGetDTO> genericFSPService,
+            IUserService userService
         ) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
@@ -40,12 +44,14 @@ namespace Hoshi.Controllers.UserControllers.SuspendedUserControllers
 				$"{nameof(SuspendedUser.User)}",
 				$"{nameof(SuspendedUser.SuspendReason)}",
 			];
+            this.userService = userService;
         }
 
         [EndpointGroupName("Admin")]
-        public override Task<IActionResult> Add(SuspendedUserPostDTO postDTO)
+        public override async Task<IActionResult> Add(SuspendedUserPostDTO postDTO)
         {
-            return base.Add(postDTO);
+            var result = await userService.SuspendUser(postDTO);
+            return await base.Add(postDTO);
         }
 
         [EndpointGroupName("Admin")]

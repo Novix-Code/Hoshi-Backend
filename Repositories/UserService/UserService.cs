@@ -1,35 +1,17 @@
 ﻿using AutoMapper;
+using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
-using Hoshi.Models.UserModels;
-using Hoshi.Repositories.FileServiceFold;
-using Hoshi.DTOs.FileServicieResult;
+using Hoshi.DTOs.UserDTOs.AdminDTOs.PermissionDTOs;
+using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
+using Hoshi.DTOs.UserDTOs.SuspendedUserDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
-using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
-using Hoshi.Models.ServiceModels;
 using Hoshi.Models.UserModels;
-using Hoshi.Models.UserModels.Resets;
-using Hoshi.Models.ViewModels;
 using Hoshi.Repositories.FileServiceFold;
 using Hoshi.Repositories.TokenService;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MimeKit.Cryptography;
-using Org.BouncyCastle.Crypto.Engines;
-using OtpNet;
-using System;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using Hoshi.DTOs.UserDTOs.AdminDTOs.AdminPageDTOs;
-using Hoshi.DTOs.UserDTOs.AdminDTOs.PermissionDTOs;
-using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
-using Hoshi.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Object = System.Object;
-using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 
 namespace Hoshi.Repositories.UserService
 {
@@ -113,7 +95,21 @@ namespace Hoshi.Repositories.UserService
                 return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn = "worker Specification not found" 
                     ,ErrorAr="لم يتم اضافة بيانات للعامل بعد"});
             }
+
+            // Check if the worker is approved once before so can not be approved again
+            if (tergetWorkerSpecif.IsApproved is true)
+            {
+                return ResultDTO<object>.BadRequest
+                (
+                    new ErrorDTO { 
+                        ErrorAr= "تم قبول العامل بالفعل.",
+                        ErrorEn = "Worker already be approved."
+                    }
+                );
+            }
+
             tergetWorkerSpecif.IsApproved = true;
+
             // handle add notifications 
             var checkexcist = await _context.NotificationTypes.Where(p=>p.Type == "Success Message").Select(p=>p.Id).FirstOrDefaultAsync(); 
             if (checkexcist ==0){
@@ -163,6 +159,20 @@ namespace Hoshi.Repositories.UserService
                     ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
                 });
             }
+
+            // Check if the user is already be approved and in this case can not be rejected
+            if (tergetWorkerSpecif.IsApproved is true)
+            {
+                return ResultDTO<object>.BadRequest
+                (
+                    new ErrorDTO
+                    {
+                        ErrorAr = "تم قبول العامل بالفعل، ولا يمكن رفضه.",
+                        ErrorEn = "Worker already be approved and can not be rejected."
+                    }
+                );
+            }
+
             tergetWorkerSpecif.IsApproved = false;
             await _context.SaveChangesAsync();
             var checkexcist = await _context.NotificationTypes.Where(p => p.Type == "Reject Message").Select(p => p.Id).FirstOrDefaultAsync();
@@ -519,6 +529,77 @@ namespace Hoshi.Repositories.UserService
             return ResultDTO<List<AdminWithRolesAndPermissionsDTO>>.Success(result);
         }
 
+        public async Task<ResultDTO<object>> SuspendUser(SuspendedUserPostDTO suspendDTO)
+        {
+            var transaction = await _context.Database.BeginTransactionAsync();
 
+            try
+            {
+                // Check user
+                User? user = await _context.Set<User>().FindAsync(suspendDTO.UserId);
+
+                if (user == null)
+                    return ResultDTO<object>.BadRequest(
+                        new ErrorDTO() 
+                        { 
+                            ErrorAr = "هذا المستخدم غير موجود.",
+                            ErrorEn = "This user not existed."
+                        }
+                    );
+
+                // Check suspend reason
+                SuspendReason? reason = await _context.Set<SuspendReason>().FindAsync(suspendDTO.SuspendReasonId);
+
+                if (reason == null)
+                    return ResultDTO<object>.BadRequest(
+                        new ErrorDTO() 
+                        { 
+                            ErrorAr = "هذا السبب غير موجود.",
+                            ErrorEn = "This reason not existed."
+                        }
+                    );
+
+                // Check if user already is suspended
+                SuspendedUser? suspendUser = await _context.Set<SuspendedUser>()
+                    .FirstOrDefaultAsync(su => su.UserId == suspendDTO.UserId);
+
+                if (suspendUser != null)
+                    return ResultDTO<object>.BadRequest(
+                        new ErrorDTO()
+                        {
+                            ErrorAr = "هذا المستخدم تم تعليقه بالفعل.",
+                            ErrorEn = "This user is already suspended."
+                        }
+                    );
+                else
+                {
+                    // If the user not has an active suspention will add the new suspention
+                    await _context.Set<SuspendedUser>().AddAsync(_mapper.Map<SuspendedUser>(suspendDTO));
+
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    return ResultDTO<object>.Success(new MessageDTO()
+                    {
+                        MessageAr = "تم التعليق بنجاح.",
+                        MessageEn = "Suspention done successfully."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO() 
+                    { 
+                        ErrorAr = "يوجد مشكلة في عملية التعليق.",
+                        ErrorEn = "There is a problem in Suspending process."
+                    }, 
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
+        }
     }
 }

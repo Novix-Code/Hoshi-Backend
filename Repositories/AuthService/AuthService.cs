@@ -196,7 +196,7 @@ namespace Hoshi.Repositories.AuthService
             var signInResult = await _signInManager.CheckPasswordSignInAsync(
                 applicationUser!, loginRequestDto.Password,false);
 
-            if (applicationUser is null || !signInResult.Succeeded)
+            if (applicationUser is null || !signInResult.Succeeded || applicationUser.IsDeleted is true)
                 return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO { 
                     ErrorAr = ".الحساب او كلمة السر خاطئة",
                     ErrorEn = "Invalid email or password."

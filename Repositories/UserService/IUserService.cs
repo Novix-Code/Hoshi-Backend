@@ -1,8 +1,6 @@
-using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
-using Hoshi.DTOs.UserDTOs.UserDTOs;
-using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.DTOs.UserDTOs.SuspendedUserDTOs;
 
 namespace Hoshi.Repositories.UserService
 {
@@ -20,5 +18,7 @@ namespace Hoshi.Repositories.UserService
         Task<ResultDTO<Object>> OrderPage();
         Task<ResultDTO<Object>> OrderDetails(int id);
         Task<ResultDTO<List<AdminWithRolesAndPermissionsDTO>>> GetAllAdminsWithRolesAndPermissionsAsync();
+
+        Task<ResultDTO<object>> SuspendUser(SuspendedUserPostDTO suspendDTO);
     }
 }

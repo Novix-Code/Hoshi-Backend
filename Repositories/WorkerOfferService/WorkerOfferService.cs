@@ -92,7 +92,9 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 if (promotion != null)
                 {
-                    promotionTitle = $"{promotion.TitleFirstPart} {promotion.TitleSecondPart}".Trim();
+                    promotionTitle = promotion.IsPercentage 
+                        ? $"{promotion.TitleFirstPart} {promotion.Value} {promotion.TitleSecondPart}".Trim()
+                        : $"{promotion.TitleFirstPart} {promotion.Value}% {promotion.TitleSecondPart}".Trim();
                     double promotionAmount = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
 
                     if (promotion.PromotionFor == PromotionFor.Worker)
