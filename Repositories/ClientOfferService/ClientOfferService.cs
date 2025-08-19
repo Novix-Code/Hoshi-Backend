@@ -28,7 +28,7 @@ namespace Hoshi.Repositories.ClientOfferService
             try
             {
                 // get target offer 
-                var targetOffer = await _context.Offers.FindAsync(id);
+                var targetOffer = await _context.Offers.Include(p=>p.AppliedPromotion).FirstOrDefaultAsync(p=>p.Id == id);
                 if (targetOffer == null)
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "target offer not found", ErrorAr = "العرض غير موجود" }, ResponseStatusCodes.NotFound);
