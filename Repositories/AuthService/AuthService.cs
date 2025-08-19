@@ -497,32 +497,45 @@ namespace Hoshi.Repositories.AuthService
                     else
                         return idImgResult;
 
-                    // Update services
-                    var services = await _context.Services
-                        .Where(s => request.ServicesIds.Contains(s.Id))
-                        .Select(s => s.Id)
+
+                    // Get old service Ids for this worker
+                    var oldServiceIds = await _context.WorkerServices
+                        .Where(ws => ws.WorkerId == request.UserId)
+                        .Select(ws => ws.ServiceId)
                         .ToListAsync();
 
-                    var oldServices = await _context.WorkerServices
-                        .Where(ws => request.ServicesIds.Contains(ws.ServiceId) && ws.WorkerId == request.UserId)
-                        .Select(s => s.ServiceId)
-                        .ToListAsync();
+                    // Requested service Ids
+                    var requestedServiceIds = request.ServicesIds;
 
-                    var newServices = services.Except(oldServices);
+                    // Services to remove (old - requested)
+                    var servicesToRemove = oldServiceIds.Except(requestedServiceIds).ToList();
 
-                    List<WorkerService> workerServices = new();
+                    // Services to add (requested - old)
+                    var servicesToAdd = requestedServiceIds.Except(oldServiceIds).ToList();
 
-                    foreach (var serviceId in newServices)
+
+                    // Remove services (direct query, no need to load objects one by one)
+                    if (servicesToRemove.Any())
                     {
-                        workerServices.Add(new()
-                        {
-                            ServiceId = serviceId,
-                            WorkerId = request.UserId,
-                            CreatedAt = DateTime.UtcNow
-                        });
+                        var workerServicesToRemove = await _context.WorkerServices
+                            .Where(ws => ws.WorkerId == request.UserId && servicesToRemove.Contains(ws.ServiceId))
+                            .ToListAsync();
+
+                        _context.WorkerServices.RemoveRange(workerServicesToRemove);
                     }
 
-                    await _context.AddRangeAsync(workerServices);
+                    // Add new services
+                    if (servicesToAdd.Any())
+                    {
+                        var newWorkerServices = servicesToAdd.Select(serviceId => new WorkerService
+                        {
+                            WorkerId = request.UserId,
+                            ServiceId = serviceId,
+                            CreatedAt = DateTime.UtcNow
+                        });
+
+                      await _context.WorkerServices.AddRangeAsync(newWorkerServices);
+                    }
 
                     // Update portfolio if provided
                     if (request.PortfolioFiles != null && request.PortfolioFiles.Any())
@@ -671,13 +684,13 @@ namespace Hoshi.Repositories.AuthService
                     MessageEn = "Worker application submitted successfully. Your request will be reviewed by the supervisor."
                 });
             }
-            catch (Exception)
+            catch (Exception ex )
             {
                 await transaction.RollbackAsync();
                 return ResultDTO<string>.InternalServerError(new ErrorDTO
                 {
                     ErrorAr = "حدث خطأ أثناء معالجة طلبك.",
-                    ErrorEn = "An error occurred while processing your request."
+                    ErrorEn = $"An error occurred while processing your request. {ex.InnerException?.Message ?? ex.Message}"
                 });
             }
         }
@@ -688,25 +701,45 @@ namespace Hoshi.Repositories.AuthService
             Tuple<bool, string?> isUpdate
         )
         {
-            // Check if this call to update user image and if true will remove last image and add the new one
-            if (isUpdate.Item1)
+            try
             {
-                _fileService.DeleteFile(isUpdate.Item2!);
+                // Check if this call to update user image and if true will remove last image and add the new one
+                if (isUpdate.Item1)
+                {
+                    _fileService.DeleteFile(isUpdate.Item2!);
+                }
+
+                // Add personal image to user   
+                Tuple<bool, string> imageResult =
+                    await _userService.AddUserImage(id, image, true);
+
+                // Chekc if it done successfuly or not
+                if (imageResult.Item1 is false)
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "يوجد مشكلة في اضافة الصورة.",
+                        ErrorEn = imageResult.Item2
+                    });
+                else
+                    return ResultDTO<string>.Success();
             }
 
-            // Add personal image to user   
-            Tuple<bool, string> imageResult =
-                await _userService.AddUserImage(id, image, true);
-
-            // Chekc if it done successfuly or not
-            if (imageResult.Item1 is false)
-                return ResultDTO<string>.BadRequest(new ErrorDTO
+            catch (IOException ioEx)
+            {
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
                 {
-                    ErrorAr = "يوجد مشكلة في اضافة الصورة.",
-                    ErrorEn = imageResult.Item2
+                    ErrorAr = "حدث خطأ في حفظ الصورة الشخصية. يرجى المحاولة مرة أخرى.",
+                    ErrorEn = $"Error saving personal image. Please try again. {ioEx.InnerException?.Message ?? ioEx.Message}"
                 });
-            else
-                return ResultDTO<string>.Success();
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ غير متوقع في حفظ الصورة الشخصية.",
+                    ErrorEn = $"Unexpected error saving personal image. {ex.InnerException?.Message ?? ex.Message}"
+                });
+            }
         }
 
         private async Task<ResultDTO<string>> AddIdentityImage(
@@ -714,24 +747,43 @@ namespace Hoshi.Repositories.AuthService
             Tuple<bool, string?> isUpdate
         )
         {
-            // Check if this call to update identity image and if true will remove last image and add the new one
-            if (isUpdate.Item1)
+            try
             {
-                _fileService.DeleteFile(isUpdate.Item2!);
-            }
-
-            Tuple<bool, string> identityImageResult =
-                await _fileService.SaveFileAsync(image, "images\\identityimages");
-
-            // Chekc if it done successfuly or not
-            if (identityImageResult.Item1 is false)
-                return ResultDTO<string>.BadRequest(new ErrorDTO
+                // Check if this call to update identity image and if true will remove last image and add the new one
+                if (isUpdate.Item1)
                 {
-                    ErrorAr = "يوجد مشكلة في اضافة الصورة.",
-                    ErrorEn = identityImageResult.Item2
+                    _fileService.DeleteFile(isUpdate.Item2!);
+                }
+
+                Tuple<bool, string> identityImageResult =
+                    await _fileService.SaveFileAsync(image, "images\\identityimages");
+
+                // Chekc if it done successfuly or not
+                if (identityImageResult.Item1 is false)
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "يوجد مشكلة في اضافة الصورة.",
+                        ErrorEn = identityImageResult.Item2
+                    });
+                else
+                    return ResultDTO<string>.Success(identityImageResult.Item2);
+            }
+            catch (IOException ioEx)
+            {
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ في حفظ الصورة الشخصية. يرجى المحاولة مرة أخرى.",
+                    ErrorEn = $"Error saving personal image. Please try again. {ioEx.InnerException?.Message ?? ioEx.Message}"
                 });
-            else
-                return ResultDTO<string>.Success(identityImageResult.Item2);
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ غير متوقع في حفظ الصورة الشخصية.",
+                    ErrorEn = $"Unexpected error saving personal image. {ex.InnerException?.Message ?? ex.Message}"
+                });
+            }
         }
 
         private string GenerateUniqueUsername(string fullName)
