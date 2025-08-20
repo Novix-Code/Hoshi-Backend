@@ -51,7 +51,7 @@ namespace Hoshi.Controllers.UserControllers.SuspendedUserControllers
         public override async Task<IActionResult> Add(SuspendedUserPostDTO postDTO)
         {
             var result = await userService.SuspendUser(postDTO);
-            return await base.Add(postDTO);
+            return StatusCode(result.StatusCode, result);
         }
 
         [EndpointGroupName("Admin")]
