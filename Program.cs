@@ -237,7 +237,7 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        app.UseMiddleware<GenericExceptionMiddleware>();
+        //app.UseMiddleware<GenericExceptionMiddleware>();
 
         app.UseCors(x => x
             .AllowAnyMethod()
