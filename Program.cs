@@ -39,20 +39,21 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 
-using Hoshi.Repositories.WorkerSpecificationService;
-using Hoshi.Repositories.ClientSpecificationService;
-using Hoshi.Repositories.WorkerPaymentHistroyService;
-using Hoshi.Repositories.PromotionService;
-using Hoshi.Repositories.ArchiveService;
 using Hoshi.Repositories.NotificationService;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Serilog;
+using Serilog.Events;
 
 public class Program
 {
     public static async Task Main(string[] args)
     {
+        Log.Logger = new LoggerConfiguration()
+             .MinimumLevel.Debug()
+             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+             .Enrich.FromLogContext()
+             .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+             .CreateLogger();
+
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
@@ -66,7 +67,9 @@ public class Program
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
 
-            builder.Services.AddHttpContextAccessor();
+        builder.Services.AddHttpContextAccessor();
+        
+        builder.Host.UseSerilog();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(op =>
@@ -237,7 +240,7 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        //app.UseMiddleware<GenericExceptionMiddleware>();
+        app.UseMiddleware<GenericExceptionMiddleware>();
 
         app.UseCors(x => x
             .AllowAnyMethod()
