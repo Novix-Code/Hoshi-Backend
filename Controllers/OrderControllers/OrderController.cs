@@ -92,22 +92,22 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
             return StatusCode((int)response.StatusCode, response);
         }
         
-        [Authorize]
+        //[Authorize]
         [HttpGet("order-details")]
         public async Task<IActionResult> GetSubmittedOrderDetails([FromQuery] int orderId)
         {
 	        var result = await orderService.GetSubmittedOrderDetailsAsync(orderId);
 	        return StatusCode(result.StatusCode, result);
         }
-        [Authorize]
+        //[Authorize]
         [HttpGet("order-client-details")]
         public async Task<IActionResult> GetOrderClientDetails([FromQuery] int orderId)
         {
 	        var result = await orderService.GetOrderClientDetailsAsync(orderId);
 	        return StatusCode(result.StatusCode, result);
         }
-        [Authorize]
-        [HttpGet("complete-order")]
+        //[Authorize]
+        [HttpPost("complete-order")]
         public async Task<IActionResult> CompleteOrder([FromQuery] int orderId)
         {
 	        var result = await orderService.CompleteOrderAsync(orderId);
