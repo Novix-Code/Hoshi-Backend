@@ -37,15 +37,31 @@ namespace Hoshi.Repositories.ClientOfferService
                 targetOffer.OfferStatus = Enums.OfferStatus.Accepted;
                 _context.Offers.Update(targetOffer);
                 await _context.SaveChangesAsync();
+
                 // get target order to update  status and worker Id
-                var targetOrder = await _context.Orders.FindAsync(targetOffer.OrderId);
+                var targetOrder = await _context.Orders.FirstOrDefaultAsync(to=>to.Id == targetOffer.OrderId);
+
                 if (targetOrder == null)
                 {
-                    return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "target order not found", ErrorAr = "الطلب غير موجود" }, ResponseStatusCodes.NotFound);
                 }
+
+                // check if targetOffer.WorkerId is null
+                if (targetOffer.WorkerId == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "Worker ID is null", ErrorAr = "معرف العامل فارغ" }, ResponseStatusCodes.BadRequest);
+                }
+
+                // check if targetOrder.OrderId is null
+                if (targetOffer.OrderId == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "Order ID is null", ErrorAr = "معرف الطلب فارغ" }, ResponseStatusCodes.BadRequest);
+                }
+
                 targetOrder.OrderStatus = Enums.OrderStatus.Assigned;
                 targetOrder.WorkerId = targetOffer.WorkerId;
+
+
                 // add order History to the table
                 var ordHst = new OrderStatusHistory
                 {
@@ -55,18 +71,29 @@ namespace Hoshi.Repositories.ClientOfferService
                 };
                 await _context.OrderStatusHistory.AddAsync(ordHst);
                 _context.Orders.Update(targetOrder);
+
                 await _context.SaveChangesAsync();
+
                 // get Worker to get the relative details
-                var targetWorker = await _context.Users.FindAsync(targetOffer.WorkerId);
+                var targetWorker = await _context.Users.FirstOrDefaultAsync(u=>u.Id == targetOffer.WorkerId);
+
                 if (targetWorker == null)
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
                 }
                 var workerSpecificationTarget = await _context.WorkerSpecifications.Include(p => p.Job).FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
+                
                 if (workerSpecificationTarget == null)
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled" }, ResponseStatusCodes.NotFound);
                 }
+
+                // Check if Job is null
+                if (workerSpecificationTarget.Job == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "وظيفة العامل غير موجودة", ErrorEn = "worker job not found" }, ResponseStatusCodes.NotFound);
+                }
+
 
                 // Convert TempInvoice -> Invoice
                 var temp = await _context.TempInvoices.FirstOrDefaultAsync(t => t.OfferId == id);
@@ -74,6 +101,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 {
                     return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "الفاتورة المؤقتة غير موجودة", ErrorEn = "Temp invoice not found" }, ResponseStatusCodes.NotFound);
                 }
+
                 // handle create a Invoice That is initialCreate 
                 var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
                 if (targetInvoice == null)
@@ -92,6 +120,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 targetInvoice.WorkerPromotionFee = temp.WorkerPromotionFee;
                 targetInvoice.ClientTotalPrice = temp.ClientTotalPrice;
                 targetInvoice.WorkerTotalPrice = temp.WorkerTotalPrice;
+                
                 _context.Invoices.Update(targetInvoice);
                 await _context.SaveChangesAsync();
                 _context.TempInvoices.Remove(temp);
@@ -117,16 +146,29 @@ namespace Hoshi.Repositories.ClientOfferService
 
                 await transaction.CommitAsync();
 
+                if (_mapper == null)
+                {
+                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "AutoMapper not configured", ErrorAr = "خطأ في النظام" }, ResponseStatusCodes.InternalServerError);
+                }
+
+
                 OrderGetDTO orderData = _mapper.Map<OrderGetDTO>(targetOrder);
+
                 var workerData = new
                 {
-                    Name = targetWorker.UserName,
-                    workerJobTitle = workerSpecificationTarget.Job.JobTitle,
-                    imageUrl = workerSpecificationTarget.IdentityImageURL,
+                    Name = targetWorker.UserName ?? "Unknown",
+                    workerJobTitle = workerSpecificationTarget.Job.JobTitle ?? "Unknown Job",
+                    imageUrl = workerSpecificationTarget.IdentityImageURL ?? "",
                     RateRatio = workerSpecificationTarget.RateRito
                 };
                 InvoiceGetDTO invoiceData = _mapper.Map<InvoiceGetDTO>(targetInvoice);
-                await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
+
+                // Check if notification service is null before using it
+                if (_notificationServiceHandler != null)
+                {
+                    await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
+                }
+
                 return ResultDTO<object>.Success(new
                 {
                     orderData,
@@ -138,7 +180,7 @@ namespace Hoshi.Repositories.ClientOfferService
 
             {
                 await transaction.RollbackAsync();
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = ex.Message }, ResponseStatusCodes.InternalServerError);
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = ex.InnerException?.Message ?? ex.Message }, ResponseStatusCodes.InternalServerError);
             }
         }
 
