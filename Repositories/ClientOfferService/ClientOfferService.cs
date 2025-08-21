@@ -123,7 +123,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 
                 _context.Invoices.Update(targetInvoice);
                 await _context.SaveChangesAsync();
-                _context.TempInvoices.Remove(temp);
+                //_context.TempInvoices.Remove(temp);
 
                 if (targetOffer.AppliedPromotionId is not null)
                 {
