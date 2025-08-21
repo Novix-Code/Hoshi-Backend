@@ -78,7 +78,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
                 if (targetInvoice == null)
                 {
-                    targetInvoice = new Models.OrderModels.Invoice
+                    targetInvoice = new Invoice
                     {
                         OrderId = targetOffer.OrderId
                     };
@@ -95,17 +95,24 @@ namespace Hoshi.Repositories.ClientOfferService
                 _context.Invoices.Update(targetInvoice);
                 await _context.SaveChangesAsync();
                 _context.TempInvoices.Remove(temp);
-                // add offer in Promotion Taken 
-                var promTaken = new PromotionTaken
+
+                if (targetOffer.AppliedPromotionId is not null)
                 {
-                    CreatedAt = DateTime.UtcNow,
-                    OfferId = id,
-                    OrderId = targetOrder.Id,
-                    PromotionId = (int)targetOffer.AppliedPromotionId,
-                    UserId = targetOffer.WorkerId
-                };
-                await _context.PromotionsTaken.AddAsync(promTaken);
-                targetOrder.OrderStatus = Enums.OrderStatus.InProgress;
+                    // add offer in Promotion Taken 
+                    var promTaken = new PromotionTaken
+                    {
+                        CreatedAt = DateTime.UtcNow,
+                        OfferId = id,
+                        OrderId = targetOrder.Id,
+                        PromotionId = (int)targetOffer.AppliedPromotionId,
+                        UserId = targetOffer.WorkerId
+                    };
+
+                    await _context.PromotionsTaken.AddAsync(promTaken);
+                }
+
+                //targetOrder.OrderStatus = Enums.OrderStatus.InProgress;
+
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
