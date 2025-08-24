@@ -8,7 +8,7 @@ using Hoshi.Models.DashboardModels;
 
 namespace Hoshi.Controllers.DashboardControllers.ArchiveSettingsControllers
 {
-
+    [NonController]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

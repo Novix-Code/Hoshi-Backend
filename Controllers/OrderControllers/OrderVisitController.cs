@@ -16,7 +16,7 @@ using Hoshi.Models.OrderModels;
 
 namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
 {
-
+    [NonController]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderVisitController : GenericFSPController<

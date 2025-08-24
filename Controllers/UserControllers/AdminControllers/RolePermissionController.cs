@@ -8,7 +8,7 @@ using Hoshi.Models.UserModels.AdminModels;
 
 namespace Hoshi.Controllers.UserControllers.AdminControllers.RolePermissionControllers
 {
-
+    [NonController]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
