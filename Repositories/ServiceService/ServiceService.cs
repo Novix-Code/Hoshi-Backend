@@ -274,15 +274,28 @@ namespace Hoshi.Repositories.ServiceService
             var notifiedUserSet = new HashSet<int>(notifiedUserIds);
 
             // Workers payment requests
-            var paymentRequests = await _context.WorkerSpecifications
+            var workerPaymentRequests = await _context.WorkerSpecifications
                 .AsNoTracking()
                 .Include(ws => ws.User)
                 .Include(ws => ws.Job)
                 .Include(ws => ws.LivingCity)
-                .Select(ws => new 
+                .Select(ws => new
                 {
                     Worker = _mapper.Map<WorkerSpecificationGetDTO>(ws),
                     Balance = workerBalanceDict.ContainsKey(ws.UserId) ? workerBalanceDict[ws.UserId] : 0.0
+                    ,
+                    PaymentRequests = _context.WorkerPaymentHistroys
+                        .Where(p => p.WorkerId == ws.UserId)
+                        .OrderByDescending(p => p.CreatedAt)
+                        .Select(p => new 
+                        {
+                            Id = p.Id,
+                            BillImageURL = p.BillImageURL,
+                            IsApproved = p.IsApproved,
+                            CreatedAt = p.CreatedAt
+                        })
+                        .ToList(),
+
                 })
                 .ToListAsync();
 
@@ -327,7 +340,7 @@ namespace Hoshi.Repositories.ServiceService
                 TotalOrdersPrices = invoiceSums?.TotalOrdersPrices ?? 0.0,
                 TotalOrdersFees = invoiceSums?.TotalOrdersFees ?? 0.0,
                 TotalUncollectedFees = invoiceSums?.TotalUncollectedFees ?? 0.0,
-                PaymentRequests = paymentRequests,
+                workerPaymentRequests = workerPaymentRequests,
                 WorkersUncollectedFees = workersUncollectedFees,
                 ClientsUncollectedFees = clientsUncollectedFees
             });
