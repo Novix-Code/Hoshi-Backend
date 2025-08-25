@@ -9,7 +9,7 @@ using Hoshi.Models.DashboardModels;
 
 namespace Hoshi.Controllers.DashboardControllers.CompanyRevenueControllers
 {
-
+    [NonController]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

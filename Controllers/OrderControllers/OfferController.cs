@@ -104,7 +104,7 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
         [HttpGet("get-offer-details-by")]
         public override async Task<IActionResult> GetById([FromQuery] int id)
         {
-            var response = await clientOfferService.GetByIdAsync(id);
+            var response = await clientOfferService.GetOfferDetailsByIdAsync(id);
             return StatusCode((int)response.StatusCode, response);
         }
 

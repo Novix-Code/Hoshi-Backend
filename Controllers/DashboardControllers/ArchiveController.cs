@@ -9,7 +9,7 @@ using Hoshi.Repositories.ArchiveService;
 
 namespace Hoshi.Controllers.DashboardControllers.ArchiveControllers
 {
-
+    [NonController]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

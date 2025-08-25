@@ -27,15 +27,21 @@ namespace Hoshi.Data.IdentitySeeders
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-            string adminEmail = "admin@example.com";
-            string adminPassword = "P@ssw0rd";
-
+            var dictionaryAdminUsers = new Dictionary<string, List<string>>
+            {
+                { "adminEmail" ,new List<string>{"novix@novix.com" , "hoshi@hoshi.com" }} ,
+                { "adminPassword" , new List<string>{"Novix@12345" , "Hoshi@12345"}}
+            };
             // Create Admin role if it doesn't exist
             if (!await roleManager.RoleExistsAsync("admin"))
-            {
                 await roleManager.CreateAsync(new IdentityRole<int>("admin"));
-            }
-
+            // Check if admin is exist , if not we will go to create it
+            await CheckThenAddAdminUser(userManager, dictionaryAdminUsers["adminEmail"][0], dictionaryAdminUsers["adminPassword"][0]);
+            await CheckThenAddAdminUser(userManager, dictionaryAdminUsers["adminEmail"][1], dictionaryAdminUsers["adminPassword"][1]);   
+        }
+        public static async Task CheckThenAddAdminUser(UserManager<User> userManager,
+                                                       string adminEmail , string adminPassword)
+        {
             // Check if the admin user exists
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
             if (adminUser == null)
@@ -46,7 +52,6 @@ namespace Hoshi.Data.IdentitySeeders
                     Email = adminEmail,
                     EmailConfirmed = true
                 };
-
                 var result = await userManager.CreateAsync(newAdmin, adminPassword);
                 if (result.Succeeded)
                 {

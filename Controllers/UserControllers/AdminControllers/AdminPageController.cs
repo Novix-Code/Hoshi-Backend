@@ -10,7 +10,7 @@ using Hoshi.Models.UserModels.AdminModels;
 
 namespace Hoshi.Controllers.UserControllers.AdminControllers.AdminPageControllers
 {
-
+    [NonController]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

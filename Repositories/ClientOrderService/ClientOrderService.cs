@@ -52,16 +52,19 @@ namespace Hoshi.Repositories.ClientOrderService
         public async Task<ResultDTO<object>> AddOrderAsync(OrderPostDTO dto)
         {
 
+            // 1. Get Client Specification
+            var clientSpecificationDetails = await _Context.ClientSpecifications
+                                            .FirstOrDefaultAsync(p => p.UserId == dto.ClientId);
+            if (clientSpecificationDetails is null)
+                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "بيانات العميل لم يتم ادخالها"
+                                                               , ErrorEn = "Client specification not found" });
+
+            // 2. Add Order
             var orderMapper = _mapper.Map<Order>(dto);
             await _Context.Orders.AddAsync(orderMapper);
-            var clientSpecificationDetails = await _Context.ClientSpecifications.FirstOrDefaultAsync(p => p.UserId == dto.ClientId);
-            if (clientSpecificationDetails is null)
-            {
-                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "بيانات العميل لم يتم ادخالها"
-                                                                , ErrorEn = "Client specification not found" });
-            }    
             await _Context.SaveChangesAsync();
-                
+            
+            // 3. Add Order Status History
             var histOrder = new OrderStatusHistoryPostDTO
             {
                 CreatedAt = DateTime.Now,
@@ -69,6 +72,8 @@ namespace Hoshi.Repositories.ClientOrderService
                 OrderStatus = orderMapper.OrderStatus
             };
             var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
+
+            // 4. Add Invoice
             var invoicMapper = new Invoice
             {
                 OrderId = orderMapper.Id
@@ -77,15 +82,12 @@ namespace Hoshi.Repositories.ClientOrderService
                 invoicMapper.ClientIndebtednessFee = clientSpecificationDetails.Indebtedness;
             if (clientSpecificationDetails.Balance>0)
                 invoicMapper.ClientPromotionFee = clientSpecificationDetails.Balance;
-
             _Context.Invoices.Add(invoicMapper);
             _Context.OrderStatusHistory.Add(histMapper);
 
-            var clientPromotionNonTaken = await _clientHomeService.GetByIdServiceAsync(dto.ClientId);
+            // 5. Determin Promotion taken and Add it
+            var clientPromotionNonTaken = await _clientHomeService.GetClientWithServiceById(dto.ClientId);
             var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
-
-            //var _offerId = await _Context.Offers.Where(p => p.OrderId == orderMapper.Id).Select(p => (int?)p.Id).FirstOrDefaultAsync();
-
             if (slectedPromotionId is not 0)
             {
                 var promotionOrder = new PromotionTakenPostDTO
@@ -99,11 +101,12 @@ namespace Hoshi.Repositories.ClientOrderService
                 _Context.PromotionsTaken.Add(promotionMapper);
             }
 
-            // Add order images
+            // 6. Add order images
             if (!dto.OrderImagesFiles.IsNullOrEmpty())
                 await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
             await _Context.SaveChangesAsync();
-            // send Notification
+
+            // 7. Send Notification
             await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة اوردر" , orderMapper.Id);
             return ResultDTO<object>.Success(orderMapper.Id.ToString());
             
@@ -111,21 +114,19 @@ namespace Hoshi.Repositories.ClientOrderService
 
         public async Task<ResultDTO<string>> DeleteOrder(int orderId)
         {
+            // 1. Get Order and check if it is Deleted or not
             var targetOrder = await _Context.Orders.FindAsync(orderId);
-            // check if order is published
-
             if (targetOrder.OrderStatus == Enums.OrderStatus.Cancelled)
-            {
-                return ResultDTO<string>.Failure(new ErrorDTO { ErrorEn = "this order is already deleted" ,
-                                                                ErrorAr = "العرض تم حذفه بالفعل"} , ResponseStatusCodes.BadRequest);
-
-            }
-            
+                return ResultDTO<string>.BadRequest(new ErrorDTO { ErrorEn = "this order is already deleted" ,
+                                                                   ErrorAr = "العرض تم حذفه بالفعل"});
+            // 2. Check If Order Is assigned
             if(targetOrder.OrderStatus == Enums.OrderStatus.Assigned)
             {
+                // 2.1 Determin the Time that is matching with business logic which is (12H before and after)
                 var befor12H = targetOrder.ServicingDateTime.AddHours(-12);
                 var after12H = targetOrder.ServicingDateTime.AddHours(12);
-                // check if the time before 12 hours of working
+                
+                // 2.2 Befor 12H
                 if(DateTime.UtcNow <= befor12H)
                 {
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
@@ -135,53 +136,49 @@ namespace Hoshi.Repositories.ClientOrderService
                     await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
                     return ResultDTO<string>.Success("Successfully deleted");
                 }
-                // here check if after 12 hours from data of work the we will calculate the 
+
+                // 2.3 After 12H
                 if (DateTime.UtcNow >= after12H) 
                 {
+                    // 2.4 Determin Fee for client and get details about him and Walledt information about worker
+                    double clientIndebtFee = await _Context.Fees
+                            .Where(f => f.ServiceId == targetOrder.ServiceId && f.FeeType == FeeType.ClientIndebtednessFee && !f.IsSpecial)
+                            .Select(f => f.MainFees)
+                            .FirstOrDefaultAsync();
 
-                    double ClientIndebtFee = await _Context.Fees
-                        .Where(f => f.ServiceId == targetOrder.ServiceId && f.FeeType == FeeType.ClientIndebtednessFee && !f.IsSpecial)
-                        .Select(f => f.MainFees)
-                        .FirstOrDefaultAsync();
-                    var clientDetails = await _Context.ClientSpecifications.
-                        FirstOrDefaultAsync(p => p.UserId == targetOrder.ClientId);
+                    var clientDetails = await _Context.ClientSpecifications
+                            .FirstOrDefaultAsync(p => p.UserId == targetOrder.ClientId);
+
                     if (clientDetails == null) 
-                    {
-                        return ResultDTO<string>.Failure(new ErrorDTO { ErrorEn = "client Specification not found", 
-                            ErrorAr = "بيانات العميل لم يتم ادخالها بعد" }, ResponseStatusCodes.NotFound);
-                    }
-                    var workerWallet = await _Context.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == targetOrder.WorkerId);
+                        return ResultDTO<string>.NotFound(new ErrorDTO { ErrorEn = "client Specification not found", 
+                                                                         ErrorAr = "بيانات العميل لم يتم ادخالها بعد" });
+                    var workerWallet = await _Context.WorkerWallets
+                            .FirstOrDefaultAsync(w => w.WorkerId == targetOrder.WorkerId);
                     if (workerWallet == null)
-                    {
-                        return ResultDTO<string>.NotFound(new ErrorDTO
-                        {
-                            ErrorAr = "محفظة العامل غير موجودة.",
-                            ErrorEn = "Worker wallet not found."
-                        });
-                    }
-                    if (clientDetails.Balance < ClientIndebtFee)
-                    {
-                        // the balance is not enough
-                        // first add the amount in indept of client
-                        clientDetails.Indebtedness += ClientIndebtFee;
-                    }
+                        return ResultDTO<string>.NotFound(new ErrorDTO { ErrorAr = "محفظة العامل غير موجودة.",
+                                                                         ErrorEn = "Worker wallet not found."});
+
+                    // 2.5 Check the balance
+                    if (clientDetails.Balance < clientIndebtFee)
+                        clientDetails.Indebtedness += clientIndebtFee;
                     else
-                    {
-                        clientDetails.Balance -= ClientIndebtFee;
-                    }
-                    // add the amount to worker wallet
-                    workerWallet.Balance += ClientIndebtFee;
+                        clientDetails.Balance -= clientIndebtFee;
+
+                    // 2.6 Add amount to worker wallet
+                    workerWallet.Balance += clientIndebtFee;
                     _Context.WorkerWallets.Update(workerWallet);
                     _Context.ClientSpecifications.Update(clientDetails);
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
                     _Context.Orders.Update(targetOrder);    
                     await _Context.SaveChangesAsync();
-                    // send notification with indept
+
+                    //2.7 send notification with indept
                     await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker($"قام العميل بإلغاء الطلب وقيمه الغرامه هي : {ClientIndebtFee}", (int)targetOrder.WorkerId);
+                    await notificationServiceHandler.sendMessagetoWorker($"قام العميل بإلغاء الطلب وقيمه الغرامه هي : {clientIndebtFee}", (int)targetOrder.WorkerId);
                     return ResultDTO<string>.Success("Successfully deleted");
 
                 }
+                // 2.8 This time is early the date ( no Fee here it just Cancellation the order)
                 else
                 {
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
@@ -196,6 +193,7 @@ namespace Hoshi.Repositories.ClientOrderService
               
 
             }
+            // 3. the order is Still Published --> no fee for client
             else
             {
                 
@@ -224,26 +222,42 @@ namespace Hoshi.Repositories.ClientOrderService
 
         public async Task<ResultDTO<OrderGetDetailsDto>> GetOrderDetails(int orderId)
         {
+            // 1. Initiate DTO for result
             var resultDto = new OrderGetDetailsDto();
-            var orderData = await _Context.Orders.FindAsync(orderId);
-            var target = _mapper.Map<OrderGetDTO>(orderData);
-            var targetOffers = await _Context.Offers.Where(p => p.OrderId == orderId).ProjectTo<OfferGetDTO>(_mapper.ConfigurationProvider).ToListAsync();
+
+            // 2. Get Order Data
+            var orderData = await _Context.Orders
+                .Include(o=>o.OrderVisits)
+                .ProjectTo<OrderGetDTO>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(i=>i.Id== orderId);
+
+            // 3. Get Offer Data
+            var targetOffers = await _Context.Offers.Where(p => p.OrderId == orderId)
+                .ProjectTo<OfferGetDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
             if (targetOffers.Count() > 0)
             {
                 var workerId = targetOffers[0].Worker!.Id;
                 var workerData = await _Context.WorkerPortfolios.FindAsync(workerId);
                 resultDto.WorkerData = _mapper.Map<WorkerPortfolioGetDTO>(workerData);
             }
+
+            // 4. get order visit data if exist
             if(orderData.OrderVisits != null)
             {
                 resultDto.VisiteRequest = _mapper.Map<List<OrderVisitGetDTO>>(orderData.OrderVisits);
             }
-            var orderInvoice = await _Context.Invoices.Where(p => p.OrderId == orderId).ProjectTo<InvoiceGetDTO>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
+
+            // 5. Get Invoice Data
+            var orderInvoice = await _Context.Invoices
+                .Where(p => p.OrderId == orderId)
+                .ProjectTo<InvoiceGetDTO>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
             if (orderInvoice != null) 
-            {
                 resultDto.ClientOrdeInvoice = orderInvoice;
-            }
-            resultDto.OrderData = target;
+
+            //6. the result model handling
+            resultDto.OrderData = orderData;
             resultDto.Offers = targetOffers;
             return ResultDTO<OrderGetDetailsDto>.Success(resultDto);
         }

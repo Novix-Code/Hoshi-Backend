@@ -14,14 +14,14 @@ namespace Hoshi.Repositories.ClientHomeService
     public class ClientHomeService : IClientHomeService
     {
         private readonly HoshiDbContext _context;
-        private readonly GenericCRUDLibrary.GenericRepositories.GenericCRUDService.IGenericCRUDService<HoshiDbContext,PromotionTaken,PromotionTakenGetDTO,PromotionTakenPostDTO,PromotionTakenPutDTO> genericCRUDLibrary;
-        public ClientHomeService(HoshiDbContext context, GenericCRUDLibrary.GenericRepositories.GenericCRUDService.IGenericCRUDService<HoshiDbContext, PromotionTaken, PromotionTakenGetDTO, PromotionTakenPostDTO, PromotionTakenPutDTO> genericCRUDLibrary)
+        public ClientHomeService(HoshiDbContext context)
         {
             _context = context;
-            this.genericCRUDLibrary = genericCRUDLibrary;
+      
         }
-        public async Task<ResultDTO<List<GetAllHomeServiceDTO>>> GetAllServiceAsync()
+        public async Task<ResultDTO<List<GetAllHomeServiceDTO>>> GetAllClientWithServiceAsync()
         {
+            // 1. Get all relative Services and promotions
             var allClients = await _context.Users
                 .Where(u => u.UserType == "Client")
                 .ToListAsync();
@@ -37,11 +37,11 @@ namespace Hoshi.Repositories.ClientHomeService
             var allClientPromotionsTaken = await _context.PromotionsTaken
                 .Where(p => allClients.Select(c => c.Id).Contains(p.UserId))
                 .ToListAsync();
-
+            
             var resultList = new List<GetAllHomeServiceDTO>();
-
             foreach (var client in allClients)
             {
+                // 2. Get each Client promotions and services
                 var takenPromotionIds = allClientPromotionsTaken
                     .Where(p => p.UserId == client.Id)
                     .Select(p => p.PromotionId)
@@ -58,7 +58,7 @@ namespace Hoshi.Repositories.ClientHomeService
                         .Where(s => !s.IsDeleted)
                         .ToList()
                 }).ToList();
-
+                // 3. Build Results
                 var clientHome = new ClientHomeDto
                 {
                     Promotions = nonTakenPromotions,
@@ -79,14 +79,14 @@ namespace Hoshi.Repositories.ClientHomeService
 
         }
 
-        public async Task<ResultDTO<ClientHomeDto>> GetByIdServiceAsync(int Id)
+        public async Task<ResultDTO<ClientHomeDto>> GetClientWithServiceById(int ClientId)
         {
-            // here related Promotions Taken
+            // 1. Get all relative Services and promotions
             var takenPromotionIds = await _context.PromotionsTaken
-                .Where(p => p.UserId == Id)
+                .Where(p => p.UserId == ClientId)
                 .Select(p => p.PromotionId)
                 .ToListAsync();
-            // all Client Promotion
+
             var clientPromotions = await _context.Promotions
                 .Where(p => p.PromotionFor == Enums.PromotionFor.Client)
                 .ToListAsync();
@@ -107,7 +107,7 @@ namespace Hoshi.Repositories.ClientHomeService
                     .ToList()
             }).ToList();
 
-            // Build the result DTO
+            //3. Build the result DTO
             var result = new ClientHomeDto
             {
                 Promotions = nonTakenPromotions,
