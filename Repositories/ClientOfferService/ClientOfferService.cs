@@ -24,54 +24,29 @@ namespace Hoshi.Repositories.ClientOfferService
             _logger = logger;
         }
 
-        public async Task<ResultDTO<object>> AcceptOfferAsync(int id)
+        public async Task<ResultDTO<object>> AcceptOfferAsync(int offerId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
-            {
-                _logger.LogInformation("Start AcceptOfferAsync for OfferId={OfferId}", id);
+            {    
 
-                // get target offer 
-                var targetOffer = await _context.Offers.Include(p=>p.AppliedPromotion).FirstOrDefaultAsync(p=>p.Id == id);
+                _logger.LogInformation("Start AcceptOfferAsync for OfferId={OfferId}", offerId);
+                // 1. Get offer and update it's status also update order's status
+                var targetOffer = await _context.Offers
+                    .Include(p=>p.AppliedPromotion)
+                    .Include(c=>c.Order)
+                    .Include(w=>w.Worker)
+                    .FirstOrDefaultAsync(p=>p.Id == offerId);
                 if (targetOffer == null)
-                {
-                    _logger.LogWarning("Offer with Id={OfferId} not found", id);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "target offer not found", ErrorAr = "العرض غير موجود" }, ResponseStatusCodes.NotFound);
-                }
-                // change status of offer to accepted
+                    return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn = "target offer not found",
+                                                                     ErrorAr = "العرض غير موجود" });
                 targetOffer.OfferStatus = Enums.OfferStatus.Accepted;
+                targetOffer.Order.OrderStatus = Enums.OrderStatus.Assigned;
+                targetOffer.Order.WorkerId = targetOffer.WorkerId;
                 _context.Offers.Update(targetOffer);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Offer {OfferId} status updated to Accepted", id);
-
-                // get target order to update  status and worker Id
-                var targetOrder = await _context.Orders.FirstOrDefaultAsync(to=>to.Id == targetOffer.OrderId);
-
-                if (targetOrder == null)
-                {
-                    _logger.LogWarning("Order with Id={OrderId} not found for OfferId={OfferId}", targetOffer.OrderId, id);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "target order not found", ErrorAr = "الطلب غير موجود" }, ResponseStatusCodes.NotFound);
-                }
-
-                // check if targetOffer.WorkerId is null
-                if (targetOffer.WorkerId == null)
-                {
-                    _logger.LogError("Offer {OfferId} has null WorkerId", id);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "Worker ID is null", ErrorAr = "معرف العامل فارغ" }, ResponseStatusCodes.BadRequest);
-                }
-
-                // check if targetOrder.OrderId is null
-                if (targetOffer.OrderId == null)
-                {
-                    _logger.LogError("Offer {OfferId} has null OrderId", id);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "Order ID is null", ErrorAr = "معرف الطلب فارغ" }, ResponseStatusCodes.BadRequest);
-                }
-
-                targetOrder.OrderStatus = Enums.OrderStatus.Assigned;
-                targetOrder.WorkerId = targetOffer.WorkerId;
-
-
-                // add order History to the table
+                _context.Orders.Update(targetOffer.Order);
+              
+                // 2. Add order History into OrderStatusHistory table
                 var ordHst = new OrderStatusHistory
                 {
                     CreatedAt = DateTime.UtcNow,
@@ -79,45 +54,29 @@ namespace Hoshi.Repositories.ClientOfferService
                     OrderStatus = Enums.OrderStatus.Assigned
                 };
                 await _context.OrderStatusHistory.AddAsync(ordHst);
-                _context.Orders.Update(targetOrder);
-
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Order {OrderId} assigned to Worker {WorkerId}", targetOrder.Id, targetOffer.WorkerId);
 
-                // get Worker to get the relative details
-                var targetWorker = await _context.Users.FirstOrDefaultAsync(u=>u.Id == targetOffer.WorkerId);
-
-                if (targetWorker == null)
-                {
-                    _logger.LogWarning("Worker with Id={WorkerId} not found", targetOffer.WorkerId);
-                    return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-                }
-                var workerSpecificationTarget = await _context.WorkerSpecifications.Include(p => p.Job).FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
-                
+                _logger.LogInformation("Offer {OfferId} status updated to Accepted", offerId);
+                _logger.LogInformation("Order {OrderId} assigned to Worker {WorkerId}", 
+                                        targetOffer.Order.Id, targetOffer.WorkerId);
+               
+                // 3. Determin Worker Details ( worker specification )
+                var workerSpecificationTarget = await _context.WorkerSpecifications
+                    .Include(p => p.Job)
+                    .FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
                 if (workerSpecificationTarget == null)
-                {
-                    _logger.LogWarning("Worker specification not found for WorkerId={WorkerId}", targetOffer.WorkerId);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ", ErrorEn = "worker specification not handled" }, ResponseStatusCodes.NotFound);
-                }
-
-                // Check if Job is null
+                    return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "تفاصيل العامل ليست موجوده ",
+                                                                     ErrorEn = "worker specification not handled" });
                 if (workerSpecificationTarget.Job == null)
-                {
-                    _logger.LogWarning("Worker job not found for WorkerId={WorkerId}", targetOffer.WorkerId);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "وظيفة العامل غير موجودة", ErrorEn = "worker job not found" }, ResponseStatusCodes.NotFound);
-                }
-
-
-                // Convert TempInvoice -> Invoice
-                var temp = await _context.TempInvoices.FirstOrDefaultAsync(t => t.OfferId == id);
+                    return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "وظيفة العامل غير موجودة",
+                                                                     ErrorEn = "worker job not found" });
+                
+                // 4. Check Temporary Invoice and also Create a new Invoice
+                var temp = await _context.TempInvoices.FirstOrDefaultAsync(t => t.OfferId == offerId);
                 if (temp == null)
-                {
-                    _logger.LogWarning("Temp invoice not found for OfferId={OfferId}", id);
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr = "الفاتورة المؤقتة غير موجودة", ErrorEn = "Temp invoice not found" }, ResponseStatusCodes.NotFound);
-                }
-
-                // handle create a Invoice That is initialCreate 
-                var targetInvoice = await _context.Invoices.Where(p => p.OrderId == targetOffer.OrderId).FirstOrDefaultAsync();
+                    return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "الفاتورة المؤقتة غير موجودة", 
+                                                                    ErrorEn = "Temp invoice not found" });
+                var targetInvoice = await _context.Invoices.FirstOrDefaultAsync(p => p.OrderId == targetOffer.OrderId);
                 if (targetInvoice == null)
                 {
                     targetInvoice = new Invoice
@@ -125,8 +84,8 @@ namespace Hoshi.Repositories.ClientOfferService
                         OrderId = targetOffer.OrderId
                     };
                     _context.Invoices.Add(targetInvoice);
+                    await _context.SaveChangesAsync();
                 }
-
                 targetInvoice.OrderPrice = temp.OrderPrice;
                 targetInvoice.CommissionFee = temp.CommissionFee;
                 targetInvoice.VisitingFee = temp.VisitingFee;
@@ -134,61 +93,45 @@ namespace Hoshi.Repositories.ClientOfferService
                 targetInvoice.WorkerPromotionFee = temp.WorkerPromotionFee;
                 targetInvoice.ClientTotalPrice = temp.ClientTotalPrice;
                 targetInvoice.WorkerTotalPrice = temp.WorkerTotalPrice;
-                
                 _context.Invoices.Update(targetInvoice);
-                await _context.SaveChangesAsync();
                 _logger.LogInformation("Invoice created/updated for OrderId={OrderId}", targetOffer.OrderId);
 
+                // 5. Determin Applied Promotions and add it to PromotionTaken Table
                 //_context.TempInvoices.Remove(temp);
-
                 if (targetOffer.AppliedPromotionId is not null)
                 {
                     // add offer in Promotion Taken 
                     var promTaken = new PromotionTaken
                     {
                         CreatedAt = DateTime.UtcNow,
-                        OfferId = id,
-                        OrderId = targetOrder.Id,
+                        OfferId = offerId,
+                        OrderId = targetOffer.Order.Id,
                         PromotionId = (int)targetOffer.AppliedPromotionId,
                         UserId = targetOffer.WorkerId
                     };
-
                     await _context.PromotionsTaken.AddAsync(promTaken);
-                    _logger.LogInformation("PromotionTaken added for OfferId={OfferId}", id);
+                    _logger.LogInformation("PromotionTaken added for OfferId={OfferId}", offerId);
                 }
-
                 //targetOrder.OrderStatus = Enums.OrderStatus.InProgress;
-
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Offer {OfferId} accepted successfully", id);
+                _logger.LogInformation("Offer {OfferId} accepted successfully", offerId);
                 await transaction.CommitAsync();
 
-                if (_mapper == null)
-                {
-                    _logger.LogError("AutoMapper is not configured!");
-                    return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "AutoMapper not configured", ErrorAr = "خطأ في النظام" }, ResponseStatusCodes.InternalServerError);
-                }
+                // 6. Send notification to the worker that his offer is accepted
+                await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
+                _logger.LogInformation("Notification sent to Worker {WorkerId}", targetOffer.WorkerId);
 
-
-                OrderGetDTO orderData = _mapper.Map<OrderGetDTO>(targetOrder);
-
+                // 7. Handle result section -- this DTOs to match business logic that required
+                OrderGetDTO orderData = _mapper.Map<OrderGetDTO>(targetOffer.Order);
                 var workerData = new
                 {
-                    Name = targetWorker.UserName ?? "Unknown",
+                    Name = targetOffer.Worker.UserName ?? "Unknown",
                     workerJobTitle = workerSpecificationTarget.Job.JobTitle ?? "Unknown Job",
                     imageUrl = workerSpecificationTarget.IdentityImageURL ?? "",
                     RateRatio = workerSpecificationTarget.RateRito
                 };
                 InvoiceGetDTO invoiceData = _mapper.Map<InvoiceGetDTO>(targetInvoice);
-
-                // Check if notification service is null before using it
-                if (_notificationServiceHandler != null)
-                {
-                    await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
-                    _logger.LogInformation("Notification sent to Worker {WorkerId}", targetOffer.WorkerId);
-
-                }
-
+                
                 return ResultDTO<object>.Success(new
                 {
                     orderData,
@@ -200,34 +143,35 @@ namespace Hoshi.Repositories.ClientOfferService
 
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error in AcceptOfferAsync for OfferId={OfferId}", id);
+                _logger.LogError(ex, "Error in AcceptOfferAsync for OfferId={OfferId}", offerId);
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = ex.InnerException?.Message ?? ex.Message }, ResponseStatusCodes.InternalServerError);
             }
         }
 
-        public async Task<ResultDTO<object>> GetByIdAsync(int id)
+        public async Task<ResultDTO<object>> GetOfferDetailsByIdAsync(int offerId)
         {
-            var targetOffer = await _context.Offers.FindAsync(id);
+            var targetOffer = await _context.Offers
+                .Include(p=>p.Worker)
+                .FirstOrDefaultAsync(I=>I.Id == offerId);
             if (targetOffer == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-            }
-            var targetWorker = await _context.Users.FindAsync(targetOffer.WorkerId);
-            var workerSpecificationTarget = await _context.WorkerSpecifications.Where(p => p.UserId == targetOffer.WorkerId).FirstOrDefaultAsync();
+                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn="this offer not exist" , ErrorAr="لم يتم ايجاد العرض"});
+           
+            // get relative information about worker that's in WorkerSpecification table
+            var workerSpecificationTarget = await _context.WorkerSpecifications
+                .Include(p=>p.Job)
+                .FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
             if (workerSpecificationTarget == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-            }
-            var job = await _context.Jobs.FindAsync(workerSpecificationTarget.JobId);
-            if (job == null)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
-
-            }
+                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn = "Worker Specification Not Found", ErrorAr ="بيانات العامل غير مكتمله"});
+           
+            // need to check if the worker details entered or not else           
+            if (workerSpecificationTarget.Job == null)
+                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn = "Worker Job Not Found" , ErrorAr = "لم يتم ارفاق وظيفة للعامل "});
+       
+            // as businees logic need this object matches to the returned output from this method
             var workerData = new
             {
-                WorkerName = targetWorker.UserName,
-                WorkerJobTitle = job.JobTitle,
+                WorkerName = targetOffer.Worker.UserName,
+                WorkerJobTitle = workerSpecificationTarget.Job.JobTitle,
                 workerImageUrl = workerSpecificationTarget.IdentityImageURL,
                 WorkerRateRatio = workerSpecificationTarget.RateRito,
                 WorkerTotalFinishedOrders = workerSpecificationTarget.CompletedOrders,

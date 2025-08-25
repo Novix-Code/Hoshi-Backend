@@ -62,14 +62,14 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetById(int id)
         {
-            var response = await clientHomeService.GetByIdServiceAsync(id);
+            var response = await clientHomeService.GetClientWithServiceById(id);
             return StatusCode((int)response.StatusCode,response);
         }
         
         [EndpointGroupName("Client")]
         public override async Task<IActionResult> GetAll()
         {
-            var response  = await clientHomeService.GetAllServiceAsync();
+            var response  = await clientHomeService.GetAllClientWithServiceAsync();
             return StatusCode((int)response.StatusCode, response);
         }
 
