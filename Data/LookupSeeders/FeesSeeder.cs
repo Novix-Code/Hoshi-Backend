@@ -51,43 +51,10 @@ namespace Hoshi.Data.LookupSeeders
                 new Fee()
                 {
                     Id = 5,
-                    MainFees = 10.0,
-                    MinFees = 00.0,
-                    MaxFees = 00.0,
+                    MainFees = 0.0,
+                    MinFees = 0.0,
+                    MaxFees = 200.0,
                     FeeType = Enums.FeeType.WorkerIndebtednessFee,
-                    CreatedAt = createdAt,
-                },
-                new Fee()
-                {
-                    Id = 6,
-                    MainFees = 18.0,
-                    MinFees = 19.0,
-                    MaxFees = 210.0,
-                    FeeType = Enums.FeeType.CommissionFee,
-                    IsSpecial = true,
-                    ServiceId = 1,
-                    CreatedAt = createdAt,
-                },
-                new Fee()
-                {
-                    Id = 7,
-                    MainFees = 12.0,
-                    MinFees = 15.0,
-                    MaxFees = 175.0,
-                    FeeType = Enums.FeeType.VisitingFee,
-                    IsSpecial = true,
-                    ServiceId = 8,
-                    CreatedAt = createdAt,
-                },
-                new Fee()
-                {
-                    Id = 8,
-                    MainFees = 9.0,
-                    MinFees = 8.5,
-                    MaxFees = 100.0,
-                    FeeType = Enums.FeeType.CancellationFee,
-                    IsSpecial = true,
-                    ServiceId = 15,
                     CreatedAt = createdAt,
                 },
             };

@@ -272,7 +272,8 @@ namespace Hoshi.Repositories.ServiceService
                 .Distinct()
                 .ToListAsync();
             var notifiedUserSet = new HashSet<int>(notifiedUserIds);
-
+            
+            /*
             // Workers payment requests
             var workerPaymentRequests = await _context.WorkerSpecifications
                 .AsNoTracking()
@@ -281,40 +282,72 @@ namespace Hoshi.Repositories.ServiceService
                 .Include(ws => ws.LivingCity)
                 .Select(ws => new
                 {
-                    Worker = _mapper.Map<WorkerSpecificationGetDTO>(ws),
-                    Balance = workerBalanceDict.ContainsKey(ws.UserId) ? workerBalanceDict[ws.UserId] : 0.0
-                    ,
-                    PaymentRequests = _context.WorkerPaymentHistroys
-                        .Where(p => p.WorkerId == ws.UserId)
+                    //Worker = _mapper.Map<WorkerSpecificationGetDTO>(ws),
+                    
+
+                    Balance = workerBalanceDict.ContainsKey(ws.UserId) ? workerBalanceDict[ws.UserId] : 0.0,
+                    PaymentRequest = _context.WorkerPaymentHistroys
+                        .Where(p => p.WorkerId == ws.UserId && p.IsApproved == false)
                         .OrderByDescending(p => p.CreatedAt)
                         .Select(p => new 
                         {
                             Id = p.Id,
-                            BillImageURL = p.BillImageURL,
-                            IsApproved = p.IsApproved,
                             CreatedAt = p.CreatedAt
                         })
-                        .ToList(),
+                        .First(),
 
+                })
+                .ToListAsync();*/
+            var workerPaymentRequests = await _context.WorkerPaymentHistroys
+                .AsNoTracking()
+                .Include(u => u.Worker)
+                .Select(r => new
+                {
+                    WorkerData = _context.WorkerSpecifications
+                        .AsNoTracking()
+                        .Include(ws => ws.Job)
+                        .Include(ws => ws.LivingCity)
+                        .Where(p => p.UserId == r.Worker!.Id)
+                        .Select(ws => new
+                        {
+                            Name = r.Worker!.FullName,
+                            Email = ws.User!.Email,
+                            Image = ws.User!.ImageURL,
+                            Job = ws.Job!.JobTitle,
+                            City = ws.LivingCity!.CityName,
+                            Balance = workerBalanceDict.ContainsKey(ws.UserId) ? workerBalanceDict[ws.UserId] : 0.0,
+                        }).FirstOrDefault(),
+                    RequestData = new
+                    {
+                        RequestId = r.Id,
+                        CreatedAt = r.CreatedAt,
+                    }
                 })
                 .ToListAsync();
 
+
             // Worker uncollected fees (optimized)
-            var workersUncollectedFees = await _context.WorkerSpecifications
+            var workersUncollectedFees = await _context.WorkerWallets
                 .AsNoTracking()
-                .Include(ws => ws.User)
-                .Include(ws => ws.Job)
-                .Include(ws => ws.LivingCity)
-                .Select(ws => new 
+                .Include(ws => ws.Worker)
+                .Where(ww => ww.Balance < 0)
+                .Select(r => new
                 {
-                    Worker = _mapper.Map<WorkerSpecificationGetDTO>(ws),
-                    OrderTotalPrice = _context.Orders
-                        .Where(o => o.WorkerId == ws.UserId)
-                        .Sum(o => (double?)o.ProposalPrice) ?? 0.0,
-                    ServiceFee = _context.Invoices
-                        .Where(i => i.Order != null && i.Order.WorkerId == ws.UserId)
-                        .Sum(i => (double?)(i.CommissionFee + i.VisitingFee + i.CancellationFee)) ?? 0.0,
-                    HasCollectionAlert = notifiedUserSet.Contains(ws.UserId)
+                    WorkerData = _context.WorkerSpecifications
+                        .AsNoTracking()
+                        .Include(ws => ws.Job)
+                        .Include(ws => ws.LivingCity)
+                        .Where(p => p.UserId == r.Worker!.Id)
+                        .Select(ws => new
+                        {
+                            Name = r.Worker!.FullName,
+                            Email = ws.User!.Email,
+                            Image = ws.User!.ImageURL,
+                            Job = ws.Job!.JobTitle,
+                            City = ws.LivingCity!.CityName,
+                        }).FirstOrDefault(),
+
+                    Balance = r.Balance,
                 })
                 .ToListAsync();
 
@@ -340,7 +373,7 @@ namespace Hoshi.Repositories.ServiceService
                 TotalOrdersPrices = invoiceSums?.TotalOrdersPrices ?? 0.0,
                 TotalOrdersFees = invoiceSums?.TotalOrdersFees ?? 0.0,
                 TotalUncollectedFees = invoiceSums?.TotalUncollectedFees ?? 0.0,
-                workerPaymentRequests = workerPaymentRequests,
+                WorkerPaymentRequests = workerPaymentRequests,
                 WorkersUncollectedFees = workersUncollectedFees,
                 ClientsUncollectedFees = clientsUncollectedFees
             });

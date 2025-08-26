@@ -11,10 +11,5 @@ namespace Hoshi.DTOs.GlobalDTOs.FeeDTOs
         public double? MainFees { get; set; }
         public double? MaxFees { get; set; }
         public double? MinFees { get; set; }
-
-
-        public bool? IsSpecial { get; set; }
-
-        public int? ServiceId { get; set; }
     }
 }
