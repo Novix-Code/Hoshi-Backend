@@ -14,6 +14,8 @@ using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Microsoft.EntityFrameworkCore;
+using Hoshi.Models.UserModels;
+using Hoshi.Models.UserModels.WorkerModels;
 
 namespace Hoshi.Repositories.ServiceService
 {
@@ -273,31 +275,7 @@ namespace Hoshi.Repositories.ServiceService
                 .ToListAsync();
             var notifiedUserSet = new HashSet<int>(notifiedUserIds);
             
-            /*
             // Workers payment requests
-            var workerPaymentRequests = await _context.WorkerSpecifications
-                .AsNoTracking()
-                .Include(ws => ws.User)
-                .Include(ws => ws.Job)
-                .Include(ws => ws.LivingCity)
-                .Select(ws => new
-                {
-                    //Worker = _mapper.Map<WorkerSpecificationGetDTO>(ws),
-                    
-
-                    Balance = workerBalanceDict.ContainsKey(ws.UserId) ? workerBalanceDict[ws.UserId] : 0.0,
-                    PaymentRequest = _context.WorkerPaymentHistroys
-                        .Where(p => p.WorkerId == ws.UserId && p.IsApproved == false)
-                        .OrderByDescending(p => p.CreatedAt)
-                        .Select(p => new 
-                        {
-                            Id = p.Id,
-                            CreatedAt = p.CreatedAt
-                        })
-                        .First(),
-
-                })
-                .ToListAsync();*/
             var workerPaymentRequests = await _context.WorkerPaymentHistroys
                 .AsNoTracking()
                 .Include(u => u.Worker)
@@ -310,6 +288,7 @@ namespace Hoshi.Repositories.ServiceService
                         .Where(p => p.UserId == r.Worker!.Id)
                         .Select(ws => new
                         {
+                            WorkerId = ws.UserId,
                             Name = r.Worker!.FullName,
                             Email = ws.User!.Email,
                             Image = ws.User!.ImageURL,
@@ -340,6 +319,7 @@ namespace Hoshi.Repositories.ServiceService
                         .Where(p => p.UserId == r.Worker!.Id)
                         .Select(ws => new
                         {
+                            WorkerId = ws.UserId,
                             Name = r.Worker!.FullName,
                             Email = ws.User!.Email,
                             Image = ws.User!.ImageURL,
@@ -414,6 +394,7 @@ namespace Hoshi.Repositories.ServiceService
             
             var WorkerDataDTO = new WorkerDataDTO
             {
+                WorkerId = workerSpec.UserId,
                 ImageUrl = workerSpec.IdentityImageURL,
                 FullName = workerSpec.User.FullName,
                 Email = workerSpec.User.Email,
@@ -430,6 +411,74 @@ namespace Hoshi.Repositories.ServiceService
                 BillImageUrl = payment.BillImageURL,
                 Worker = WorkerDataDTO
             });
+        }
+
+        public async Task<ResultDTO<string>> AddWorkerPayment(int workerId, double paymentValue)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1- Check if worker exist
+                User? worker = await _context.Users.FindAsync(workerId);
+                if(worker is null || worker.UserType != UserType.Worker.ToString())
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "معرف العامل خاطئ.",
+                        ErrorEn = "Worker id is not correct."
+                    });
+
+                // 2- Get user wallet
+                WorkerWallet? workerWallet = await _context.WorkerWallets.FirstOrDefaultAsync(ww => ww.WorkerId == workerId);
+                if(workerWallet is null)
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "لا توجد محفظة لهذا العامل.",
+                        ErrorEn = "There is no wallet for this user."
+                    });
+
+                // 3- Update user balance and hitlimit
+                if(paymentValue <= 0)
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "لا يمكن اضافة قيمة اقل من او يساوي 0.",
+                        ErrorEn = "Can not add value less than or equal 0."
+                    });
+
+                workerWallet.Balance = paymentValue;
+                workerWallet.HitLimit = false;
+
+                // 4- Add it to wallet history
+                await _context.WorkerWalletHistories.AddAsync(new WorkerWalletHistory
+                {
+                    IsIncome = true,
+                    CreatedAt = DateTime.UtcNow,
+                    WorkerWalletId = workerWallet.Id,
+                    Value = paymentValue,
+                    Title = "اضافة رصيد جديد على المحفظة"
+                });
+
+                // 5- Save changes
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return ResultDTO<string>.Success(new MessageDTO
+                {
+                    MessageAr = $"تم اضافة {paymentValue} دينار الى العامل {worker.FullName}.",
+                    MessageEn = $"Successfully add {paymentValue} D.L to worker {worker.FullName}."
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
+                    {
+                        ErrorAr = "يوجد مشكلة في عملية اضافة الدفع للخطأ التالي.",
+                        ErrorEn = "There is a problem in Payment adding process."
+                    }, 
+                    innerError : ex.InnerException is null ? ex.Message : ex.InnerException.Message
+                );
+            }
         }
         
         public async Task<ResultDTO<ComplaintPageResponseDTO>> GetComplaintsPageAsync()

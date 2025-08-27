@@ -16,6 +16,7 @@ namespace Hoshi.Repositories.ServiceService
         Task<ResultDTO<object>> GetServicesPageAsync();
         Task<ResultDTO<object>> GetPaymentsPageAsync();
         Task<ResultDTO<PaymentDetailsResponseDTO>> GetPaymentDetailsAsync(int paymentId);
+        Task<ResultDTO<string>> AddWorkerPayment(int workerId, double paymentValue);
         Task<ResultDTO<ComplaintPageResponseDTO>> GetComplaintsPageAsync();
         Task<ResultDTO<ComplaintGetDTO>> GetComplaintDetailsAsync(int complaintId);
         Task<ResultDTO<MessageDTO>> ComplaintResponse(ComplaintResponseDTO complaintCreateDto);

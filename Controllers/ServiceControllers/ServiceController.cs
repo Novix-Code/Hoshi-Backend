@@ -140,6 +140,13 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
             return StatusCode((int)response.StatusCode, response);
         }
         
+        [HttpPatch("add-payment")]
+        public async Task<IActionResult> AddWorkerPayment(int workerId, double paymentValue)
+        {
+            var response = await serviceService.AddWorkerPayment(workerId, paymentValue);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        
         [HttpGet("get-complaints-page")]
         public async Task<IActionResult> GetComplaintsPageAsync()
         {
