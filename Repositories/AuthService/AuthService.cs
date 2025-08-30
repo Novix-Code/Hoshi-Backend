@@ -217,7 +217,7 @@ namespace Hoshi.Repositories.AuthService
             var token = await _tokenService.CreateTokenAsync(applicationUser);
             await _context.SaveChangesAsync();
           
-
+                
             return ResultDTO<UserGetDTO>.Success(
                 _mapper.Map<UserGetDTO>(applicationUser),
                 token,
@@ -460,21 +460,22 @@ namespace Hoshi.Repositories.AuthService
                 }
 
                 // Check if worker specification already exists
-                var existingWorkerSpec = await _context.WorkerSpecifications.Include(p=>p.User)
-                    .FirstOrDefaultAsync(ws => ws.UserId == request.UserId);
-
+                var existingWorkerSpec = await _context.WorkerSpecifications
+                                                .Include(p=>p.User)
+                                                .FirstOrDefaultAsync(ws => ws.UserId == request.UserId);
                 if (existingWorkerSpec != null)
                 {
                     // Adding User personal image
-                    var perImgResult = await AddPersonalImage(
-                        existingWorkerSpec.UserId, 
-                        request.PersonalImage,
-                        new Tuple<bool, string?>(true, existingWorkerSpec.User!.ImageURL)
-                    );
+                    if(existingWorkerSpec.User.ImageURL != null)
+                       {
+                            var perImgResult = await AddPersonalImage(
+                           existingWorkerSpec.UserId,
+                           request.PersonalImage,
+                           new Tuple<bool, string?>(true, existingWorkerSpec.User!.ImageURL));
 
-                    if (perImgResult.IsSuccess is false)
-                        return perImgResult;
-
+                            if (perImgResult.IsSuccess is false)
+                                return perImgResult;
+                        }
                     // Update existing worker specification (re-application case)
                     existingWorkerSpec.Bio = request.Bio;
                     existingWorkerSpec.IsCompany = request.IsCompany;
@@ -549,7 +550,9 @@ namespace Hoshi.Repositories.AuthService
                         // Delete old portfolio files
                         foreach (var portfolio in existingPortfolio)
                         {
-                            _fileService.DeleteFile(portfolio.FileURL);
+                            if(portfolio.FileURL != null)
+                                _fileService.DeleteFile(portfolio.FileURL);
+
                         }
 
                         // Add new portfolio files
@@ -817,5 +820,6 @@ namespace Hoshi.Repositories.AuthService
 
             return username;
         }
+
     }
 }

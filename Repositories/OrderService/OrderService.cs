@@ -128,7 +128,6 @@ namespace Hoshi.Repositories.OrderService
                     .Include(o => o.OrderVisits)
                     .Include(o => o.OrderStatusHistory)
                     .FirstOrDefaultAsync(o => o.Id == orderId);
-
                 if (order == null)
                     return ResultDTO<bool>.NotFound(new ErrorDTO
                     {
@@ -137,6 +136,12 @@ namespace Hoshi.Repositories.OrderService
                     });
 
                 // 2. Change order status to Completed and add status history
+                if (order.OrderStatus == OrderStatus.Completed)
+                    return ResultDTO<bool>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "الطلب مكتمل بالفعل.",
+                        ErrorEn = "Order already completed."
+                    });
                 order.OrderStatus = OrderStatus.Completed;
                 order.OrderStatusHistory!.Add(new OrderStatusHistory
                 {
@@ -177,12 +182,7 @@ namespace Hoshi.Repositories.OrderService
                         ErrorEn = "No invoices found for the order."
                     });
 
-                if (order.OrderStatus == OrderStatus.Completed)
-                    return ResultDTO<bool>.BadRequest(new ErrorDTO
-                    {
-                        ErrorAr = "الطلب مكتمل بالفعل.",
-                        ErrorEn = "Order already completed."
-                    });
+                
 
                 double totalClientCost = invoices.Sum(i => i.ClientTotalPrice);
                 double totalWorkerCost = invoices.Sum(i => i.WorkerTotalPrice);
