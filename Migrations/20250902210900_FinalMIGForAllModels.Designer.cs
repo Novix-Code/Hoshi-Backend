@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250816230903_CreateNewMIGForAllModels")]
-    partial class CreateNewMIGForAllModels
+    [Migration("20250902210900_FinalMIGForAllModels")]
+    partial class FinalMIGForAllModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1338,45 +1338,9 @@ namespace Hoshi.Migrations
                             FeeType = 4,
                             IsDeleted = false,
                             IsSpecial = false,
-                            MainFees = 10.0,
-                            MaxFees = 0.0,
+                            MainFees = 0.0,
+                            MaxFees = 200.0,
                             MinFees = 0.0
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 0,
-                            IsDeleted = false,
-                            IsSpecial = true,
-                            MainFees = 18.0,
-                            MaxFees = 210.0,
-                            MinFees = 19.0,
-                            ServiceId = 1
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 1,
-                            IsDeleted = false,
-                            IsSpecial = true,
-                            MainFees = 12.0,
-                            MaxFees = 175.0,
-                            MinFees = 15.0,
-                            ServiceId = 8
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 2,
-                            IsDeleted = false,
-                            IsSpecial = true,
-                            MainFees = 9.0,
-                            MaxFees = 100.0,
-                            MinFees = 8.5,
-                            ServiceId = 15
                         });
                 });
 
@@ -3670,6 +3634,48 @@ namespace Hoshi.Migrations
                     b.ToTable("WorkerWalletHistories");
                 });
 
+            modelBuilder.Entity("Hoshi.Models.ViewModels.AllClientModelForView", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("AllClientView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.AllWorkersModelForView", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("AllWorkertView", (string)null);
+                });
+
             modelBuilder.Entity("Hoshi.Models.ViewModels.CitiesViewModel", b =>
                 {
                     b.Property<string>("CityCode")
@@ -3745,8 +3751,8 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -3754,7 +3760,28 @@ namespace Hoshi.Migrations
 
                     b.ToTable((string)null);
 
-                    b.ToView("SuspendedWorker", (string)null);
+                    b.ToView("NewClientView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.NewWorkerModelForView", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("NewWorkerView", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.OverViewPage", b =>
@@ -3797,6 +3824,48 @@ namespace Hoshi.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("PortfolioView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.SuspendedUserModelForView", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("SuspendedUser", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.SuspendedWorkerModelForView", b =>
+                {
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("SuspendedWorker", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerDetailsViewModel", b =>
@@ -3852,7 +3921,7 @@ namespace Hoshi.Migrations
                     b.ToView("WorkerDetailsView", (string)null);
                 });
 
-            modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
+            modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerPageModelForView", b =>
                 {
                     b.Property<double>("AverageOrdering")
                         .HasColumnType("float");
@@ -3869,6 +3938,25 @@ namespace Hoshi.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("WorkerPageView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
+                {
+                    b.Property<double>("AverageOrdering")
+                        .HasColumnType("float");
+
+                    b.Property<int>("totalActiveClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("totalClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("totalNewClients")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("ClientPageView4", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.orderViewModelDetails", b =>

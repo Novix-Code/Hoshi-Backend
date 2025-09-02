@@ -1,6 +1,6 @@
 ﻿namespace Hoshi.Models.ViewModels
 {
-    public class NewClient
+    public class AllClientModelForView
     {
         public int Id { get; set; }
         public string UserName { get; set; }

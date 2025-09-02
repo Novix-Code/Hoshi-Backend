@@ -237,9 +237,9 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> Clientpage()
         {
             var clientPage = await _context.ClientPageView4.FirstOrDefaultAsync();
-            var newClient = await _context.NewClientView.FirstOrDefaultAsync();
-            var allClient = await _context.AllClientView.FirstOrDefaultAsync();
-            var susClient = await _context.SuspendedUser.FirstOrDefaultAsync();
+            var newClient = await _context.NewClientView.ToListAsync();
+            var allClient = await _context.AllClientView.ToListAsync();
+            var susClient = await _context.SuspendedUserView.ToListAsync();
             var result = new
             {
                 TotalClients = clientPage.totalClients,

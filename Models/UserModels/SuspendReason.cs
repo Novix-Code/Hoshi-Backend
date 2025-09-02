@@ -1,4 +1,4 @@
-﻿using GenericCRUDLibrary.CustomAttributes;
+﻿    using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericModels;
 
 namespace Hoshi.Models.UserModels

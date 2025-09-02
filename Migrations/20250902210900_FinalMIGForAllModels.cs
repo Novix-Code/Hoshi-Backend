@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateNewMIGForAllModels : Migration
+    public partial class FinalMIGForAllModels : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1565,7 +1565,7 @@ namespace Hoshi.Migrations
                     { 2, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 1, false, false, 15.0, 180.0, 15.0, null, null },
                     { 3, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 2, false, false, 18.0, 300.0, 20.0, null, null },
                     { 4, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 3, false, false, 0.0, 250.0, 0.0, null, null },
-                    { 5, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 4, false, false, 10.0, 0.0, 0.0, null, null }
+                    { 5, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 4, false, false, 0.0, 200.0, 0.0, null, null }
                 });
 
             migrationBuilder.InsertData(
@@ -1658,16 +1658,6 @@ namespace Hoshi.Migrations
                     { 39, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), "/images/services/web-development.jpg", false, null, null, 11, "برمجة وتطوير المواقع" },
                     { 40, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), "/images/services/home-security.jpg", false, null, null, 12, "خدمات الحراسة المنزلية" },
                     { 41, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), "/images/services/security-cameras.jpg", false, null, null, 12, "تركيب كاميرات المراقبة" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Fees",
-                columns: new[] { "Id", "CreatedAt", "FeeType", "IsDeleted", "IsSpecial", "MainFees", "MaxFees", "MinFees", "ModifiedAt", "ServiceId" },
-                values: new object[,]
-                {
-                    { 6, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 0, false, true, 18.0, 210.0, 19.0, null, 1 },
-                    { 7, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 1, false, true, 12.0, 175.0, 15.0, null, 8 },
-                    { 8, new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc), 2, false, true, 9.0, 100.0, 8.5, null, 15 }
                 });
 
             migrationBuilder.InsertData(

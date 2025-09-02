@@ -5,10 +5,29 @@
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateMIGForViews : Migration
+    public partial class FinalMIGForViews : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+
+            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerPageView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerDetailsView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedWorker;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedUser;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS PortfolioView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS OverviewView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS OrdersGetView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS NewWorkerView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS NewClientView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS JobView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientPageView4;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientDetailsView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS CitiesgetView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkertView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView;");
+            //////////////////////////
+            /////////////////////////
             migrationBuilder.Sql(@"CREATE VIEW AllClientView AS
                             SELECT 
                                 u.Id,
@@ -18,7 +37,7 @@ namespace Hoshi.Migrations
                             FROM AspNetUsers u
                             JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                             JOIN AspNetRoles r ON ur.RoleId = r.Id
-                            WHERE r.Name = 'Client';");
+                            WHERE ur.RoleId=1;");
             migrationBuilder.Sql(@"CREATE VIEW AllWorkertView AS
                             SELECT 
                                 u.Id,
@@ -28,7 +47,7 @@ namespace Hoshi.Migrations
                             FROM AspNetUsers u
                             JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                             JOIN AspNetRoles r ON ur.RoleId = r.Id
-                            WHERE r.Name = 'Worker';");
+                            WHERE ur.RoleId = 3;");
             migrationBuilder.Sql(@" Create View CitiesgetView As
                              Select * from Cities");
             migrationBuilder.Sql(@"
@@ -42,30 +61,39 @@ namespace Hoshi.Migrations
                                 cl.UserId
                             FROM AspNetUsers u
                             JOIN ClientSpecifications cl ON u.Id = cl.UserId;");
-            migrationBuilder.Sql(@"CREATE VIEW ClientPageView4 AS
+            migrationBuilder.Sql(@" CREATE VIEW ClientPageView4 AS
                             SELECT 
                                 ISNULL((SELECT COUNT(*) 
                                  FROM AspNetUserRoles ur 
                                  JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                 WHERE r.Name = 'Client'), 0) AS totalClients,
+                                 WHERE ur.RoleId = 1), 0) AS totalClients,
 
                                 ISNULL((SELECT COUNT(*) 
                                  FROM AspNetUsers u 
                                  JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                                  JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                 WHERE r.Name = 'Client' 
+                                 WHERE ur.RoleId = 1
                                  AND u.CreatedAt >= DATEADD(DAY, -7, GETUTCDATE())), 0) AS totalNewClients,
 
-                                ISNULL((SELECT COUNT(*) 
-                                 FROM AspNetUsers u 
-                                 JOIN AspNetUserRoles ur ON u.Id = ur.UserId
-                                 JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                 WHERE r.Name = 'Client' AND u.IsDeleted = 0), 0) AS totalActiveClients,
+                                ISNULL((
+										SELECT COUNT(*) 
+										FROM AspNetUsers u
+										JOIN AspNetUserRoles ur ON u.Id = ur.UserId
+										JOIN AspNetRoles r ON ur.RoleId = r.Id
+										WHERE  ur.RoleId = 1
+										  AND u.IsDeleted = 0
+										  AND NOT EXISTS (
+											  SELECT 1 
+											  FROM SuspendedUsers s
+											  WHERE s.UserId = u.Id
+										  )
+									), 0) AS totalActiveClients,
+
 
                                 ISNULL((SELECT AVG(CAST(ProposalPrice AS FLOAT)) 
                                  FROM Orders 
                                  WHERE ProposalPrice IS NOT NULL), 0) AS AverageOrdering
-                            FROM (SELECT 1 AS Dummy) AS Base");
+                                FROM (SELECT 1 AS Dummy) AS Base;");
             migrationBuilder.Sql(@"CREATE VIEW JobView AS
                             SELECT JobTitle, IsDeleted,Id From Jobs");
             migrationBuilder.Sql(@"CREATE VIEW NewClientView AS
@@ -77,7 +105,7 @@ namespace Hoshi.Migrations
                                 FROM AspNetUsers u
                                 JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                                 JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                WHERE r.Name = 'Client'
+                                WHERE ur.RoleId = 1
                                   AND u.CreatedAt >= DATEADD(DAY, -7, GETUTCDATE());");
             migrationBuilder.Sql(@"CREATE VIEW NewWorkerView AS
                             SELECT 
@@ -88,10 +116,22 @@ namespace Hoshi.Migrations
                                 FROM AspNetUsers u
                                 JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                                 JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                WHERE r.Name = 'Worker'
+                                WHERE ur.RoleId = 3
                                   AND u.CreatedAt >= DATEADD(DAY, -7, GETUTCDATE());");
             migrationBuilder.Sql(@" CREATE View OrdersGetView As
-        Select Id,CityId, Description,ProposalPrice,Location,Latitude,Longitude,ServicingDateTime,TotalClientCost,TotalWorkerCost,ClientId,WorkerId,OrderStatus from Orders");
+                            Select Id,
+                            CityId, 
+                            Description,
+                            ProposalPrice,
+                            Location,
+                            Latitude,
+                            Longitude,
+                            ServicingDateTime,
+                            TotalClientCost,
+                            TotalWorkerCost,
+                            ClientId,
+                            WorkerId,
+                            OrderStatus from Orders");
             migrationBuilder.Sql(@"
                             CREATE VIEW OverviewView AS
                             SELECT 
@@ -101,7 +141,7 @@ namespace Hoshi.Migrations
                                 (SELECT COUNT(*) FROM Orders) AS TotalOrders,
                                 (SELECT COUNT(*) FROM Orders WHERE OrderStatus = 2) AS TotalCompletedOrders,
                                 (SELECT SUM(TotalClientCost- TotalWorkerCost - ProposalPrice) FROM Orders) AS TotalOrderIncome,
-                                (SELECT SUM(ProposalPrice) FROM Orders) AS TotalOrderPrice");
+                                (SELECT SUM(ProposalPrice) FROM Orders) AS TotalOrderPrice;");
             migrationBuilder.Sql(@"CREATE VIEW PortfolioView AS
                             SELECT FileURL,WorkerId from WorkerPortfolios");
             migrationBuilder.Sql(@"CREATE VIEW SuspendedUser AS
@@ -114,7 +154,7 @@ namespace Hoshi.Migrations
                             JOIN SuspendedUsers sus On u.Id = sus.UserId
                             JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                             JOIN AspNetRoles r ON ur.RoleId = r.Id
-                            WHERE r.Name = 'Client';");
+                            WHERE ur.RoleId=1;");
             migrationBuilder.Sql(@"CREATE VIEW SuspendedWorker AS
                             SELECT 
                                 u.Id,
@@ -125,7 +165,7 @@ namespace Hoshi.Migrations
                             JOIN SuspendedUsers sus On u.Id = sus.UserId
                             JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                             JOIN AspNetRoles r ON ur.RoleId = r.Id
-                            WHERE r.Name = 'Worker';");
+                            WHERE ur.RoleId = 3;");
             migrationBuilder.Sql(@"
                         CREATE VIEW WorkerDetailsView AS
                         SELECT 
@@ -143,26 +183,35 @@ namespace Hoshi.Migrations
                             CompletedOrders,
                             RateRito
                         FROM AspNetUsers u
-                        JOIN WorkerSpecifications cl ON u.Id = cl.UserId");
+                        JOIN WorkerSpecifications cl ON u.Id = cl.UserId;");
             migrationBuilder.Sql(@"CREATE VIEW WorkerPageView AS
                             SELECT 
                                 ISNULL((SELECT COUNT(*) 
                                  FROM AspNetUserRoles ur 
                                  JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                 WHERE r.Name = 'Worker'), 0) AS totalClients,
+                                 WHERE ur.RoleId = 3), 0) AS totalClients,
 
                                 ISNULL((SELECT COUNT(*) 
                                  FROM AspNetUsers u 
                                  JOIN AspNetUserRoles ur ON u.Id = ur.UserId
                                  JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                 WHERE r.Name = 'Worker' 
+                                 WHERE ur.RoleId = 3 
                                  AND u.CreatedAt >= DATEADD(DAY, -7, GETUTCDATE())), 0) AS totalNewClients,
 
-                                ISNULL((SELECT COUNT(*) 
-                                 FROM AspNetUsers u 
-                                 JOIN AspNetUserRoles ur ON u.Id = ur.UserId
-                                 JOIN AspNetRoles r ON ur.RoleId = r.Id
-                                 WHERE r.Name = 'Worker' AND u.IsDeleted = 0), 0) AS totalActiveClients,
+                                ISNULL((
+									SELECT COUNT(*) 
+									FROM AspNetUsers u
+									JOIN AspNetUserRoles ur ON u.Id = ur.UserId
+									JOIN AspNetRoles r ON ur.RoleId = r.Id
+									WHERE ur.RoleId =3
+									  AND u.IsDeleted = 0
+									  AND NOT EXISTS (
+										  SELECT 1 
+										  FROM SuspendedUsers s
+										  WHERE s.UserId = u.Id
+									  )
+								), 0) AS totalActiveClients,
+
 
 								ISNULL(
 									CAST((
@@ -173,12 +222,12 @@ namespace Hoshi.Migrations
 											JOIN AspNetUsers u ON o.WorkerId = u.Id
 											JOIN AspNetUserRoles ur ON u.Id = ur.UserId
 											JOIN AspNetRoles r ON ur.RoleId = r.Id
-											WHERE r.Name = 'Worker'
+											where ur.RoleId = 3
 											GROUP BY o.WorkerId
 										) AS WorkerOrders
 									) AS FLOAT),
 									0.0
-								) AS AverageOrdering");
+								) AS AverageOrdering;");
 
         }
 

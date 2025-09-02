@@ -109,7 +109,7 @@ namespace Hoshi.Controllers.UserControllers
         }
 
         [HttpPatch("edit")]
-        [Authorize]
+     
         public async Task<IActionResult> Edit([FromForm] ApplicationUserEditRequestDto userEditRequestDto)
         {
             var serviceResponse = await authService.Edit(userEditRequestDto);

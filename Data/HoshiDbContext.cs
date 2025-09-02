@@ -46,16 +46,16 @@ namespace Hoshi.Data
             modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
             modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("ClientPageView4");
             modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewClientView");
-            modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllClientView");
-            modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedUser");
+            modelBuilder.Entity<AllClientModelForView>().HasNoKey().ToView("AllClientView");
+            modelBuilder.Entity<SuspendedUserModelForView>().HasNoKey().ToView("SuspendedUser");
             modelBuilder.Entity<ClientDetailsModelView>().HasNoKey().ToView("ClientDetailsView");
             modelBuilder.Entity<WorkerDetailsViewModel>().HasNoKey().ToView("WorkerDetailsView");
             modelBuilder.Entity<CitiesViewModel>().HasNoKey().ToView("CitiesgetView");
             modelBuilder.Entity<orderViewModelDetails>().HasNoKey().ToView("OrdersGetView");
-            modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("WorkerPageView");
-            modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewWorkerView");
-            modelBuilder.Entity<NewClient>().HasNoKey().ToView("AllWorkertView");
-            modelBuilder.Entity<NewClient>().HasNoKey().ToView("SuspendedWorker");
+            modelBuilder.Entity<WorkerPageModelForView>().HasNoKey().ToView("WorkerPageView");
+            modelBuilder.Entity<NewWorkerModelForView>().HasNoKey().ToView("NewWorkerView");
+            modelBuilder.Entity<AllWorkersModelForView>().HasNoKey().ToView("AllWorkertView");
+            modelBuilder.Entity<SuspendedWorkerModelForView>().HasNoKey().ToView("SuspendedWorker");
             modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
             modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
         }
@@ -70,16 +70,16 @@ namespace Hoshi.Data
         public DbSet<OverViewPage> OverviewView { get; set; }
         public DbSet<clientPageModel> ClientPageView4 { get; set; }
         public DbSet<NewClient> NewClientView { get; set; }
-        public DbSet<NewClient> AllClientView { get; set; }
-        public DbSet<NewClient> SuspendedUser { get; set; }
+        public DbSet<AllClientModelForView> AllClientView { get; set; }
+        public DbSet<SuspendedUserModelForView> SuspendedUserView { get; set; }
         public DbSet<ClientDetailsModelView> ClientDetailsView { get; set; }
         public DbSet<WorkerDetailsViewModel> WorkerDetailsView { get; set; }
         public DbSet<CitiesViewModel> CitiesgetView { get; set; }
         public DbSet<orderViewModelDetails> OrdersGetView { get; set; }
-        public DbSet<clientPageModel> WorkerPageView { get; set; }
-        public DbSet<NewClient> NewWorkerView { get; set; }
-        public DbSet<NewClient> AllWorkertView { get; set; }
-        public DbSet<NewClient> SuspendedWorker { get; set; }
+        public DbSet<WorkerPageModelForView> WorkerPageView { get; set; }
+        public DbSet<NewWorkerModelForView> NewWorkerView { get; set; }
+        public DbSet<AllWorkersModelForView> AllWorkertView { get; set; }
+        public DbSet<SuspendedWorkerModelForView> SuspendedWorker { get; set; }
         public DbSet<JobViewModel> JobView { get; set; }
         public DbSet<PortfolioViewModel> PortfolioView { get; set; }
 
