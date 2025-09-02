@@ -13,5 +13,6 @@ namespace Hoshi.DTOs.UserDTOs.ClientSpecificationDTOs
         public double Indebtedness { get; set; } = 0.0;
 
         public UserGetDTO? User { get; set; }
+        public string ClientImageURL { get; set; }
     }
 }

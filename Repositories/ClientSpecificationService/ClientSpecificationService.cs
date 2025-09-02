@@ -60,6 +60,7 @@ namespace Hoshi.Repositories.ClientSpecificationService
                 }
 
                 var csDto = mapper.Map<ClientSpecificationGetDTO>(clientSpecification);
+                csDto.ClientImageURL = csDto.User!.ImageURL;
 
                 return ResultDTO<ClientSpecificationGetDTO>.Success(csDto);
             }
