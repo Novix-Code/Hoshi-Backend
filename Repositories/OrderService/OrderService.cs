@@ -136,6 +136,7 @@ namespace Hoshi.Repositories.OrderService
                     });
 
                 // 2. Change order status to Completed and add status history
+
                 if (order.OrderStatus == OrderStatus.Completed)
                     return ResultDTO<bool>.BadRequest(new ErrorDTO
                     {
@@ -317,7 +318,7 @@ namespace Hoshi.Repositories.OrderService
                 await transaction.CommitAsync();
                 // send notification
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه استكمال اوردر", orderId);
-                return ResultDTO<bool>.Success();
+                return ResultDTO<bool>.Success(true);
             }
             catch (Exception ex)
             {

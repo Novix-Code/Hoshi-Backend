@@ -111,7 +111,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         public async Task<IActionResult> CompleteOrder([FromQuery] int orderId)
         {
 	        var result = await orderService.CompleteOrderAsync(orderId);
-	        return StatusCode(result.StatusCode, result);
+	        return StatusCode(result.StatusCode, result.Data);
         }
         
         [HttpGet("assigned-order")]
