@@ -116,7 +116,7 @@ namespace Hoshi.Repositories.OrderService
         /// <summary>
         /// Completes an order by updating its status, handling all financial transactions, and sending notifications.
         /// </summary>
-        public async Task<ResultDTO<bool>> CompleteOrderAsync(int orderId)
+        public async Task<ResultDTO<object>> CompleteOrderAsync(int orderId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
             try
@@ -129,7 +129,7 @@ namespace Hoshi.Repositories.OrderService
                     .Include(o => o.OrderStatusHistory)
                     .FirstOrDefaultAsync(o => o.Id == orderId);
                 if (order == null)
-                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    return ResultDTO<object>.NotFound(new ErrorDTO
                     {
                         ErrorAr = "الطلب غير موجود.",
                         ErrorEn = "order not found."
@@ -138,7 +138,7 @@ namespace Hoshi.Repositories.OrderService
                 // 2. Change order status to Completed and add status history
 
                 if (order.OrderStatus == OrderStatus.Completed)
-                    return ResultDTO<bool>.BadRequest(new ErrorDTO
+                    return ResultDTO<object>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "الطلب مكتمل بالفعل.",
                         ErrorEn = "Order already completed."
@@ -169,7 +169,7 @@ namespace Hoshi.Repositories.OrderService
 
                 // --- Validations before financial operations ---
                 if (client == null)
-                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    return ResultDTO<object>.NotFound(new ErrorDTO
                     {
                         ErrorAr = "العميل غير موجود.",
                         ErrorEn = "Client not found."
@@ -177,7 +177,7 @@ namespace Hoshi.Repositories.OrderService
 
                 var invoices = _hoshiDbContext.Invoices.Where(i => i.OrderId == order.Id).ToList();
                 if (invoices == null || !invoices.Any())
-                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    return ResultDTO<object>.NotFound(new ErrorDTO
                     {
                         ErrorAr = "لا توجد فواتير للطلب.",
                         ErrorEn = "No invoices found for the order."
@@ -194,7 +194,7 @@ namespace Hoshi.Repositories.OrderService
                 double totalIndebtednessFee = invoices.Sum(i => i.ClientIndebtednessFee);
 
                 if (totalClientCost < 0 || totalWorkerCost < 0 || totalCommission < 0 || totalIndebtednessFee < 0)
-                    return ResultDTO<bool>.BadRequest(new ErrorDTO
+                    return ResultDTO<object>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "قيمة مالية غير صحيحة.",
                         ErrorEn = "Invalid financial value."
@@ -220,7 +220,7 @@ namespace Hoshi.Repositories.OrderService
                 var workerWallet = await _hoshiDbContext.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == order.WorkerId);
                 if (workerWallet == null)
                 {
-                    return ResultDTO<bool>.NotFound(new ErrorDTO
+                    return ResultDTO<object>.NotFound(new ErrorDTO
                     {
                         ErrorAr = "محفظة العامل غير موجودة.",
                         ErrorEn = "Worker wallet not found."
@@ -305,25 +305,46 @@ namespace Hoshi.Repositories.OrderService
                 //  Wallet difference adjustment
                 if (totalClientCost > totalWorkerCost)
                 {
-                    var diff = totalClientCost - totalWorkerCost;
-                    await WalletService.DeductFromWalletAsync(worker.Id, diff, "فرق بين العميل والعامل");
+                    try
+                    {
+                        var diff = totalClientCost - totalWorkerCost;
+                        await WalletService.DeductFromWalletAsync(worker.Id, diff, "فرق بين العميل والعامل");
+                    }
+                    catch 
+                    {
+                        return ResultDTO<object>.NotFound(new ErrorDTO {
+                            ErrorAr = "خطأ في اضافه walletHistory",
+                            ErrorEn = "error in adding walletHistory"
+                            });
+                    }
                 }
                 else if (totalWorkerCost > totalClientCost)
                 {
-                    var diff = totalWorkerCost - totalClientCost;
-                    await WalletService.AddToWalletAsync(worker.Id, diff, "فرق بين العامل والعميل");
+                   try{
+                        var diff = totalWorkerCost - totalClientCost;
+                        await WalletService.AddToWalletAsync(worker.Id, diff, "فرق بين العامل والعميل");
+                    }
+                    catch
+                    {
+                        return ResultDTO<object>.NotFound(new ErrorDTO
+                        {
+                            ErrorAr = "خطأ في اضافه walletHistory",
+                            ErrorEn = "error in adding walletHistory"
+                        });
+                    }
                 }
+                
 
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
                 // send notification
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه استكمال اوردر", orderId);
-                return ResultDTO<bool>.Success(true);
+                return ResultDTO<object>.Success(true);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return ResultDTO<bool>.InternalServerError(new ErrorDTO
+                return ResultDTO<object>.InternalServerError(new ErrorDTO
                 {
                     ErrorAr = "حدث خطأ في الخادم.",
                     ErrorEn = $"Internal server error: {ex.Message}"

@@ -8,7 +8,7 @@ namespace Hoshi.Repositories.OrderService
     {
         Task<ResultDTO<SubmittedOrderDetailsDto>> GetSubmittedOrderDetailsAsync(int orderId);
         Task<ResultDTO<OrderClientDetailsDto>> GetOrderClientDetailsAsync(int orderId);
-        Task<ResultDTO<bool>> CompleteOrderAsync(int orderId);
+        Task<ResultDTO<object>> CompleteOrderAsync(int orderId);
         Task<ResultDTO<object>> GetAssignedOrderAsync(int orderId);
         Task<ResultDTO<DashboardOrderDetailsResponseDTO>> GetDashboardOrderDetailsAsync(int orderId);
     }
