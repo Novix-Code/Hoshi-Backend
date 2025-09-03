@@ -308,7 +308,7 @@ namespace Hoshi.Repositories.OrderService
                     try
                     {
                         var diff = totalClientCost - totalWorkerCost;
-                        await WalletService.DeductFromWalletAsync(worker.Id, diff, "فرق بين العميل والعامل");
+                        await WalletService.DeductFromWalletAsync( (int)order.WorkerId, diff, "فرق بين العميل والعامل");
                     }
                     catch 
                     {
@@ -320,9 +320,10 @@ namespace Hoshi.Repositories.OrderService
                 }
                 else if (totalWorkerCost > totalClientCost)
                 {
-                   try{
+                   try
+                    {
                         var diff = totalWorkerCost - totalClientCost;
-                        await WalletService.AddToWalletAsync(worker.Id, diff, "فرق بين العامل والعميل");
+                        await WalletService.AddToWalletAsync((int)order.WorkerId, diff, "فرق بين العامل والعميل");
                     }
                     catch
                     {
