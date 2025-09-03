@@ -339,7 +339,11 @@ namespace Hoshi.Repositories.OrderService
                 await transaction.CommitAsync();
                 // send notification
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه استكمال اوردر", orderId);
-                return ResultDTO<object>.Success(true);
+                return ResultDTO<object>.Success(new
+                {
+                    Success = true,
+                    Message = "Order Completed Successfully"
+                });
             }
             catch (Exception ex)
             {
