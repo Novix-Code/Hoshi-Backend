@@ -15,6 +15,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.UserService
 {
+    /// <summary>
+    /// Implements user-related operations for admin dashboard views, profile image management,
+    /// worker application approval/rejection, and admin role-permission listings.
+    /// </summary>
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
@@ -42,7 +46,7 @@ namespace Hoshi.Repositories.UserService
         }
 
         /// <summary>
-        /// This Method to save User Personal Image and update user data.
+        /// Save user's personal image to storage and update user's ImageURL.
         /// </summary>
         /// <param name="id">User id that will be updated</param>
         /// <param name="image">Image file that will be saved</param>
@@ -64,7 +68,7 @@ namespace Hoshi.Repositories.UserService
                     _fileService.DeleteFile(user.ImageURL!);
                 }
 
-                // User FileService method to save the image to the images\personalimages folder in wwwroot
+                // Use FileService to save the image to images/personalimages in wwwroot
                 var imageResult = await _fileService.SaveFileAsync(image, "images/personalimages");
 
                 // Check if the image saved successfuly
@@ -82,8 +86,8 @@ namespace Hoshi.Repositories.UserService
             }
             catch (Exception ex)
             {
-                // If any thing happends return the exception
-                return new Tuple<bool, string>(false, ex.InnerException!.Message);
+                // If anything happens return the exception
+                return new Tuple<bool, string>(false, ex.InnerException?.Message ?? ex.Message);
             }
         }
 
@@ -96,7 +100,7 @@ namespace Hoshi.Repositories.UserService
                     ,ErrorAr="لم يتم اضافة بيانات للعامل بعد"});
             }
 
-            // Check if the worker is approved once before so can not be approved again
+            // Check if the worker is approved once before so cannot be approved again
             if (tergetWorkerSpecif.IsApproved is true)
             {
                 return ResultDTO<object>.BadRequest
@@ -160,7 +164,7 @@ namespace Hoshi.Repositories.UserService
                 });
             }
 
-            // Check if the user is already be approved and in this case can not be rejected
+            // Check if the user is already approved; in this case cannot be rejected
             if (tergetWorkerSpecif.IsApproved is true)
             {
                 return ResultDTO<object>.BadRequest
@@ -391,7 +395,8 @@ namespace Hoshi.Repositories.UserService
             var totalCompletedOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed).CountAsync();
             var totalCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled).CountAsync();
             var ActiveOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).ToListAsync();
-            var CompletedAndCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed && p.OrderStatus== Enums.OrderStatus.Cancelled).ToListAsync();
+            var CompletedAndCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed || p.OrderStatus== Enums.OrderStatus.Cancelled).ToListAsync();
+            // Suggested FIX: previous filter used && which is unsatisfiable; using || to include completed or cancelled
             var result = new
             {
                 TotalOrders = totalOrders,

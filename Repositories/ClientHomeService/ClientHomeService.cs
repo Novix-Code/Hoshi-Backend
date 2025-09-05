@@ -11,6 +11,9 @@ using System.Security.AccessControl;
 
 namespace Hoshi.Repositories.ClientHomeService
 {
+    /// <summary>
+    /// Builds client home data including non-taken promotions and active services by category.
+    /// </summary>
     public class ClientHomeService : IClientHomeService
     {
         private readonly HoshiDbContext _context;
@@ -19,6 +22,9 @@ namespace Hoshi.Repositories.ClientHomeService
             _context = context;
       
         }
+        /// <summary>
+        /// For all clients, compute available promotions (not yet taken) and active services per category.
+        /// </summary>
         public async Task<ResultDTO<List<GetAllHomeServiceDTO>>> GetAllClientWithServiceAsync()
         {
             // 1. Get all relative Services and promotions
@@ -79,6 +85,9 @@ namespace Hoshi.Repositories.ClientHomeService
 
         }
 
+        /// <summary>
+        /// For a specific client, compute available promotions (not yet taken) and active services per category.
+        /// </summary>
         public async Task<ResultDTO<ClientHomeDto>> GetClientWithServiceById(int ClientId)
         {
             // 1. Get all relative Services and promotions

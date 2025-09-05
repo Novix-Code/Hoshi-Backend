@@ -9,7 +9,8 @@ using System.Security.Claims;
 namespace Hoshi.Hubs;
 
 /// <summary>
-/// SignalR Hub for real-time chat functionality
+/// SignalR Hub for real-time chat functionality.
+/// Responsible for managing connections, sending and receiving messages, and delivering unread messages on connect.
 /// </summary>
 [Authorize]
 public class ChatHub :Hub
@@ -22,7 +23,8 @@ public class ChatHub :Hub
     }
 
     /// <summary>
-    /// Called when a client connects to the hub
+    /// Called when a client connects to the hub.
+    /// Ensures single active connection per user and sends a welcome + unread messages.
     /// </summary>
     public override async Task OnConnectedAsync()
     {
@@ -74,7 +76,8 @@ public class ChatHub :Hub
     }
 
     /// <summary>
-    /// Called when a client disconnects from the hub
+    /// Called when a client disconnects from the hub.
+    /// Cleans up connection record if present.
     /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
@@ -100,7 +103,8 @@ public class ChatHub :Hub
     }
 
     /// <summary>
-    /// Send a message to another user
+    /// Send a message to another user.
+    /// Creates a persisted message and delivers in real-time if the receiver is online.
     /// </summary>
     /// <param name="receiverId">The ID of the user to send the message to</param>
     /// <param name="message">The message content</param>
@@ -176,11 +180,13 @@ public class ChatHub :Hub
         catch (Exception ex)
         {
             await Clients.Caller.SendAsync("Error", "Failed to send message");
+            // Suggested improvement (log exception):
+            // _logger.LogError(ex, "Error in SendMessage for {SenderId} -> {ReceiverId}", senderId, receiverId);
         }
     }
 
     /// <summary>
-    /// Get chat history with a specific user
+    /// Get chat history with a specific user.
     /// </summary>
     /// <param name="otherUserId">The ID of the other user</param>
     public async Task GetChatHistory(int otherUserId)
@@ -214,12 +220,15 @@ public class ChatHub :Hub
         catch (Exception ex)
         {
             await Clients.Caller.SendAsync("Error", "Failed to get chat history");
+            // Suggested improvement (log exception):
+            // _logger.LogError(ex, "Error in GetChatHistory for {UserId} with {OtherUserId}", currentUserId, otherUserId);
         }
     }
 
 
     /// <summary>
-    /// Send unread messages to the connected user
+    /// Send unread messages to the connected user.
+    /// Marks them as read after delivery.
     /// </summary>
     /// <param name="userId">The user ID</param>
     private async Task SendUnreadMessages(int? userId)
@@ -260,7 +269,7 @@ public class ChatHub :Hub
 
 
     /// <summary>
-    /// Get the user ID from the JWT claims
+    /// Get the user ID from the JWT claims.
     /// </summary>
     /// <returns>The user ID or null if not found</returns>
 

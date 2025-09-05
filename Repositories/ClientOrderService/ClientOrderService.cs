@@ -23,6 +23,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Hoshi.Repositories.ClientOrderService
 {
+    /// <summary>
+    /// Implements client-facing order operations: creation, deletion with time-window rules,
+    /// listing and details aggregation. Sends admin/worker notifications on key events.
+    /// </summary>
     public class ClientOrderService : IClientOrderService
     {
         private readonly HoshiDbContext _Context;
@@ -49,6 +53,9 @@ namespace Hoshi.Repositories.ClientOrderService
             _hubContext = hubContext;
             this.notificationServiceHandler = notificationServiceHandler;
         }
+        /// <summary>
+        /// Create an order, add initial status history, create invoice and attach promotions/images if applicable.
+        /// </summary>
         public async Task<ResultDTO<object>> AddOrderAsync(OrderPostDTO dto)
         {
 
@@ -58,6 +65,9 @@ namespace Hoshi.Repositories.ClientOrderService
             if (clientSpecificationDetails is null)
                 return ResultDTO<object>.NotFound(new ErrorDTO { ErrorAr = "بيانات العميل لم يتم ادخالها"
                                                                , ErrorEn = "Client specification not found" });
+            // Suggested: wrap order + status history + invoice + images in a transaction for atomicity
+            // using var tx = await _Context.Database.BeginTransactionAsync();
+            // try { ... await tx.CommitAsync(); } catch { await tx.RollbackAsync(); throw; }
 
             // 2. Add Order
             var orderMapper = _mapper.Map<Order>(dto);
@@ -84,8 +94,10 @@ namespace Hoshi.Repositories.ClientOrderService
                 invoicMapper.ClientPromotionFee = clientSpecificationDetails.Balance;
             _Context.Invoices.Add(invoicMapper);
             _Context.OrderStatusHistory.Add(histMapper);
+            // Suggested: extract initial invoice creation logic to a helper for reuse/testing
+            // private Invoice CreateInitialInvoiceFromClientSpec(ClientSpecification spec, int orderId) { ... }
 
-            // 5. Determin Promotion taken and Add it
+            // 5. Determine promotion taken and add it
             var clientPromotionNonTaken = await _clientHomeService.GetClientWithServiceById(dto.ClientId);
             var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
             if (slectedPromotionId is not 0)
@@ -104,6 +116,7 @@ namespace Hoshi.Repositories.ClientOrderService
             // 6. Add order images
             if (!dto.OrderImagesFiles.IsNullOrEmpty())
                 await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
+            // Suggested: if any image fails, consider reverting the order (transaction recommended)
             await _Context.SaveChangesAsync();
 
             // 7. Send Notification
@@ -112,6 +125,10 @@ namespace Hoshi.Repositories.ClientOrderService
             
         }
 
+        /// <summary>
+        /// Cancel an order respecting business time windows (12h before/after service time).
+        /// Applies client fee and worker wallet credit if late.
+        /// </summary>
         public async Task<ResultDTO<string>> DeleteOrder(int orderId)
         {
             // 1. Get Order and check if it is Deleted or not
@@ -125,6 +142,7 @@ namespace Hoshi.Repositories.ClientOrderService
                 // 2.1 Determin the Time that is matching with business logic which is (12H before and after)
                 var befor12H = targetOrder.ServicingDateTime.AddHours(-12);
                 var after12H = targetOrder.ServicingDateTime.AddHours(12);
+                // Suggested: ensure ServicingDateTime stored in UTC and compare against DateTime.UtcNow
                 
                 // 2.2 Befor 12H
                 if(DateTime.UtcNow <= befor12H)
@@ -145,6 +163,7 @@ namespace Hoshi.Repositories.ClientOrderService
                             .Where(f => f.ServiceId == targetOrder.ServiceId && f.FeeType == FeeType.ClientIndebtednessFee && !f.IsSpecial)
                             .Select(f => f.MainFees)
                             .FirstOrDefaultAsync();
+                    // Suggested: consider decimal for money and batching updates
 
                     var clientDetails = await _Context.ClientSpecifications
                             .FirstOrDefaultAsync(p => p.UserId == targetOrder.ClientId);
@@ -178,7 +197,7 @@ namespace Hoshi.Repositories.ClientOrderService
                     return ResultDTO<string>.Success("Successfully deleted");
 
                 }
-                // 2.8 This time is early the date ( no Fee here it just Cancellation the order)
+                // 2.8 This time is early the date (no fee here; just cancellation)
                 else
                 {
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled;
@@ -193,7 +212,7 @@ namespace Hoshi.Repositories.ClientOrderService
               
 
             }
-            // 3. the order is Still Published --> no fee for client
+            // 3. The order is still published -> no fee for client
             else
             {
                 
@@ -207,6 +226,9 @@ namespace Hoshi.Repositories.ClientOrderService
             }
         }
 
+        /// <summary>
+        /// Get all non-cancelled orders projected to lightweight DTO.
+        /// </summary>
         public async Task<ResultDTO<List<OrderGetAllDto>>> GetAllClientsAsync()
         {
             var AllOrders = await _Context.Orders
@@ -220,6 +242,9 @@ namespace Hoshi.Repositories.ClientOrderService
             return ResultDTO<List<OrderGetAllDto>>.Success( AllOrders); 
         }
 
+        /// <summary>
+        /// Aggregate order details including offers, visits, and invoice into a single view model.
+        /// </summary>
         public async Task<ResultDTO<OrderGetDetailsDto>> GetOrderDetails(int orderId)
         {
             // 1. Initiate DTO for result
@@ -242,7 +267,7 @@ namespace Hoshi.Repositories.ClientOrderService
                 resultDto.WorkerData = _mapper.Map<WorkerPortfolioGetDTO>(workerData);
             }
 
-            // 4. get order visit data if exist
+            // 4. Get order visit data if exists
             if(orderData.OrderVisits != null)
             {
                 resultDto.VisiteRequest = _mapper.Map<List<OrderVisitGetDTO>>(orderData.OrderVisits);
@@ -260,6 +285,8 @@ namespace Hoshi.Repositories.ClientOrderService
             resultDto.OrderData = orderData;
             resultDto.Offers = targetOffers;
             return ResultDTO<OrderGetDetailsDto>.Success(resultDto);
+            // Suggested improvement (reduce roundtrips by querying with joins and single projection):
+            // - Project order, offers, visits, and invoice in a single LINQ query using grouping.
         }
     }
 }

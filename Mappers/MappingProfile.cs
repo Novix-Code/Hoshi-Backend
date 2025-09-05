@@ -69,6 +69,10 @@ namespace Hoshi.Mappers
 {
     public class MappingProfile : Profile
     {
+        /// <summary>
+        /// AutoMapper profile for mapping between entities and DTOs.
+        /// Includes generic helpers to reduce repetitive mapping configuration.
+        /// </summary>
         public MappingProfile()
         {
 
@@ -198,6 +202,7 @@ namespace Hoshi.Mappers
 
 			CreateMap<WorkerPortfolioBasicDTO, WorkerPortfolio>().ReverseMap();
 
+            // Suggested improvement (projection-friendly mappings for queries):
             // CreateMap<Order, OrderSearchResultDto>()
             //     .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.ServiveName))
             //     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName));
@@ -228,6 +233,8 @@ namespace Hoshi.Mappers
             CreateMap<GetDto, T>().ReverseMap();
 
             CreateMap<GetDto, List<T>>().ReverseMap();
+            // Suggested improvement (avoid List mappings to prevent accidental materialization):
+            // Remove the List<> mapping above and map collections explicitly where needed.
         }
 
         /// <summary>
@@ -257,6 +264,9 @@ namespace Hoshi.Mappers
             CreateMap<GetDto, T>().ReverseMap();
 
             CreateMap<GetDto, List<T>>().ReverseMap();
+            // Suggested improvement (use UtcNow for server consistency):
+            // .ForMember(d => d.CreatedAt, s => s.MapFrom(s => DateTime.UtcNow));
+            // .ForMember(d => d.ModifiedAt, s => s.MapFrom(s => DateTime.UtcNow));
         }
     }
 }

@@ -10,6 +10,10 @@ namespace Hoshi.Repositories.TokenService
 {
     public class TokenService : ITokenService
     {
+        /// <summary>
+        /// Issues JWTs and maintains an in-memory blacklist of invalidated tokens using the token's JTI.
+        /// Note: Blacklist is memory-scoped; consider a distributed cache for multi-instance deployments.
+        /// </summary>
         private readonly IMemoryCache _cache;
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
@@ -65,6 +69,8 @@ namespace Hoshi.Repositories.TokenService
             var jti = jwt.Id; // Unique token identifier
 
             _cache.Set($"invalidated_jti:{jti}", true, jwt.ValidTo);
+            // Suggested improvement (use distributed cache for scalability):
+            // _distributedCache.SetString($"invalidated_jti:{jti}", "1", new DistributedCacheEntryOptions { AbsoluteExpiration = jwt.ValidTo });
         }
 
         public async Task<bool> IsTokenInvalidated(string token)

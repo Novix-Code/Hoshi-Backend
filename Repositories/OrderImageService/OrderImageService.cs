@@ -8,6 +8,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Hoshi.Repositories.OrderImageService
 {
+    /// <summary>
+    /// Handles saving order images to storage and persisting their records.
+    /// </summary>
     public class OrderImageService : IOrderImageService
     {
         private readonly IMapper mapper;
@@ -25,6 +28,9 @@ namespace Hoshi.Repositories.OrderImageService
             this.fileService = fileService;
         }
 
+        /// <summary>
+        /// Save images for a given order and return the created image DTOs.
+        /// </summary>
         public async Task<ResultDTO<List<OrderImageGetDTO>>> AddImages(int orderId, List<IFormFile> images)
         {
 
@@ -74,6 +80,9 @@ namespace Hoshi.Repositories.OrderImageService
                 error.ErrorEn = "There is a problem in Adding proccess.";
 
                 return ResultDTO<List<OrderImageGetDTO>>.InternalServerError(error, ex.InnerException!.Message);
+                // Suggested improvement (wrap in transaction to ensure all-or-nothing for multi-file):
+                // using var tx = await context.Database.BeginTransactionAsync();
+                // try { ... await tx.CommitAsync(); } catch { await tx.RollbackAsync(); throw; }
             }
         }
     }

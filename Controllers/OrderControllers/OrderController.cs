@@ -15,6 +15,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Hoshi.Controllers.OrderControllers.OrderControllers
 {
 
+    /// <summary>
+    /// Order endpoints built on top of generic CRUD and FSP services.
+    /// Client endpoints delegate to domain services to encapsulate business logic and constraints.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : GenericFSPController<
@@ -63,6 +67,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
 
         [EndpointGroupName("Client")]
+        /// <summary>
+        /// Delete an order (client scope).
+        /// </summary>
         public override async Task<IActionResult> Delete(int id)
         {
             var response  = await clientOrderService.DeleteOrder(id);
@@ -70,6 +77,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
 
         [EndpointGroupName("Client")]
+        /// <summary>
+        /// Create a new order (client scope).
+        /// </summary>
         public override async Task<IActionResult> Add([FromForm] OrderPostDTO postDTO)
         {
 
@@ -79,6 +89,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
 
         [EndpointGroupName("Client")]
+        /// <summary>
+        /// Get all client orders.
+        /// </summary>
         public override async Task<IActionResult> GetAll()
         {
             var response = await clientOrderService.GetAllClientsAsync();
@@ -86,6 +99,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
 
         [EndpointGroupName("Client")]
+        /// <summary>
+        /// Get order by id (client scope).
+        /// </summary>
         public override async Task<IActionResult> GetById(int id)
         {
             var response = await clientOrderService.GetOrderDetails(id);
@@ -94,6 +110,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         
         //[Authorize]
         [HttpGet("order-details")]
+        /// <summary>
+        /// Get details of a submitted order (client-facing view model).
+        /// </summary>
         public async Task<IActionResult> GetSubmittedOrderDetails([FromQuery] int orderId)
         {
 	        var result = await orderService.GetSubmittedOrderDetailsAsync(orderId);
@@ -101,6 +120,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
         //[Authorize]
         [HttpGet("order-client-details")]
+        /// <summary>
+        /// Get public profile details for the client who submitted an order.
+        /// </summary>
         public async Task<IActionResult> GetOrderClientDetails([FromQuery] int orderId)
         {
 	        var result = await orderService.GetOrderClientDetailsAsync(orderId);
@@ -108,6 +130,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
         //[Authorize]
         [HttpPost("complete-order")]
+        /// <summary>
+        /// Mark an order as completed, handling financial operations and notifications.
+        /// </summary>
         public async Task<IActionResult> CompleteOrder([FromQuery] int orderId)
         {
 	        var result = await orderService.CompleteOrderAsync(orderId);
@@ -115,6 +140,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
         
         [HttpGet("assigned-order")]
+        /// <summary>
+        /// Get the currently assigned order details.
+        /// </summary>
         public async Task<IActionResult> GetAssignedOrder([FromQuery] int orderId)
         {
 	        var result = await orderService.GetAssignedOrderAsync(orderId);
@@ -122,6 +150,9 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
         }
         
         [HttpGet("get-dashboard-order-details")]
+        /// <summary>
+        /// Get rich order details for admin dashboard.
+        /// </summary>
         public async Task<IActionResult> GetDashboardOrderDetails([FromQuery] int orderId)
         {
 	        var result = await orderService.GetDashboardOrderDetailsAsync(orderId);

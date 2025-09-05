@@ -19,6 +19,11 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Hoshi.Data
 {
+    /// <summary>
+    /// Entity Framework Core DbContext for the Hoshi application.
+    /// Extends IdentityDbContext to include ASP.NET Identity tables and custom domain models.
+    /// Note: Global delete behavior is set to NoAction to avoid cascade deletions.
+    /// </summary>
     public class HoshiDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public HoshiDbContext(DbContextOptions options) : base(options) { }
@@ -36,6 +41,19 @@ namespace Hoshi.Data
                     foreignKey.DeleteBehavior = DeleteBehavior.NoAction;
                 }
             }
+
+            // Suggested improvement (configure decimal precision and string lengths globally):
+            // foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            // {
+            //     foreach (var property in entityType.GetProperties())
+            //     {
+            //         if (property.ClrType == typeof(decimal))
+            //         {
+            //             property.SetPrecision(18);
+            //             property.SetScale(2);
+            //         }
+            //     }
+            // }
 
             // Add Main Data Seeders:
             LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
@@ -58,6 +76,8 @@ namespace Hoshi.Data
             modelBuilder.Entity<SuspendedWorkerModelForView>().HasNoKey().ToView("SuspendedWorker");
             modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
             modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
+            // Suggested improvement (schema-qualified views):
+            // modelBuilder.Entity<OverViewPage>().ToView("dbo.OverviewView");
         }
 
 
@@ -65,7 +85,7 @@ namespace Hoshi.Data
 
 
         /// <summary>
-        /// this is View Models
+        /// Database views (read-only projections).
         /// </summary>
         public DbSet<OverViewPage> OverviewView { get; set; }
         public DbSet<clientPageModel> ClientPageView4 { get; set; }

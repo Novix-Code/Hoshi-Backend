@@ -9,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerHomeService
 {
+    /// <summary>
+    /// Provides worker home data such as available offers, upcoming orders,
+    /// and nearby orders based on geospatial distance. Also supports order search filters.
+    /// </summary>
     public class WorkerHomeService : IWorkerHomeService
     {
         private readonly HoshiDbContext _hoshiDbContext;
@@ -18,6 +22,9 @@ namespace Hoshi.Repositories.WorkerHomeService
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
         }
+        /// <summary>
+        /// Get worker home snapshot including offers, upcoming and nearby orders (sorted by distance).
+        /// </summary>
         public async Task<ResultDTO<WorkerOrderDetailsDto>> GetWorkerHomeAsync(int workerId)
         {
             var workerExists = await _hoshiDbContext.Users.AnyAsync(u => u.Id == workerId);
@@ -91,6 +98,9 @@ namespace Hoshi.Repositories.WorkerHomeService
             return angle * (Math.PI / 180);
         }
 
+        /// <summary>
+        /// Search published orders, filter by service/city names, order by creation date descending.
+        /// </summary>
         public async Task<ResultDTO<List<OrderGetDTO>>> SearchOrdersAsync(OrderSearchRequestDto searchRequest)
         {
 
