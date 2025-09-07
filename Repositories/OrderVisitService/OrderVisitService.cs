@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.OrderVisitService
 {
+    /// <summary>
+    /// Manages creation of order visits and dispatches client notifications.
+    /// </summary>
     public class OrderVisitService : IOrderVisitService
     {
         private readonly INotificationServiceHandler notificationServiceHandler;
@@ -21,6 +24,9 @@ namespace Hoshi.Repositories.OrderVisitService
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Create an order visit and attach a new invoice record with client fees if applicable.
+        /// </summary>
         public async Task<ResultDTO<object>> addVisitAsync(OrderVisitPostDTO orderVisit)
         {
             var targetOrder = await _context.Orders.FindAsync(orderVisit.OrderId);
@@ -60,12 +66,18 @@ namespace Hoshi.Repositories.OrderVisitService
 
         }
 
+        /// <summary>
+        /// Send a message to the client of an order.
+        /// </summary>
         public async Task sendNoificationforclient(int orderId , string message)
         {
             var targetOrder = await _context.Orders.FirstOrDefaultAsync(p => p.Id == orderId);
             await notificationServiceHandler.sendMessagetoClient(message, targetOrder.ClientId);
         }
 
+        /// <summary>
+        /// Send a message to the client of a given visit's order.
+        /// </summary>
         public async Task sendNoificationforclient2(int VisitId, string message)
         {
             var targetVisit = await _context.OrderVisits.FindAsync(VisitId);

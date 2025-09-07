@@ -3,8 +3,15 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Hoshi.Repositories.Hubs
 {
+    /// <summary>
+    /// SignalR hub for broadcasting role-based notifications.
+    /// Adds authenticated connections to role groups and exposes a simple broadcast method.
+    /// </summary>
     public class NotificationHub : Hub<INotificationHub>
     {
+        /// <summary>
+        /// On connect, add the connection to a group based on user role.
+        /// </summary>
         public override async Task OnConnectedAsync()
         {
             var user = Context.User;
@@ -35,6 +42,9 @@ namespace Hoshi.Repositories.Hubs
             await base.OnConnectedAsync();
         }
 
+        /// <summary>
+        /// Broadcast a message to all connections.
+        /// </summary>
         public async Task SendMessage(string message)
         {
             await Clients.All.ReceiveMessage($"{message}");

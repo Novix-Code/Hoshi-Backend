@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerSpecificationService
 {
+    /// <summary>
+    /// Provides read/update operations for worker specifications including images, portfolios, and services.
+    /// </summary>
     public class WorkerSpecificationService : IWorkerSpecificationService
     {
         private readonly HoshiDbContext context;
@@ -33,7 +36,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
         }
 
         /// <summary>
-        /// 
+        /// Get worker specification by user id with related user, job, city, portfolios and services.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
@@ -88,7 +91,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
         }
 
         /// <summary>
-        /// 
+        /// Update worker specification: personal image, portfolio files, and services.
         /// </summary>
         /// <param name="putDTO"></param>
         /// <returns></returns>
@@ -195,7 +198,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
         }
 
         /// <summary>
-        /// 
+        /// Add or replace worker national ID image.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="image"></param>
@@ -242,7 +245,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
         }
 
         /// <summary>
-        /// 
+        /// Add or replace worker portfolio files.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="files"></param>

@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.ArchiveService
 {
+    /// <summary>
+    /// Handles creation and update of archive records with associated file uploads.
+    /// </summary>
     public class ArchiveService : IArchiveService
     {
         private readonly IMapper mapper;
@@ -25,6 +28,9 @@ namespace Hoshi.Repositories.ArchiveService
             this.fileService = fileService;
         }
 
+        /// <summary>
+        /// Create an archive entry and save its file via FileService.
+        /// </summary>
         public async Task<ResultDTO<ArchiveGetDTO>> AddArchive(ArchivePostDTO postDTO)
         {
             try
@@ -58,6 +64,9 @@ namespace Hoshi.Repositories.ArchiveService
             }
         }
 
+        /// <summary>
+        /// Update an archive entry and optionally replace its file (deletes the old file first).
+        /// </summary>
         public async Task<ResultDTO<ArchiveGetDTO>> UpdateArchive(ArchivePutDTO putDTO)
         {
             try

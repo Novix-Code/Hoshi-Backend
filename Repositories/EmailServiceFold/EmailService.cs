@@ -11,6 +11,11 @@ using OtpNet;
 
 namespace Hoshi.Repositories.EmailServiceFold
 {
+    /// <summary>
+    /// Service for sending transactional emails (OTP, admin credentials) and managing OTP lifecycle.
+    /// Uses MailKit SMTP and OtpNet TOTP generation.
+    /// Note: SSL validation bypass is enabled for debugging; see commented fix below.
+    /// </summary>
     public class EmailService : IEmailService
     {
 
@@ -229,6 +234,8 @@ namespace Hoshi.Repositories.EmailServiceFold
                 {
                     // Bypass SSL validation for debugging only
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                    // Suggested improvement (do not bypass SSL in production):
+                    // client.ServerCertificateValidationCallback = null;
 
                     await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
@@ -243,7 +250,7 @@ namespace Hoshi.Repositories.EmailServiceFold
             catch (Exception ex)
             {
 
-                return ResultDTO<string>.Failure(new ErrorDTO() , ResponseStatusCodes.BadRequest);
+                return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
 
             }
         }
@@ -270,6 +277,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                 {
                     // Bypass SSL validation for debugging only
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                    // Suggested improvement: remove the bypass in production.
 
                     await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
@@ -299,7 +307,7 @@ namespace Hoshi.Repositories.EmailServiceFold
             try
             {
                 var OTP = GenerateOtp();
-                
+
                 var emailMessage = new MimeMessage();
                 emailMessage.From.Add(new MailboxAddress("Ahmed Toba", _configuration["SmtpSettings:Username"]));
                 emailMessage.To.Add(new MailboxAddress("", email));
@@ -318,6 +326,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                 {
                     // Bypass SSL validation for debugging only
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                    // Suggested improvement: remove the bypass in production.
 
                     await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
@@ -327,14 +336,14 @@ namespace Hoshi.Repositories.EmailServiceFold
                 var _user = await _userManager.FindByEmailAsync(email);
                 var userOTPDTO = new UserOTP
                 {
-                    Code = OTP.ComputeTotp() , 
+                    Code = OTP.ComputeTotp(),
                     CreatedAt = DateTime.Now,
-                    IsRevoked = false,  
-                    SecreteKey = this._secretKey , 
-                    UserId     = _user.Id
+                    IsRevoked = false,
+                    SecreteKey = this._secretKey,
+                    UserId = _user.Id
 
                 };
-                
+
                 await _context.UserOTPs.AddAsync(userOTPDTO);
                 await _context.SaveChangesAsync();
 
@@ -342,35 +351,44 @@ namespace Hoshi.Repositories.EmailServiceFold
             }
             catch (Exception ex)
             {
-
-                return ResultDTO<string>.Failure(new ErrorDTO { ErrorEn = "faild to send OTP"}, ResponseStatusCodes.BadRequest);
-
+                return ResultDTO<string>.Failure(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "فشل في ارسال ال OTP.",
+                        ErrorEn = ex.InnerException == null ? ex.Message : ex.InnerException.Message
+                    },
+                    ResponseStatusCodes.BadRequest
+                );
             }
 
         }
-        public async Task<ResultDTO<object>> checkOTPVerfication(string otp , string userId)
+        public async Task<ResultDTO<object>> checkOTPVerfication(string otp, string userId)
         {
             var targetuserOtp = await _context.UserOTPs.Where(p => p.UserId == int.Parse(userId)).FirstOrDefaultAsync();
-           
-            if (targetuserOtp == null) {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "not found this Otp" } , ResponseStatusCodes.NotFound);
 
-            }
-            if (targetuserOtp.Code != otp)
+            if (targetuserOtp == null || targetuserOtp.Code != otp || targetuserOtp.IsRevoked)
             {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "Not Correct OTP" }, ResponseStatusCodes.NotFound);
-
+                return ResultDTO<object>.Failure(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "هذا ال OTP غير صحيح.",
+                        ErrorEn = "This OTO is not Valied"
+                    },
+                    ResponseStatusCodes.BadRequest
+                );
             }
-            if (targetuserOtp.IsRevoked)
-            {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "this Otp Is Revokeds" } , ResponseStatusCodes.NotFound);
 
-            }
             var totp = new Totp(targetuserOtp.SecreteKey, step: otpDefaultSteps, totpSize: 8);
             bool isValid = totp.VerifyTotp(otp, out long timeStepMatched, new VerificationWindow(previous: 1, future: 0));
-            if (!isValid) 
+            if (!isValid)
             {
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "this Otp is expired please use resend OTP" }, ResponseStatusCodes.NotFound);
+                return ResultDTO<object>.Failure(
+                    new ErrorDTO { 
+                        ErrorAr = "هذا ال OTP منتهي، برجاء استخدام اعادة الارسال.",
+                        ErrorEn = "This Otp is expired please use resend OTP" 
+                    }, 
+                    ResponseStatusCodes.NotFound
+                );
 
             }
             var targetUser = await _userManager.FindByIdAsync(userId);
@@ -416,21 +434,27 @@ namespace Hoshi.Repositories.EmailServiceFold
                 {
                     // Bypass SSL validation for debugging only
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                    // Suggested improvement: remove the bypass in production.
 
                     await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
                     await client.SendAsync(emailMessage);
                     await client.DisconnectAsync(true);
                 }
-                
+
 
                 return ResultDTO<object>.Success("Successfully Send OTP");
             }
             catch (Exception ex)
             {
-
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "faild to send OTP" }, ResponseStatusCodes.BadRequest);
-
+                return ResultDTO<object>.Failure(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "فشل في ارسال ال OTP.",
+                        ErrorEn = ex.InnerException == null ? ex.Message : ex.InnerException.Message
+                    },
+                    ResponseStatusCodes.BadRequest
+                );
             }
         }
 

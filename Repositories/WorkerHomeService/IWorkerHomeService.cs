@@ -7,9 +7,18 @@ using Hoshi.Models.OrderModels;
 
 namespace Hoshi.Repositories.WorkerHomeService
 {
+    /// <summary>
+    /// Worker home data: lists of offers, upcoming orders, nearby orders, and search.
+    /// </summary>
     public interface IWorkerHomeService
     {
+        /// <summary>
+        /// Get worker home details including offers, upcoming and nearby orders.
+        /// </summary>
         Task<ResultDTO<WorkerOrderDetailsDto>> GetWorkerHomeAsync(int workerId);
+        /// <summary>
+        /// Search published orders by service and city names.
+        /// </summary>
         Task<ResultDTO<List<OrderGetDTO>>> SearchOrdersAsync(OrderSearchRequestDto searchRequest);
     }
 }

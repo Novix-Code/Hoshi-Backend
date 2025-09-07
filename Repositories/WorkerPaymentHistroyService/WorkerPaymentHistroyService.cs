@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerPaymentHistroyService
 {
+    /// <summary>
+    /// Manages worker payment history creation and updates with bill image handling.
+    /// </summary>
     public class WorkerPaymentHistroyService : IWorkerPaymentHistroyService
     {
         private readonly IMapper mapper;
@@ -25,6 +28,9 @@ namespace Hoshi.Repositories.WorkerPaymentHistroyService
             this.fileService = fileService;
         }
 
+        /// <summary>
+        /// Add a payment history record and save bill image.
+        /// </summary>
         public async Task<ResultDTO<WorkerPaymentHistroyGetDTO>> AddService(WorkerPaymentHistroyPostDTO postDTO)
         {
             try
@@ -62,6 +68,9 @@ namespace Hoshi.Repositories.WorkerPaymentHistroyService
             }
         }
 
+        /// <summary>
+        /// Update payment history if not approved yet; supports replacing bill image.
+        /// </summary>
         public async Task<ResultDTO<WorkerPaymentHistroyGetDTO>> UpdateService(WorkerPaymentHistroyPutDTO putDTO)
         {
             try

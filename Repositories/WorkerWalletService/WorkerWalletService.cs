@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerWalletService
 {
+    /// <summary>
+    /// Provides worker wallet read and write operations, including payment submissions and balance updates.
+    /// </summary>
     public class WorkerWalletService : IWorkerWalletService
     {
         private readonly HoshiDbContext _context;
@@ -21,6 +24,9 @@ namespace Hoshi.Repositories.WorkerWalletService
             _environment = environment;
         }
 
+        /// <summary>
+        /// Get worker wallet and recent history; returns NotFound if wallet missing.
+        /// </summary>
         public async Task<ResultDTO<WorkerWalletResponseDTO>> GetWorkerWalletAsync(int workerId)
         {
             // Check if worker exists
@@ -64,6 +70,9 @@ namespace Hoshi.Repositories.WorkerWalletService
             return ResultDTO<WorkerWalletResponseDTO>.Success(response);
         }
 
+        /// <summary>
+        /// Submit a payment with an uploaded bill image; image is saved under /uploads/bills.
+        /// </summary>
         public async Task<ResultDTO<string>> AddPaymentAsync(int workerId, AddPaymentRequestDTO request)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -105,6 +114,9 @@ namespace Hoshi.Repositories.WorkerWalletService
                 {
                     await request.BillImage.CopyToAsync(fileStream);
                 }
+                // Suggested improvement (reuse central FileService & validate extension):
+                // var saveResult = await _fileService.SaveFileAsync(request.BillImage, "uploads/bills");
+                // if (!saveResult.Item1) return ResultDTO<string>.BadRequest(new ErrorDTO { ErrorEn = saveResult.Item2 });
 
                 // Create payment history record
                 var paymentHistory = new WorkerPaymentHistroy
@@ -131,6 +143,9 @@ namespace Hoshi.Repositories.WorkerWalletService
             }
         }
 
+        /// <summary>
+        /// Add funds to wallet and append an income history record.
+        /// </summary>
         public async Task AddToWalletAsync(int workerId, double amount, string title)
         {
             var wallet = await _context.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == workerId);
@@ -158,6 +173,9 @@ namespace Hoshi.Repositories.WorkerWalletService
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Deduct funds from wallet and append an expense history record.
+        /// </summary>
         public async Task DeductFromWalletAsync(int workerId, double amount, string title)
         {
             var wallet = await _context.WorkerWallets.FirstOrDefaultAsync(w => w.WorkerId == workerId);

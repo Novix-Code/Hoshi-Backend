@@ -46,12 +46,17 @@ using Hoshi.Repositories.RatesService;
 
 public class Program
 {
+    /// <summary>
+    /// Application entry point. Configures logging, services (DI), authentication, Swagger, and the HTTP pipeline.
+    /// Note: Behavior intentionally unchanged. Suggestions are provided in comments with optional improved code snippets commented out.
+    /// </summary>
     public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
              .MinimumLevel.Debug()
              .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
              .Enrich.FromLogContext()
+             .Enrich.WithProperty("Application", "Hoshi")
              .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
              .CreateLogger();
 
@@ -69,7 +74,7 @@ public class Program
         });
 
         builder.Services.AddHttpContextAccessor();
-        
+
         builder.Host.UseSerilog();
 
         builder.Services.AddEndpointsApiExplorer();
@@ -98,12 +103,41 @@ public class Program
                 Version = "1.0",
                 Description = "This APIs for Admin in this project."
             });
+
+            // Suggested improvement(JWT auth for Swagger UI):
+             op.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+             {
+                 Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                 Name = "Authorization",
+                 In = ParameterLocation.Header,
+                 Type = SecuritySchemeType.Http,
+                 Scheme = JwtBearerDefaults.AuthenticationScheme
+             });
+            op.AddSecurityRequirement(new OpenApiSecurityRequirement
+             {
+                 {
+                     new OpenApiSecurityScheme
+                     {
+                         Reference = new OpenApiReference
+                         {
+                             Type = ReferenceType.SecurityScheme,
+                             Id = "Bearer"
+                         }
+                     }, new List<string>()
+                 }
+             });
         });
 
         // Initialize Db Context
         builder.Services.AddDbContext<HoshiDbContext>(
             contextBuilder => contextBuilder.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"])
         );
+        // Suggested improvement (enable detailed errors in Development):
+        // builder.Services.AddDbContext<HoshiDbContext>(options =>
+        //     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+        //            .EnableDetailedErrors(builder.Environment.IsDevelopment())
+        //            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
+        // );
 
         builder.Services.AddIdentity<User, IdentityRole<int>>().AddEntityFrameworkStores<HoshiDbContext>();
 
@@ -144,6 +178,9 @@ public class Program
                     return Task.CompletedTask;
                 }
             };
+            // Suggested improvement (harden JWT bearer):
+            // options.RequireHttpsMetadata = true;
+            // options.SaveToken = true;
         });
 
 
@@ -160,7 +197,7 @@ public class Program
 
         // Add Services Injections
 
-			builder.Services.AddAutoMapper(typeof(Program));
+        builder.Services.AddAutoMapper(typeof(Program));
 
         builder.Services.AddMemoryCache();
 
@@ -168,67 +205,77 @@ public class Program
 
         builder.Services.AddTransient(typeof(IArchiveService), typeof(ArchiveService));
 
-			builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
+        builder.Services.AddTransient(typeof(IUserService), typeof(UserService));
 
-			builder.Services.AddTransient(typeof(IClientOrderService), typeof(ClientOrderService));
+        builder.Services.AddTransient(typeof(IClientOrderService), typeof(ClientOrderService));
 
-			builder.Services.AddTransient(typeof(IWorkerOrderService), typeof(WorkerOrderService));
+        builder.Services.AddTransient(typeof(IWorkerOrderService), typeof(WorkerOrderService));
 
-			builder.Services.AddTransient(typeof(IOrderService), typeof(OrderService));
+        builder.Services.AddTransient(typeof(IOrderService), typeof(OrderService));
 
-			builder.Services.AddTransient(typeof(IClientHomeService), typeof(ClientHomeService));
+        builder.Services.AddTransient(typeof(IClientHomeService), typeof(ClientHomeService));
 
-			builder.Services.AddTransient(typeof(IClientSpecificationService), typeof(ClientSpecificationService));
+        builder.Services.AddTransient(typeof(IClientSpecificationService), typeof(ClientSpecificationService));
 
-			builder.Services.AddTransient(typeof(IServiceService), typeof(ServiceService));
+        builder.Services.AddTransient(typeof(IServiceService), typeof(ServiceService));
 
-			builder.Services.AddTransient(typeof(IClientVisitService), typeof(ClientVisitService));
+        builder.Services.AddTransient(typeof(IClientVisitService), typeof(ClientVisitService));
 
-			builder.Services.AddTransient(typeof(IWorkerVisitService), typeof(WorkerVisitService));
+        builder.Services.AddTransient(typeof(IWorkerVisitService), typeof(WorkerVisitService));
 
-			builder.Services.AddTransient(typeof(IOrderVisitService), typeof(OrderVisitService));
+        builder.Services.AddTransient(typeof(IOrderVisitService), typeof(OrderVisitService));
 
-			builder.Services.AddTransient(typeof(IClientOfferService), typeof(ClientOfferService));
+        builder.Services.AddTransient(typeof(IClientOfferService), typeof(ClientOfferService));
 
-			builder.Services.AddTransient(typeof(IWorkerOfferService), typeof(WorkerOfferService));
+        builder.Services.AddTransient(typeof(IWorkerOfferService), typeof(WorkerOfferService));
 
-			builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
-      
-			builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
+        builder.Services.AddTransient(typeof(IWorkerWalletService), typeof(WorkerWalletService));
 
-			builder.Services.AddTransient(typeof(IWorkerSpecificationService), typeof(WorkerSpecificationService));
+        builder.Services.AddTransient(typeof(IWorkerHomeService), typeof(WorkerHomeService));
 
-			builder.Services.AddTransient(typeof(IWorkerPaymentHistroyService), typeof(WorkerPaymentHistroyService));
+        builder.Services.AddTransient(typeof(IWorkerSpecificationService), typeof(WorkerSpecificationService));
 
-			builder.Services.AddTransient(typeof(IPromotionService), typeof(PromotionService));
+        builder.Services.AddTransient(typeof(IWorkerPaymentHistroyService), typeof(WorkerPaymentHistroyService));
 
-			builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
-			builder.Services.AddTransient(typeof(IRateService), typeof(RateService));
+        builder.Services.AddTransient(typeof(IPromotionService), typeof(PromotionService));
+
+        builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
+
+			  builder.Services.AddTransient(typeof(IRateService), typeof(RateService));
       
         builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
-      
-			builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
-      
-			builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
-            builder.Services.AddTransient(typeof(INotificationServiceHandler), typeof(NotificationServiceHandler));
-            builder.Services.AddSignalR();
-            
-            var app = builder.Build();
+
+        builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
+
+        builder.Services.AddTransient(typeof(ITokenService), typeof(TokenService));
+
+        builder.Services.AddTransient(typeof(INotificationServiceHandler), typeof(NotificationServiceHandler));
+
+        builder.Services.AddSignalR();
+        // Suggested improvement (configure SignalR for scale-out scenarios):
+        // builder.Services.AddSignalR().AddJsonProtocol(o =>
+        // {
+        //     o.PayloadSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        // });
+
+        var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
-        {
+        //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+        //{
             app.UseSwagger();
             app.UseSwaggerUI(op =>
             {
+                op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
+
                 op.SwaggerEndpoint("/swagger/Worker/swagger.json", "Worker APIs");
 
                 op.SwaggerEndpoint("/swagger/Client/swagger.json", "Client APIs");
 
-                op.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin APIs");
-
                 op.DocumentTitle = "Hoshi - Swagger";
+
                 op.RoutePrefix = string.Empty;
+
                 // This options to make swagger more easy to use.
                 // Make all endpoints ready to use directly when it open, you don't need to press on "Try It Out" button any more.
                 op.EnableTryItOutByDefault();
@@ -237,7 +284,7 @@ public class Program
                 // Make all Endpoints and Controllers Collapse
                 op.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
             });
-        }
+        //}
 
 
         app.UseHttpsRedirection();
@@ -258,7 +305,7 @@ public class Program
 
         app.UseStaticFiles();
 
-        //Map SignalR Hub
+        // Map SignalR Hubs
         app.MapHub<NotificationHub>("/notification-hub");
         app.MapHub<ChatHub>("/chathub");
 

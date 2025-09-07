@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.PromotionService
 {
+    /// <summary>
+    /// Implements promotion creation and updates, including image persistence via FileService.
+    /// </summary>
     public class PromotionService : IPromotionService
     {
         private readonly IMapper mapper;
@@ -26,6 +29,9 @@ namespace Hoshi.Repositories.PromotionService
         }
 
 
+        /// <summary>
+        /// Create a promotion and save its image; returns the created DTO.
+        /// </summary>
         public async Task<ResultDTO<PromotionGetDTO>> AddPromotion(PromotionPostDTO postDTO)
         {
             try
@@ -59,6 +65,9 @@ namespace Hoshi.Repositories.PromotionService
             }
         }
 
+        /// <summary>
+        /// Update a promotion and optionally replace its image (old image is deleted first).
+        /// </summary>
         public async Task<ResultDTO<PromotionGetDTO>> UpdatePromotion(PromotionPutDTO putDTO)
         {
             try

@@ -30,6 +30,11 @@ namespace Hoshi.Controllers.UserControllers
         }
 
 
+        /// <summary>
+        /// Register a new user account.
+        /// </summary>
+        /// <param name="userType">User type (client/worker).</param>
+        /// <param name="registerRequestDto">Registration payload.</param>
         [HttpPost("register")]
         public async Task<IActionResult> Register(
             [FromQuery] UserType userType,
@@ -40,6 +45,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
+        /// <summary>
+        /// Authenticate a user and return a JWT.
+        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] ApplicationUserLoginRequestDto loginRequestDto)
         {
@@ -47,6 +55,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
+        /// <summary>
+        /// Start password reset by generating and emailing a reset token.
+        /// </summary>
         [HttpPost("forget-password")]
         public async Task<IActionResult> ForgetPassword([FromBody] string email)
         {
@@ -54,6 +65,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)response.StatusCode, response);
         }
 
+        /// <summary>
+        /// Reset password using a previously issued token.
+        /// </summary>
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto requestDto)
         {
@@ -101,6 +115,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
+        /// <summary>
+        /// Get the authenticated user's id from JWT.
+        /// </summary>
         [HttpGet("get-current-userId")]
         public IActionResult GetUserId()
         {
@@ -108,6 +125,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)response.StatusCode, response);
         }
 
+        /// <summary>
+        /// Edit profile data for the authenticated user.
+        /// </summary>
         [HttpPatch("edit")]
      
         public async Task<IActionResult> Edit([FromForm] ApplicationUserEditRequestDto userEditRequestDto)
@@ -116,6 +136,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
 
+        /// <summary>
+        /// Delete a user (admin only).
+        /// </summary>
         [HttpDelete("delete/{id}")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete([FromRoute] string id)
@@ -123,12 +146,18 @@ namespace Hoshi.Controllers.UserControllers
             var serviceResponse = await authService.Delete(id);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
         }
+        /// <summary>
+        /// Verify OTP code received via email.
+        /// </summary>
         [HttpPost("CheckOTP")]
         public async Task<IActionResult> otpResult(string otp, string id)
         {
             var response = await emailService.checkOTPVerfication(otp, id);
             return StatusCode(response.StatusCode, response);
         }
+        /// <summary>
+        /// Request to resend OTP.
+        /// </summary>
         [HttpPost("reset-OTP")]
         public async Task<IActionResult> resetOtp(string Email)
         {
@@ -136,6 +165,9 @@ namespace Hoshi.Controllers.UserControllers
             return StatusCode(repsonse.StatusCode, Response);
         }
 
+        /// <summary>
+        /// Get admins along with their roles and permissions.
+        /// </summary>
         [HttpGet("get-all-admins-with-roles-and-permissions")]
         public async Task<IActionResult> GetAllAdminsWithRolesAndPermissionsAsync()
         {

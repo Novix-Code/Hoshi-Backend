@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerVisitService
 {
+    /// <summary>
+    /// Executes worker visit flows: add, complete, and cancel, with fee calculations and notifications.
+    /// </summary>
     public class WorkerVisitService : IWorkerVisitService
     {
         private readonly HoshiDbContext _hoshiDbContext;
@@ -23,6 +26,9 @@ namespace Hoshi.Repositories.WorkerVisitService
             _mapper = mapper;
             _notificationServiceHandler = notificationServiceHandler;
         }
+        /// <summary>
+        /// Create a visit, compute fees, and upsert temp invoice entries for the visit.
+        /// </summary>
         public async Task<ResultDTO<OrderVisitGetDTO>> AddVisitAsync(OrderVisitPostDTO dto)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
@@ -100,6 +106,9 @@ namespace Hoshi.Repositories.WorkerVisitService
             }
         }
 
+        /// <summary>
+        /// Complete a visit: deduct client balance/indebtedness, credit worker wallet, deduct commission, add revenue.
+        /// </summary>
         public async Task<ResultDTO<bool>> CompleteVisitAsync(int visitId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
@@ -251,6 +260,9 @@ namespace Hoshi.Repositories.WorkerVisitService
             }
         }
 
+        /// <summary>
+        /// Cancel a visit: apply cancellation fee to worker wallet if configured and log company revenue.
+        /// </summary>
         public async Task<ResultDTO<bool>> CancelVisitAsync(int visitId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();

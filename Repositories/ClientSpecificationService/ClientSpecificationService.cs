@@ -15,6 +15,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Hoshi.Repositories.ClientSpecificationService
 {
+    /// <summary>
+    /// Implements client specification retrieval and updates including linked user fields and image handling.
+    /// </summary>
     public class ClientSpecificationService : IClientSpecificationService
     {
         private readonly HoshiDbContext context;
@@ -36,7 +39,7 @@ namespace Hoshi.Repositories.ClientSpecificationService
         }
 
         /// <summary>
-        /// Get Client Specifications by its UserId
+        /// Get client specifications by user id.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns>Client Specification GetDTO for the provided user</returns>
@@ -77,7 +80,7 @@ namespace Hoshi.Repositories.ClientSpecificationService
         }
 
         /// <summary>
-        /// Update Client Specification and its User data.
+        /// Update client specification and its user data.
         /// </summary>
         /// <param name="putDTO"> Dto of data that will be updated</param>
         /// <returns>Client Specification GetDTO after updating</returns>

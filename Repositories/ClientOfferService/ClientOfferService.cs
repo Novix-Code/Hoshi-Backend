@@ -59,6 +59,9 @@ namespace Hoshi.Repositories.ClientOfferService
                 _logger.LogInformation("Offer {OfferId} status updated to Accepted", offerId);
                 _logger.LogInformation("Order {OrderId} assigned to Worker {WorkerId}", 
                                         targetOffer.Order.Id, targetOffer.WorkerId);
+                // Suggested: validate order status before transition to avoid invalid state changes
+                // if (targetOffer.Order.OrderStatus != Enums.OrderStatus.Published)
+                //    return ResultDTO<object>.BadRequest(new ErrorDTO { ErrorEn = "Order not in expected state.", ErrorAr = "حالة الطلب لا تسمح بقبول العرض." });
                
                 // 3. Determin Worker Details ( worker specification )
                 var workerSpecificationTarget = await _context.WorkerSpecifications
@@ -95,6 +98,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 targetInvoice.WorkerTotalPrice = temp.WorkerTotalPrice;
                 _context.Invoices.Update(targetInvoice);
                 _logger.LogInformation("Invoice created/updated for OrderId={OrderId}", targetOffer.OrderId);
+                // Suggested: move fee aggregation to a dedicated method/service to ensure single source of truth
 
                 // 5. Determin Applied Promotions and add it to PromotionTaken Table
                 //_context.TempInvoices.Remove(temp);
@@ -189,5 +193,10 @@ namespace Hoshi.Repositories.ClientOfferService
             });
 
         }
+
+        // Suggested: normalize promotion title rendering (ensure % only when IsPercentage is true)
+        // private static string BuildPromotionTitle(Promotion p) =>
+        //     p.IsPercentage ? $"{p.TitleFirstPart} {p.Value}% {p.TitleSecondPart}".Trim() :
+        //                      $"{p.TitleFirstPart} {p.Value} {p.TitleSecondPart}".Trim();
     }
 }

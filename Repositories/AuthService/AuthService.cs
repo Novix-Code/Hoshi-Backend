@@ -5,8 +5,6 @@ using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
-using Hoshi.Models.DashboardModels;
-using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
@@ -28,6 +26,11 @@ using System.Text.RegularExpressions;
 
 namespace Hoshi.Repositories.AuthService
 {
+    /// <summary>
+    /// Handles user authentication, registration, password reset, profile edits and worker application flow.
+    /// <br></br>
+    /// Uses ASP.NET Identity, EF Core, and app services (files, notifications, tokens).
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IMapper _mapper;
@@ -89,7 +92,7 @@ namespace Hoshi.Repositories.AuthService
             // Hash the token before storing
             var hashedToken = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
-            //Add this to the Password Reset Requests Table
+            // Add this to the Password Reset Requests Table
             var passwordResetRequest = new PasswordResetRequest
             {
                 ExpiresAt = DateTime.UtcNow.AddHours(1),
@@ -108,14 +111,14 @@ namespace Hoshi.Repositories.AuthService
             var user = await _userManager.FindByEmailAsync(resetPasswordRequestDto.Email);
             if (user is null) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
 
-            //Hash the recieved token for comparison
+            // Hash the received token for comparison
             var hashedRecievedToken = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(resetPasswordRequestDto.Token)));
 
             var passwordResetTokenRequestRepo = await _context.PasswordResetRequests.ToListAsync();
             var passwordResetRequest = passwordResetTokenRequestRepo
                 .Where(r => r.UserId == user.Id && r.ResetToken == hashedRecievedToken).FirstOrDefault();
 
-            //Validate the token and its expiry
+            // Validate the token and its expiry
             if (passwordResetRequest is null || passwordResetRequest.ExpiresAt < DateTime.UtcNow)
                 return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
 
@@ -128,7 +131,7 @@ namespace Hoshi.Repositories.AuthService
                 return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
             }
 
-            //Remove the used token as it is one time use
+            // Remove the used token as it is one time use
             passwordResetTokenRequestRepo.Remove(passwordResetRequest);
             await _context.SaveChangesAsync();
 
@@ -144,7 +147,7 @@ namespace Hoshi.Repositories.AuthService
             var logoutResult = await Logout();
             if ((int)logoutResult.StatusCode < 200 || (int)logoutResult.StatusCode > 299)
                 return logoutResult;
-            //Prevent the admin from deleting himself
+            // Prevent the admin from deleting himself
             var isAdmin = await _userManager.IsInRoleAsync(applicationUser, "admin");
             if (isAdmin)
                 return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
@@ -172,7 +175,7 @@ namespace Hoshi.Repositories.AuthService
             applicationUser.Email = userEditRequestDto.Email;
             applicationUser.PhoneNumber = userEditRequestDto.PhoneNumber;
 
-        
+
             var identityResult = await _userManager.UpdateAsync(applicationUser);
             if (!identityResult.Succeeded)
             {
@@ -192,32 +195,36 @@ namespace Hoshi.Repositories.AuthService
         public async Task<ResultDTO<UserGetDTO>> Login(ApplicationUserLoginRequestDto loginRequestDto)
         {
             var applicationUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
-           
+
             var signInResult = await _signInManager.CheckPasswordSignInAsync(
-                applicationUser!, loginRequestDto.Password,false);
+                applicationUser!, loginRequestDto.Password, false);
 
             if (applicationUser is null || !signInResult.Succeeded || applicationUser.IsDeleted is true)
-                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO { 
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO
+                {
                     ErrorAr = ".الحساب او كلمة السر خاطئة",
                     ErrorEn = "Invalid email or password."
                 });
-                
+
             // check if account is Suspended and the reason 
             var checkSuspend = await _context.SuspendedUsers.Where(p => p.UserId == applicationUser.Id).FirstOrDefaultAsync();
+
             if (checkSuspend is not null)
             {
                 var getResoun = await _context.SuspendReasons.FindAsync(checkSuspend.SuspendReasonId);
-                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO { 
-                        ErrorAr = $"الحساب معلق للسبب التالي : { getResoun.Reason}",
-                        ErrorEn = $"Acount is Suspended for : { getResoun.Reason}"
-                    }
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = $"الحساب معلق للسبب التالي : {getResoun.Reason}",
+                    ErrorEn = $"Acount is Suspended for : {getResoun.Reason}"
+                }
                 );
             }
 
             var token = await _tokenService.CreateTokenAsync(applicationUser);
+
             await _context.SaveChangesAsync();
-          
-                
+
+
             return ResultDTO<UserGetDTO>.Success(
                 _mapper.Map<UserGetDTO>(applicationUser),
                 token,
@@ -230,21 +237,21 @@ namespace Hoshi.Repositories.AuthService
         }
 
         public async Task<ResultDTO<UserGetDTO>> Register(
-            UserType userType, 
+            UserType userType,
             ApplicationUserRegisterRequestDto registerRequestDto
         )
         {
-            if(userType is UserType.Admin)
+            if (userType is UserType.Admin)
             {
                 return ResultDTO<UserGetDTO>.BadRequest(
-                    new ErrorDTO 
-                    { 
+                    new ErrorDTO
+                    {
                         ErrorAr = "المشرف لا يمكنه انشاء حساب لنفسه.",
                         ErrorEn = "Admin can not Register."
                     }
                 );
             }
-            
+
 
             if (registerRequestDto == null)
             {
@@ -313,7 +320,7 @@ namespace Hoshi.Repositories.AuthService
                     );
                 }
 
-                if(userType is UserType.Client)
+                if (userType is UserType.Client)
                 {
                     ClientSpecification clientSpecification = new ClientSpecification()
                     {
@@ -328,28 +335,28 @@ namespace Hoshi.Repositories.AuthService
                     WorkerSpecification workerSpecification = new WorkerSpecification
                     {
                         UserId = applicationUser.Id
-                        
+
                     };
                     await _context.Set<WorkerSpecification>().AddAsync(workerSpecification);
 
                 }
 
 
-                    var token = await _tokenService.CreateTokenAsync(applicationUser);
+                var token = await _tokenService.CreateTokenAsync(applicationUser);
                 await _context.SaveChangesAsync();
 
                 /// Handle Send Notification for admin that there are new worker registered
-                ///
 
                 if (userType is UserType.Worker)
                 {
-                    await notificationServiceHandler.sendMessagetoAdmin("عمليه تسجيل عامل جديد" ,applicationUser.Id);
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه تسجيل عامل جديد", applicationUser.Id);
                 }
 
                 var otpResult = await _emailService.SendOTP(applicationUser.Email);
 
-
-
+                // Suggested improvement (handle OTP failure gracefully):
+                if (!otpResult.IsSuccess)
+                    return ResultDTO<UserGetDTO>.BadRequest(otpResult.Error!);
 
                 return ResultDTO<UserGetDTO>.Success(
                     _mapper.Map<UserGetDTO>(applicationUser),
@@ -407,7 +414,7 @@ namespace Hoshi.Repositories.AuthService
 
             return ResultDTO<string>.Success("Logged out successfully");
         }
-        
+
         public async Task<ResultDTO<string>> BeWorkerAsync(BeWorkerRequestDTO request)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -461,21 +468,21 @@ namespace Hoshi.Repositories.AuthService
 
                 // Check if worker specification already exists
                 var existingWorkerSpec = await _context.WorkerSpecifications
-                                                .Include(p=>p.User)
+                                                .Include(p => p.User)
                                                 .FirstOrDefaultAsync(ws => ws.UserId == request.UserId);
                 if (existingWorkerSpec != null)
                 {
                     // Adding User personal image
-                    if(existingWorkerSpec.User.ImageURL != null)
-                       {
-                            var perImgResult = await AddPersonalImage(
-                           existingWorkerSpec.UserId,
-                           request.PersonalImage,
-                           new Tuple<bool, string?>(true, existingWorkerSpec.User!.ImageURL));
+                    if (existingWorkerSpec.User.ImageURL != null)
+                    {
+                        var perImgResult = await AddPersonalImage(
+                       existingWorkerSpec.UserId,
+                       request.PersonalImage,
+                       new Tuple<bool, string?>(true, existingWorkerSpec.User!.ImageURL));
 
-                            if (perImgResult.IsSuccess is false)
-                                return perImgResult;
-                        }
+                        if (perImgResult.IsSuccess is false)
+                            return perImgResult;
+                    }
                     // Update existing worker specification (re-application case)
                     existingWorkerSpec.Bio = request.Bio;
                     existingWorkerSpec.IsCompany = request.IsCompany;
@@ -493,7 +500,7 @@ namespace Hoshi.Repositories.AuthService
                         new Tuple<bool, string?>(true, existingWorkerSpec.IdentityImageURL)
                     );
 
-                    if(idImgResult.IsSuccess)
+                    if (idImgResult.IsSuccess)
                         existingWorkerSpec.IdentityImageURL = idImgResult.Data!;
                     else
                         return idImgResult;
@@ -535,7 +542,7 @@ namespace Hoshi.Repositories.AuthService
                             CreatedAt = DateTime.UtcNow
                         });
 
-                      await _context.WorkerServices.AddRangeAsync(newWorkerServices);
+                        await _context.WorkerServices.AddRangeAsync(newWorkerServices);
                     }
 
                     // Update portfolio if provided
@@ -550,7 +557,7 @@ namespace Hoshi.Repositories.AuthService
                         // Delete old portfolio files
                         foreach (var portfolio in existingPortfolio)
                         {
-                            if(portfolio.FileURL != null)
+                            if (portfolio.FileURL != null)
                                 _fileService.DeleteFile(portfolio.FileURL);
 
                         }
@@ -687,7 +694,7 @@ namespace Hoshi.Repositories.AuthService
                     MessageEn = "Worker application submitted successfully. Your request will be reviewed by the supervisor."
                 });
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 return ResultDTO<string>.InternalServerError(new ErrorDTO
@@ -699,8 +706,8 @@ namespace Hoshi.Repositories.AuthService
         }
 
         private async Task<ResultDTO<string>> AddPersonalImage(
-            int id, 
-            IFormFile image, 
+            int id,
+            IFormFile image,
             Tuple<bool, string?> isUpdate
         )
         {

@@ -22,6 +22,10 @@ namespace Hoshi.Repositories.OrderService
 {
     public class OrderService : IOrderService
     {
+        /// <summary>
+        /// Handles order detail projections, completion workflow, and dashboard details.
+        /// Wraps transactional updates and notification fan-out.
+        /// </summary>
         private readonly HoshiDbContext _hoshiDbContext;
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
@@ -192,6 +196,11 @@ namespace Hoshi.Repositories.OrderService
 
                 double totalCommission = invoices.Sum(i => i.CommissionFee);
                 double totalIndebtednessFee = invoices.Sum(i => i.ClientIndebtednessFee);
+                // Suggested: consider using decimal for monetary values to avoid floating point rounding issues
+                // decimal totalClientCost = invoices.Sum(i => (decimal)i.ClientTotalPrice);
+                // decimal totalWorkerCost = invoices.Sum(i => (decimal)i.WorkerTotalPrice);
+                // decimal totalCommission = invoices.Sum(i => (decimal)i.CommissionFee);
+                // decimal totalIndebtednessFee = invoices.Sum(i => (decimal)i.ClientIndebtednessFee);
 
                 if (totalClientCost < 0 || totalWorkerCost < 0 || totalCommission < 0 || totalIndebtednessFee < 0)
                     return ResultDTO<object>.BadRequest(new ErrorDTO

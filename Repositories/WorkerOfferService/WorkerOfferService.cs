@@ -13,6 +13,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerOfferService
 {
+    /// <summary>
+    /// Handles worker offer creation, confirmation, and cancellation including fee computations,
+    /// temp invoice upserts, and notifications.
+    /// </summary>
     public class WorkerOfferService : IWorkerOfferService
     {
         private readonly HoshiDbContext _hoshiDbContext;
@@ -31,6 +35,9 @@ namespace Hoshi.Repositories.WorkerOfferService
             this.workerVisitService = workerVisitService;
         }
 
+        /// <summary>
+        /// Create an offer, compute fees, promotions, and upsert temp invoice; notify client/admin.
+        /// </summary>
         public async Task<ResultDTO<CreateOfferResponseDto>> CreateOfferAsync(OfferPostDTO dto)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
@@ -46,6 +53,9 @@ namespace Hoshi.Repositories.WorkerOfferService
                         ErrorAr = "الطلب غير موجود.",
                         ErrorEn = "Order not found."
                     });
+                // Suggested: ensure only Published orders accept new offers
+                // if (order.OrderStatus != OrderStatus.Published)
+                //     return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO { ErrorAr = "لا يمكن تقديم عرض لهذا الطلب.", ErrorEn = "Order cannot accept offers in its current state." });
                 
                 var worker = await _hoshiDbContext.Users.FindAsync(dto.WorkerId);
                 if (worker == null)
@@ -59,6 +69,9 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var offer = _mapper.Map<Offer>(dto);
                 _hoshiDbContext.Offers.Add(offer);
                 await _hoshiDbContext.SaveChangesAsync();
+                // Suggested: block duplicate active offers by same worker for same order (business-dependent)
+                // bool duplicate = await _hoshiDbContext.Offers.AnyAsync(o => o.OrderId == dto.OrderId && o.WorkerId == dto.WorkerId && !o.IsDeleted);
+                // if (duplicate) return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO { ErrorAr = "يوجد عرض سابق لهذا العامل.", ErrorEn = "Duplicate worker offer for this order." });
 
                 // 3. Calculate fees (prefer special by service, else base)
                 var (visitMain, visitMin, visitMax) = await workerVisitService.GetFeeAsync(FeeType.VisitingFee,order);
@@ -108,6 +121,8 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
                 var clientTotalPrice = dto.OfferedPrice + ( invoice?.ClientIndebtednessFee ?? 0 ) - clientPromotionFee;
+                // Suggested: use decimal for money to avoid floating point rounding issues
+                // decimal clientTotal = (decimal)dto.OfferedPrice + (decimal)(invoice?.ClientIndebtednessFee ?? 0) - (decimal)clientPromotionFee;
 
                 // 7. Upsert TempInvoice for this offer
                 var existingTemp = await _hoshiDbContext.TempInvoices
@@ -142,6 +157,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     _hoshiDbContext.TempInvoices.Update(existingTemp);
                 }
                 await _hoshiDbContext.SaveChangesAsync();
+                // Suggested: add unique index on TempInvoices.OfferId to ensure 1:1 temp invoice per offer
 
                 // 8. Build response DTO
                 var response = new CreateOfferResponseDto
@@ -176,6 +192,9 @@ namespace Hoshi.Repositories.WorkerOfferService
             }
         }
 
+        /// <summary>
+        /// Confirm an offer; sets IsConfirmed and OfferStatus to Waitting.
+        /// </summary>
         public async Task<ResultDTO<string>> ConfirmOfferAsync(int offerId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();
@@ -209,6 +228,9 @@ namespace Hoshi.Repositories.WorkerOfferService
             }
         }
 
+        /// <summary>
+        /// Cancel a worker offer; deduct cancellation fee from worker wallet and log history.
+        /// </summary>
         public async Task<ResultDTO<string>> CancelOfferAsync(int offerId)
         {
             using var transaction = await _hoshiDbContext.Database.BeginTransactionAsync();

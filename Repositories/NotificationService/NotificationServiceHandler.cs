@@ -10,6 +10,9 @@ using System.Security.Claims;
 
 namespace Hoshi.Repositories.NotificationService
 {
+    /// <summary>
+    /// Notification service responsible for persisting notifications and broadcasting via SignalR groups.
+    /// </summary>
     public class NotificationServiceHandler : INotificationServiceHandler
     {
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
@@ -22,6 +25,9 @@ namespace Hoshi.Repositories.NotificationService
             _contextAccessor = contextAccessor;
         }
 
+        /// <summary>
+        /// Get notifications for the current authenticated admin.
+        /// </summary>
         public async Task<ResultDTO<object>> getNotificationsAdminAsync()
         {
             var userId = _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -43,6 +49,9 @@ namespace Hoshi.Repositories.NotificationService
             
         }
 
+        /// <summary>
+        /// Get notifications for the current authenticated client or worker.
+        /// </summary>
         public async Task<ResultDTO<object>> getNotificationsClientAndWorkerAsync()
         {
             var userId = _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -67,6 +76,9 @@ namespace Hoshi.Repositories.NotificationService
 
    
 
+        /// <summary>
+        /// Persist an admin notification for each admin and broadcast to the admin group.
+        /// </summary>
         public async Task sendMessagetoAdmin(string messge , int subId)
         {
             var allAdmins = await _context.UserRoles.Where(p => p.RoleId == 2).ToListAsync();
@@ -85,10 +97,15 @@ namespace Hoshi.Repositories.NotificationService
                     await _context.SaveChangesAsync();
                 }
                 await _hubContext.Clients.Group("admin").ReceiveMessage(messge);
+                // Suggested improvement (consistent group name casing):
+                // await _hubContext.Clients.Group("Admin").ReceiveMessage(messge);
 
             }
         }
 
+        /// <summary>
+        /// Persist a client notification and broadcast to the client group.
+        /// </summary>
         public async Task sendMessagetoClient(string message, int Id)
         {
             var notificationhandle = new UserNotification
@@ -101,9 +118,14 @@ namespace Hoshi.Repositories.NotificationService
             await _context.UserNotifications.AddAsync(notificationhandle);
             await _context.SaveChangesAsync();
             await _hubContext.Clients.Group("client").ReceiveMessage(message);
+            // Suggested improvement (target specific user via connection mapping):
+            // await _hubContext.Clients.User(Id.ToString()).ReceiveMessage(message);
 
         }
 
+        /// <summary>
+        /// Persist a worker notification and broadcast to the worker group.
+        /// </summary>
         public async Task sendMessagetoWorker(string message, int Id)
         {
             var notificationhandle = new UserNotification
@@ -116,6 +138,8 @@ namespace Hoshi.Repositories.NotificationService
             await _context.UserNotifications.AddAsync(notificationhandle);
             await _context.SaveChangesAsync();
             await _hubContext.Clients.Group("worker").ReceiveMessage(message);
+            // Suggested improvement (target specific user via connection mapping):
+            // await _hubContext.Clients.User(Id.ToString()).ReceiveMessage(message);
 
         }
     }
