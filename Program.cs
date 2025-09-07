@@ -42,6 +42,7 @@ using System.Text.Json.Serialization;
 using Hoshi.Repositories.NotificationService;
 using Serilog;
 using Serilog.Events;
+using Hoshi.Repositories.RatesService;
 
 public class Program
 {
@@ -240,6 +241,8 @@ public class Program
 
         builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
 
+			  builder.Services.AddTransient(typeof(IRateService), typeof(RateService));
+      
         builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
 
         builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));
