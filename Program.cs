@@ -42,7 +42,6 @@ using System.Text.Json.Serialization;
 using Hoshi.Repositories.NotificationService;
 using Serilog;
 using Serilog.Events;
-using Swashbuckle.AspNetCore.Filters;
 using Hoshi.Repositories.RatesService;
 
 public class Program
