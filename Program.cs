@@ -139,7 +139,9 @@ public class Program
         //            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
         // );
 
-        builder.Services.AddIdentity<User, IdentityRole<int>>().AddEntityFrameworkStores<HoshiDbContext>();
+        builder.Services.AddIdentity<User, IdentityRole<int>>()
+            .AddEntityFrameworkStores<HoshiDbContext>()
+            .AddDefaultTokenProviders();
 
         var jwtSettings = builder.Configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
@@ -274,7 +276,7 @@ public class Program
 
                 op.DocumentTitle = "Hoshi - Swagger";
 
-                op.RoutePrefix = string.Empty;
+                //op.RoutePrefix = string.Empty;
 
                 // This options to make swagger more easy to use.
                 // Make all endpoints ready to use directly when it open, you don't need to press on "Try It Out" button any more.
