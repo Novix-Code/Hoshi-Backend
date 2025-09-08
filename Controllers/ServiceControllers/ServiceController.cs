@@ -9,11 +9,13 @@ using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
 using Hoshi.Models.ServiceModels;
 using Hoshi.Repositories.ClientHomeService;
 using Hoshi.Repositories.ServiceService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ServiceController : SoftDeleteGenericFSPController<

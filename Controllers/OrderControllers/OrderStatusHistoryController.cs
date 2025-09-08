@@ -5,10 +5,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OrderStatusHistoryDTOs;
 using Hoshi.Models.OrderModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.OrderControllers.OrderStatusHistoryControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderStatusHistoryController : GenericJustFSPController<

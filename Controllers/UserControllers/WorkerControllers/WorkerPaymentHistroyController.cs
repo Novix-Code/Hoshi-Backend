@@ -7,11 +7,13 @@ using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPaymentHistroyDTOs;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.WorkerPaymentHistroyService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerPaymentHistroyControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class WorkerPaymentHistroyController : GenericFSPController<

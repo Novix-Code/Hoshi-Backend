@@ -7,11 +7,13 @@ using Hoshi.DTOs.OrderDTOs.OfferDTOs;
 using Hoshi.Models.OrderModels;
 using Hoshi.Repositories.ClientOfferService;
 using Hoshi.Repositories.WorkerOfferService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.OrderControllers.OfferControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OfferController : GenericFSPController<

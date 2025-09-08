@@ -5,10 +5,12 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using Hoshi.Data;
 using Hoshi.DTOs.ServiceDTOs.JobServiceDTOs;
 using Hoshi.Models.ServiceModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.ServiceControllers.JobServiceControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

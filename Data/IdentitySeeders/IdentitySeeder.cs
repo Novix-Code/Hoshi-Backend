@@ -11,7 +11,7 @@ namespace Hoshi.Data.IdentitySeeders
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-            string[] roles = { "client", "admin", "worker" };
+            string[] roles = { "Admin", "Client", "Worker" };
 
             foreach (var role in roles)
             {

@@ -5,11 +5,13 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using Hoshi.Data;
 using Hoshi.DTOs.DashboardDTOs.ArchiveSettingsDTOs;
 using Hoshi.Models.DashboardModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.DashboardControllers.ArchiveSettingsControllers
 {
+    [Authorize]
     [NonController]
-    [ApiController]
+    //[ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
     public class ArchiveSettingsController : GenericController<

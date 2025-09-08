@@ -5,11 +5,13 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.PermissionPageDTOs;
 using Hoshi.Models.UserModels.AdminModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.UserControllers.AdminControllers.PermissionPageControllers
 {
+    [Authorize]
     [NonController]
-    [ApiController]
+    //[ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
     public class PermissionPageController : GenericController<

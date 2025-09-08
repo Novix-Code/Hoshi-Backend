@@ -7,10 +7,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.UserCollectionAlertDTOs;
 using Hoshi.Models.UserModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.UserControllers.UserCollectionAlertControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserCollectionAlertController : GenericFSPController<

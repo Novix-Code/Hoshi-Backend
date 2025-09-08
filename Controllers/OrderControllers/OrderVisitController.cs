@@ -13,11 +13,13 @@ using Hoshi.Repositories.WorkerVisitService;
 using Hoshi.Repositories.ClientVisitService;
 
 using Hoshi.Models.OrderModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.OrderControllers.OrderVisitControllers
 {
+    [Authorize]
     [NonController]
-    [ApiController]
+    //[ApiController]
     [Route("api/[controller]")]
     public class OrderVisitController : GenericFSPController<
         HoshiDbContext, 

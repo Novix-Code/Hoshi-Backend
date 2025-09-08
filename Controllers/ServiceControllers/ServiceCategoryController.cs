@@ -7,10 +7,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.ServiceDTOs.ServiceCategoryDTOs;
 using Hoshi.Models.ServiceModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.ServiceControllers.ServiceCategoryControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ServiceCategoryController : SoftDeleteGenericFSPController<

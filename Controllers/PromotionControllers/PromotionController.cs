@@ -6,10 +6,12 @@ using Hoshi.Data;
 using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
 using Hoshi.Models.PromotionModels;
 using Hoshi.Repositories.PromotionService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PromotionController : SoftDeleteGenericController<

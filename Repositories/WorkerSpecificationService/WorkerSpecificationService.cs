@@ -99,6 +99,8 @@ namespace Hoshi.Repositories.WorkerSpecificationService
         {
             ErrorDTO error = new ErrorDTO();
 
+            using var transaction = await context.Database.BeginTransactionAsync();
+
             try
             {
                 // Confirm if specification exists
@@ -141,7 +143,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
                         });
                 }
 
-                // Update Worker Services
+                // Update Worker Services// Update Worker Services
                 if (putDTO.ServicesIds is not null)
                 {
                     // Validate services exist
@@ -158,37 +160,47 @@ namespace Hoshi.Repositories.WorkerSpecificationService
                     }
 
                     // Update services
-                    var services = await context.Services
-                        .Where(s => putDTO.ServicesIds.Contains(s.Id))
-                        .Select(s => s.Id)
+
+                    // Get existing worker services
+                    var existingServices = await context.WorkerServices
+                        .Where(ws => ws.WorkerId == specification.UserId)
                         .ToListAsync();
 
-                    var oldServices = await context.WorkerServices
-                        .Where(ws => putDTO.ServicesIds.Contains(ws.ServiceId) && ws.WorkerId == specification.UserId)
-                        .Select(s => s.ServiceId)
-                        .ToListAsync();
+                    var existingServiceIds = existingServices.Select(ws => ws.ServiceId).ToHashSet();
 
-                    var newServices = services.Except(oldServices);
+                    // Calculate differences
+                    var requestedServiceIds = putDTO.ServicesIds.ToHashSet();
 
-                    List<WorkerService> workerServices = new();
+                    var toRemove = existingServices
+                        .Where(ws => !requestedServiceIds.Contains(ws.ServiceId))
+                        .ToList();
 
-                    foreach (var serviceId in newServices)
-                    {
-                        workerServices.Add(new()
+                    var toAdd = requestedServiceIds
+                        .Except(existingServiceIds)
+                        .Select(serviceId => new WorkerService
                         {
                             ServiceId = serviceId,
                             WorkerId = specification.UserId,
                             CreatedAt = DateTime.UtcNow
-                        });
-                    }
+                        })
+                        .ToList();
 
-                    await context.AddRangeAsync(workerServices);
+                    // Apply changes
+                    if (toRemove.Any())
+                        context.WorkerServices.RemoveRange(toRemove);
+
+                    if (toAdd.Any())
+                        await context.WorkerServices.AddRangeAsync(toAdd);
                 }
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return ResultDTO<WorkerSpecificationGetDTO>.Success();
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 return ResultDTO<WorkerSpecificationGetDTO>.InternalServerError(new ErrorDTO()
                 {
                     ErrorAr = "يوجد مشكلة في تعديل ملف العامل.",

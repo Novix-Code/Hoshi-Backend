@@ -4,11 +4,13 @@ using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.InvoiceDTOs;
 using Hoshi.Models.OrderModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.OrderControllers.InvoiceControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class InvoiceController : GenericJustFSPController<

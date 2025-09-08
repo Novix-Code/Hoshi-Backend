@@ -5,10 +5,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.NumericalStatisticsDTOs;
 using Hoshi.Models.DashboardModels.StatisticsModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.DashboardControllers.StatisticsControllers.NumericalStatisticsControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

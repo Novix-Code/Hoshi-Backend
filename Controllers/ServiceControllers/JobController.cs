@@ -5,10 +5,12 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using Hoshi.Data;
 using Hoshi.DTOs.ServiceDTOs.JobDTOs;
 using Hoshi.Models.ServiceModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.ServiceControllers.JobControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class JobController : SoftDeleteGenericController<

@@ -7,10 +7,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.RateDTOs;
 using Hoshi.Models.GlobalModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.GlobalControllers.RateControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class RateController : GenericFSPController<

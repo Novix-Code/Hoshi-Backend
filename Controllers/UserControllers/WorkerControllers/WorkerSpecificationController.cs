@@ -10,10 +10,12 @@ using Hoshi.Repositories.UserService;
 using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Repositories.WorkerSpecificationService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerSpecificationControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Worker")]

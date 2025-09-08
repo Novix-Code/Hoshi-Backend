@@ -84,10 +84,18 @@ namespace Hoshi.Repositories.AuthService
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+            if (user is null) return ResultDTO<string>.BadRequest(new ErrorDTO()
+            {
+                ErrorAr = "هذا الحساب غير صحيح.",
+                ErrorEn = "This Accunt not valid."
+            });
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            if (string.IsNullOrEmpty(token)) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+            if (string.IsNullOrEmpty(token)) return ResultDTO<string>.InternalServerError(new ErrorDTO()
+            {
+                ErrorAr = "يوجد مشكلة في النظام.",
+                ErrorEn = "There is a problem in system."
+            });
 
             // Hash the token before storing
             var hashedToken = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
@@ -99,6 +107,7 @@ namespace Hoshi.Repositories.AuthService
                 ResetToken = hashedToken,
                 UserId = user.Id
             };
+
             var passwordResetTokenRequestRepo = await _context.PasswordResetRequests.ToListAsync();
             _context.PasswordResetRequests.Add(passwordResetRequest);
             await _context.SaveChangesAsync();
@@ -109,7 +118,11 @@ namespace Hoshi.Repositories.AuthService
         public async Task<ResultDTO<string>> ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto)
         {
             var user = await _userManager.FindByEmailAsync(resetPasswordRequestDto.Email);
-            if (user is null) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+            if (user is null) return ResultDTO<string>.BadRequest(new ErrorDTO()
+            {
+                ErrorAr = "هذا الحساب غير صحيح.",
+                ErrorEn = "This Accunt not valid."
+            });
 
             // Hash the received token for comparison
             var hashedRecievedToken = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(resetPasswordRequestDto.Token)));
@@ -196,10 +209,17 @@ namespace Hoshi.Repositories.AuthService
         {
             var applicationUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
 
+            if (applicationUser is null || applicationUser.IsDeleted is true)
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = ".الحساب او كلمة السر خاطئة",
+                    ErrorEn = "Invalid email or password."
+                });
+
             var signInResult = await _signInManager.CheckPasswordSignInAsync(
                 applicationUser!, loginRequestDto.Password, false);
 
-            if (applicationUser is null || !signInResult.Succeeded || applicationUser.IsDeleted is true)
+            if (!signInResult.Succeeded)
                 return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO
                 {
                     ErrorAr = ".الحساب او كلمة السر خاطئة",
@@ -285,6 +305,8 @@ namespace Hoshi.Repositories.AuthService
                 CreatedAt = DateTime.UtcNow
             };
 
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
                 var identityResult = await _userManager.CreateAsync(applicationUser, registerRequestDto.Password);
@@ -296,7 +318,7 @@ namespace Hoshi.Repositories.AuthService
                 _context.Set<User>().Update(applicationUser);
 
                 // Add main role to user
-                string role = userType.ToString().ToLower();
+                string role = userType.ToString();
 
                 if (!await _roleManager.RoleExistsAsync(role))
                 {
@@ -334,8 +356,8 @@ namespace Hoshi.Repositories.AuthService
                 {
                     WorkerSpecification workerSpecification = new WorkerSpecification
                     {
-                        UserId = applicationUser.Id
-
+                        UserId = applicationUser.Id,
+                        CreatedAt = DateTime.UtcNow
                     };
                     await _context.Set<WorkerSpecification>().AddAsync(workerSpecification);
 
@@ -343,7 +365,6 @@ namespace Hoshi.Repositories.AuthService
 
 
                 var token = await _tokenService.CreateTokenAsync(applicationUser);
-                await _context.SaveChangesAsync();
 
                 /// Handle Send Notification for admin that there are new worker registered
 
@@ -358,6 +379,9 @@ namespace Hoshi.Repositories.AuthService
                 if (!otpResult.IsSuccess)
                     return ResultDTO<UserGetDTO>.BadRequest(otpResult.Error!);
 
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 return ResultDTO<UserGetDTO>.Success(
                     _mapper.Map<UserGetDTO>(applicationUser),
                     token,
@@ -370,6 +394,7 @@ namespace Hoshi.Repositories.AuthService
             }
             catch (DbUpdateException ex)
             {
+                await transaction.RollbackAsync();
                 return ResultDTO<UserGetDTO>.InternalServerError(
                     new ErrorDTO
                     {

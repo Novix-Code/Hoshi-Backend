@@ -24,7 +24,7 @@ namespace Hoshi.Repositories.WorkerOfferService
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
         private readonly INotificationServiceHandler notificationServiceHandler;
         private readonly IWorkerVisitService workerVisitService;
-        
+
 
         public WorkerOfferService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationServiceHandler notificationServiceHandler, IWorkerVisitService workerVisitService)
         {
@@ -45,7 +45,7 @@ namespace Hoshi.Repositories.WorkerOfferService
             {
                 // 1. Validate order and worker existence
                 var order = await _hoshiDbContext.Orders
-                    .Include(p=>p.AppliedPromotion)
+                    .Include(p => p.AppliedPromotion)
                     .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
                 if (order == null)
                     return ResultDTO<CreateOfferResponseDto>.NotFound(new ErrorDTO
@@ -53,10 +53,15 @@ namespace Hoshi.Repositories.WorkerOfferService
                         ErrorAr = "الطلب غير موجود.",
                         ErrorEn = "Order not found."
                     });
-                // Suggested: ensure only Published orders accept new offers
-                // if (order.OrderStatus != OrderStatus.Published)
-                //     return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO { ErrorAr = "لا يمكن تقديم عرض لهذا الطلب.", ErrorEn = "Order cannot accept offers in its current state." });
-                
+
+                // Ensure only Published orders accept new offers
+                if (order.OrderStatus != OrderStatus.Published)
+                    return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "لا يمكن تقديم عرض لهذا الطلب.",
+                        ErrorEn = "Order cannot accept offers in its current state."
+                    });
+
                 var worker = await _hoshiDbContext.Users.FindAsync(dto.WorkerId);
                 if (worker == null)
                     return ResultDTO<CreateOfferResponseDto>.NotFound(new ErrorDTO
@@ -67,20 +72,42 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 // 2. Create the offer
                 var offer = _mapper.Map<Offer>(dto);
-                _hoshiDbContext.Offers.Add(offer);
-                await _hoshiDbContext.SaveChangesAsync();
-                // Suggested: block duplicate active offers by same worker for same order (business-dependent)
-                // bool duplicate = await _hoshiDbContext.Offers.AnyAsync(o => o.OrderId == dto.OrderId && o.WorkerId == dto.WorkerId && !o.IsDeleted);
-                // if (duplicate) return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO { ErrorAr = "يوجد عرض سابق لهذا العامل.", ErrorEn = "Duplicate worker offer for this order." });
+
+                // Block duplicate active offers by same worker for same order (business-dependent)
+                bool duplicate = await _hoshiDbContext.Offers.AnyAsync(o => o.OrderId == dto.OrderId && o.WorkerId == dto.WorkerId && !o.IsDeleted);
+                if (duplicate)
+                    return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "يوجد عرض سابق لهذا العامل.",
+                        ErrorEn = "Duplicate worker offer for this order."
+                    });
+                else
+                {
+                    _hoshiDbContext.Offers.Add(offer);
+                    await _hoshiDbContext.SaveChangesAsync();
+                }
 
                 // 3. Calculate fees (prefer special by service, else base)
-                var (visitMain, visitMin, visitMax) = await workerVisitService.GetFeeAsync(FeeType.VisitingFee,order);
-                var (cancelMain, cancelMin, cancelMax) = await workerVisitService.GetFeeAsync(FeeType.CancellationFee,order);
-                var (commissionMain, commissionMin, commissionMax) = await workerVisitService.GetFeeAsync(FeeType.CommissionFee,order);
+                var (visitMain, visitMin, visitMax) = await workerVisitService.GetFeeAsync(FeeType.VisitingFee, order);
+                var (cancelMain, cancelMin, cancelMax) = await workerVisitService.GetFeeAsync(FeeType.CancellationFee, order);
+                var (commissionMain, commissionMin, commissionMax) = await workerVisitService.GetFeeAsync(FeeType.CommissionFee, order);
 
-                var visitFeeValue = workerVisitService.Clamp(visitMain, visitMin, visitMax);
-                var cancellationFeeValue = workerVisitService.Clamp(cancelMain, cancelMin, cancelMax);
-                var commissionFeeValue = workerVisitService.Clamp(commissionMain, commissionMin, commissionMax);
+                // This to get the value of the Fee according to its range
+                var visitFeeValue = workerVisitService.Clamp(
+                    workerVisitService.ValueFromPercentage(dto.OfferedPrice, visitMain),
+                    visitMin,
+                    visitMax
+                );
+                var cancellationFeeValue = workerVisitService.Clamp(
+                    workerVisitService.ValueFromPercentage(dto.OfferedPrice, cancelMain),
+                    cancelMin,
+                    cancelMax
+                );
+                var commissionFeeValue = workerVisitService.Clamp(
+                    workerVisitService.ValueFromPercentage(dto.OfferedPrice, commissionMain),
+                    commissionMin,
+                    commissionMax
+                );
 
                 // 4. Determine applied promotion for this order and split between client/worker
                 var promotionsUsed = await _hoshiDbContext.PromotionsTaken
@@ -91,7 +118,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 var promotion = await _hoshiDbContext.Promotions.FirstOrDefaultAsync(p => !promotionsUsed.Contains(p.Id));
                 if (promotion != null)
-                   {
+                {
                     offer.AppliedPromotionId = promotion.Id;
                     _hoshiDbContext.Offers.Update(offer);
                     await _hoshiDbContext.SaveChangesAsync();
@@ -105,7 +132,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 if (promotion != null)
                 {
-                    promotionTitle = promotion.IsPercentage 
+                    promotionTitle = promotion.IsPercentage
                         ? $"{promotion.TitleFirstPart} {promotion.Value} {promotion.TitleSecondPart}".Trim()
                         : $"{promotion.TitleFirstPart} {promotion.Value}% {promotion.TitleSecondPart}".Trim();
                     double promotionAmount = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
@@ -120,9 +147,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
-                var clientTotalPrice = dto.OfferedPrice + ( invoice?.ClientIndebtednessFee ?? 0 ) - clientPromotionFee;
-                // Suggested: use decimal for money to avoid floating point rounding issues
-                // decimal clientTotal = (decimal)dto.OfferedPrice + (decimal)(invoice?.ClientIndebtednessFee ?? 0) - (decimal)clientPromotionFee;
+                var clientTotalPrice = dto.OfferedPrice + (invoice?.ClientIndebtednessFee ?? 0) - clientPromotionFee;
 
                 // 7. Upsert TempInvoice for this offer
                 var existingTemp = await _hoshiDbContext.TempInvoices
@@ -137,7 +162,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                         CancellationFee = cancellationFeeValue,
                         WorkerPromotionFee = workerPromotionFee,
                         ClientPromotionFee = clientPromotionFee,
-                        ClientIndebtednessFee = 0.0,
+                        ClientIndebtednessFee = invoice?.ClientIndebtednessFee ?? 0.0,
                         ClientTotalPrice = clientTotalPrice,
                         WorkerTotalPrice = workerTotalPrice,
                         OfferId = offer.Id
@@ -151,7 +176,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     existingTemp.CancellationFee = cancellationFeeValue;
                     existingTemp.WorkerPromotionFee = workerPromotionFee;
                     existingTemp.ClientPromotionFee = clientPromotionFee;
-                    existingTemp.ClientIndebtednessFee = 0.0;
+                    existingTemp.ClientIndebtednessFee = invoice?.ClientIndebtednessFee ?? 0.0;
                     existingTemp.ClientTotalPrice = clientTotalPrice;
                     existingTemp.WorkerTotalPrice = workerTotalPrice;
                     _hoshiDbContext.TempInvoices.Update(existingTemp);
@@ -163,7 +188,6 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var response = new CreateOfferResponseDto
                 {
                     OfferId = offer.Id,
-                    ClientName = order.Client?.UserName ?? string.Empty,
                     OrderId = offer.OrderId,
                     OfferedPrice = offer.OfferedPrice,
                     VisitFee = visitFeeValue,
@@ -178,7 +202,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 await transaction.CommitAsync();
                 // send notification
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة عرض", offer.Id);
-                await notificationServiceHandler.sendMessagetoClient("تم اضافة عرض على الطلب الخاص بك" ,order.ClientId);
+                await notificationServiceHandler.sendMessagetoClient("تم اضافة عرض على الطلب الخاص بك", order.ClientId);
                 return ResultDTO<CreateOfferResponseDto>.Success(response);
             }
             catch (Exception ex)
@@ -280,7 +304,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                     workerWallet.Balance -= workerCancellationFee;
                     _hoshiDbContext.WorkerWallets.Update(workerWallet);
-                    
+
                     _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
                     {
                         Title = "Cancellation Fee",
@@ -288,9 +312,9 @@ namespace Hoshi.Repositories.WorkerOfferService
                         IsIncome = false,
                         WorkerWalletId = workerWallet.Id
                     });
-                    
+
                     await _hoshiDbContext.SaveChangesAsync();
-                    await notificationServiceHandler.sendMessagetoClient($"   قام العامل ب إلغاء الطلب والغرامه هي: {workerCancellationFee}",order.ClientId);
+                    await notificationServiceHandler.sendMessagetoClient($"   قام العامل ب إلغاء الطلب والغرامه هي: {workerCancellationFee}", order.ClientId);
 
                 }
 
@@ -311,6 +335,6 @@ namespace Hoshi.Repositories.WorkerOfferService
                 });
             }
         }
-        
+
     }
 }

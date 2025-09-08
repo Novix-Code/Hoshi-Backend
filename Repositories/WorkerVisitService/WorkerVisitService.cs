@@ -52,9 +52,22 @@ namespace Hoshi.Repositories.WorkerVisitService
                 var (cancelMain, cancelMin, cancelMax) = await GetFeeAsync(FeeType.CancellationFee, order);
                 var (commissionMain, commissionMin, commissionMax) = await GetFeeAsync(FeeType.CommissionFee, order);
 
-                var visitingFeeValue = Clamp(visitMain, visitMin, visitMax);
-                var cancellationFeeValue = Clamp(cancelMain, cancelMin, cancelMax);
-                var commissionFeeValue = Clamp(commissionMain, commissionMin, commissionMax);
+                // This to get the value of the Fee according to its range
+                var visitFeeValue = Clamp(
+                    ValueFromPercentage(dto.VisitPrice, visitMain),
+                    visitMin,
+                    visitMax
+                );
+                var cancellationFeeValue = Clamp(
+                    ValueFromPercentage(dto.VisitPrice, cancelMain),
+                    cancelMin,
+                    cancelMax
+                );
+                var commissionFeeValue = Clamp(
+                    ValueFromPercentage(dto.VisitPrice, commissionMain),
+                    commissionMin,
+                    commissionMax
+                );
 
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
@@ -69,7 +82,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                     {
                         OrderPrice = visit.VisitPrice,
                         CommissionFee = commissionFeeValue,
-                        VisitingFee = visitingFeeValue,
+                        VisitingFee = visitFeeValue,
                         CancellationFee = cancellationFeeValue,
                         WorkerPromotionFee = 0,
                         ClientPromotionFee = 0,
@@ -83,7 +96,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                 {
                     existingTemp.OrderPrice = visit.VisitPrice;
                     existingTemp.CommissionFee = commissionFeeValue;
-                    existingTemp.VisitingFee = visitingFeeValue;
+                    existingTemp.VisitingFee = visitFeeValue;
                     existingTemp.CancellationFee = cancellationFeeValue;
                     existingTemp.ClientIndebtednessFee = 0.0;
                     existingTemp.ClientTotalPrice = clientWillPay;
@@ -350,7 +363,25 @@ namespace Hoshi.Repositories.WorkerVisitService
                 });
             }
         }
+        /*
+         {
+          "data": {
+            "offerId": 24,
+            "orderId": 24,
+            "offeredPrice": 210,
+            "visitFee": 15,==> 31.5
+            "cancellationFee": 20,==> 37.8
+            "serviceFee": 25,==> 52.5
+            "promotionTitle": "",
+            "promotionValue": 0,
+            "workerRevenue": 185,
+            "clientWillPay": 210
+          },
+          "statusCode": 200,
+          "isSuccess": true
+         }
 
+         */
 
         // Create/Update TempInvoice for the visit with full fee and promotion logic
         public async Task<(double main, double min, double max)> GetFeeAsync(FeeType type,Order order)
@@ -376,6 +407,13 @@ namespace Hoshi.Repositories.WorkerVisitService
             if (max > 0 && value > max) return max;
             if (min > 0 && value < min) return min;
             return value;
+        }
+
+        public double ValueFromPercentage(double value, double percentage)
+        {
+            if(percentage <= 0) return value;
+
+            return value * (percentage / 100) ;
         }
     }
 }

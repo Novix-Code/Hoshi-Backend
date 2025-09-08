@@ -6,10 +6,12 @@ using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OrderImageDTOs;
 using Hoshi.Models.OrderModels;
 using Hoshi.Repositories.OrderImageService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.OrderControllers.OrderImageControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderImageController : GenericController<

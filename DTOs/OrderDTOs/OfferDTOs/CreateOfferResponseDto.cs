@@ -3,7 +3,6 @@ namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
     public class CreateOfferResponseDto
     {
         public int OfferId { get; set; }
-        public string ClientName { get; set; }
         public int OrderId { get; set; }
         public double OfferedPrice { get; set; }
         public double VisitFee { get; set; }

@@ -19,6 +19,7 @@ namespace Hoshi.Controllers.OrderControllers.OrderControllers
     /// Order endpoints built on top of generic CRUD and FSP services.
     /// Client endpoints delegate to domain services to encapsulate business logic and constraints.
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : GenericFSPController<

@@ -7,11 +7,13 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.AdminPageDTOs;
 using Hoshi.Models.UserModels.AdminModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.UserControllers.AdminControllers.AdminPageControllers
 {
+    [Authorize]
     [NonController]
-    [ApiController]
+    //[ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
     public class AdminPageController : GenericFSPController<

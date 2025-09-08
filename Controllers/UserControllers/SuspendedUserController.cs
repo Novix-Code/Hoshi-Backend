@@ -8,10 +8,12 @@ using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.SuspendedUserDTOs;
 using Hoshi.Models.UserModels;
 using Hoshi.Repositories.UserService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.UserControllers.SuspendedUserControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SuspendedUserController : GenericFSPController<

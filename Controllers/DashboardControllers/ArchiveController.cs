@@ -6,11 +6,13 @@ using Hoshi.Data;
 using Hoshi.DTOs.DashboardDTOs.ArchiveDTOs;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Repositories.ArchiveService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.DashboardControllers.ArchiveControllers
 {
+    [Authorize]
     [NonController]
-    [ApiController]
+    //[ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
     public class ArchiveController : SoftDeleteGenericController<

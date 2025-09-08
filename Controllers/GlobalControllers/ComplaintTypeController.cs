@@ -7,10 +7,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.ComplaintTypeDTOs;
 using Hoshi.Models.GlobalModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.GlobalControllers.ComplaintTypeControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
