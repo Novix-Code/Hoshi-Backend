@@ -8,6 +8,7 @@ using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.RateDTOs;
 using Hoshi.Models.GlobalModels;
 using Microsoft.AspNetCore.Authorization;
+using Hoshi.Repositories.RatesService;
 
 namespace Hoshi.Controllers.GlobalControllers.RateControllers
 {
@@ -22,26 +23,43 @@ namespace Hoshi.Controllers.GlobalControllers.RateControllers
         RatePostDTO, 
         RatePutDTO>
     {
+        private readonly IRateService rateService;
         public RateController(
-            IMapper mapper, 
+            IMapper mapper,
             IGenericCRUDService<
-                HoshiDbContext, 
-                Rate, 
-                RateGetDTO, 
-                RatePostDTO, 
-                RatePutDTO> genericCRUDService, 
+                HoshiDbContext,
+                Rate,
+                RateGetDTO,
+                RatePostDTO,
+                RatePutDTO> genericCRUDService,
             IGenericFSPService<
-                HoshiDbContext, 
-                Rate, 
-                RateGetDTO> genericFSPService 
-        ) : base(mapper, genericCRUDService, genericFSPService)
+                HoshiDbContext,
+                Rate,
+                RateGetDTO> genericFSPService
+,
+            IRateService rateService) : base(mapper, genericCRUDService, genericFSPService)
         {
             // Add Includes
 
-			includes = [
-				$"{nameof(Rate.Client)}",
-				$"{nameof(Rate.Worker)}",
-			];
+            includes = [
+                $"{nameof(Rate.Client)}",
+                $"{nameof(Rate.Worker)}",
+            ];
+            this.rateService = rateService;
         }
+
+
+
+        public override async Task<IActionResult> Add(RatePostDTO postDTO)
+        {
+            var baseResponse = await base.Add(postDTO);
+            if (postDTO.FromClient)
+                await rateService.AddRateForWorker(postDTO);
+            else 
+               await rateService.AddRateForClient(postDTO);
+
+            return baseResponse;
+        }
+
     }
 }

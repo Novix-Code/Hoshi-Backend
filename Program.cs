@@ -43,6 +43,7 @@ using Hoshi.Repositories.NotificationService;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Filters;
+using Hoshi.Repositories.RatesService;
 
 public class Program
 {
@@ -140,7 +141,9 @@ public class Program
         //            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
         // );
 
-        builder.Services.AddIdentity<User, IdentityRole<int>>().AddEntityFrameworkStores<HoshiDbContext>();
+        builder.Services.AddIdentity<User, IdentityRole<int>>()
+            .AddEntityFrameworkStores<HoshiDbContext>()
+            .AddDefaultTokenProviders();
 
         var jwtSettings = builder.Configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
@@ -242,6 +245,8 @@ public class Program
 
         builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
 
+		builder.Services.AddTransient(typeof(IRateService), typeof(RateService));
+      
         builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
 
         builder.Services.AddTransient(typeof(IEmailService), typeof(EmailService));

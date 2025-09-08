@@ -58,8 +58,8 @@ namespace Hoshi.Controllers.UserControllers
         /// <summary>
         /// Start password reset by generating and emailing a reset token.
         /// </summary>
-        [HttpPost("forget-password")]
-        public async Task<IActionResult> ForgetPassword([FromBody] string email)
+        [HttpPost("Change-Password-Request")]
+        public async Task<IActionResult> ChangeReqPassword([FromBody] string email)
         {
             var response = await authService.CreateResetPasswordTokenAsync(email);
             return StatusCode((int)response.StatusCode, response);
