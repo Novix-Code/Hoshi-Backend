@@ -314,16 +314,15 @@ namespace Hoshi.Repositories.UserService
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr="Client Not Found"}, ResponseStatusCodes.NotFound);
         
             var targetOffer = await _context.Offers.FirstOrDefaultAsync(p=>p.OrderId == id);
-            if (targetOffer == null)
-                return ResultDTO<object>.NotFound(new ErrorDTO {ErrorEn="offered Not Found",
-                                                                ErrorAr="لا يوجد عروض على هذا الطلب"});
+            // if (targetOffer == null)
+                // return ResultDTO<object>.NotFound(new ErrorDTO {ErrorEn="offered Not Found",ErrorAr="لا يوجد عروض على هذا الطلب"});
             var targetimages = await _context.Orders.Where(p => p.Id == id).Select(p => p.OrderImages).ToListAsync();
-            if(targetimages == null)
-                return ResultDTO<object>.NotFound(new ErrorDTO
+            // if(targetimages == null)
+                /* return ResultDTO<object>.NotFound(new ErrorDTO
                 {
                     ErrorEn = "Order Image Not Found",
                     ErrorAr = "لا يوجد صور لهذا الطلب"
-                });
+                });*/
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
             if (workerDetails == null)
                 return ResultDTO<object>.NotFound(new ErrorDTO
