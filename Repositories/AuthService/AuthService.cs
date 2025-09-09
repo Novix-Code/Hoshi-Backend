@@ -792,7 +792,7 @@ namespace Hoshi.Repositories.AuthService
 
                 // Send notification to all admin users
                 await notificationServiceHandler.sendMessagetoAdmin(" Worker application submitted by user with ID ", request.UserId);
-                await notificationServiceHandler.sendMessagetoWorker("تم ارسال طلب ان تصبح عامل", request.UserId);
+                await notificationServiceHandler.sendMessagetoWorker(6, request.UserId, "تم ارسال طلب ان تصبح عامل");
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 

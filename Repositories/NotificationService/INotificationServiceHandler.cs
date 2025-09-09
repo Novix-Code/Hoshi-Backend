@@ -14,11 +14,11 @@ namespace Hoshi.Repositories.NotificationService
         /// <summary>
         /// Send a notification to a specific client and persist a user notification.
         /// </summary>
-        Task sendMessagetoClient(string message , int Id);
+        Task sendMessagetoClient(int notificationTypId , int Id , string message);
         /// <summary>
         /// Send a notification to a specific worker and persist a user notification.
         /// </summary>
-        Task sendMessagetoWorker(string message , int Id);
+        Task sendMessagetoWorker(int notificationTypId, int Id , string message);
         /// <summary>
         /// Get notifications for the current admin user.
         /// </summary>

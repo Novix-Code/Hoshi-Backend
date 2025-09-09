@@ -104,13 +104,14 @@ namespace Hoshi.Repositories.NotificationService
         /// <summary>
         /// Persist a client notification and broadcast to the client group.
         /// </summary>
-        public async Task sendMessagetoClient(string message, int Id)
+        public async Task sendMessagetoClient(int notificationTypId, int clientId , string message)
         {
+            var targetNoti = await _context.NotificationTypes.FindAsync(notificationTypId);
             var notificationhandle = new UserNotification
             {
-                UserId = Id,
+                UserId = clientId,
                 CreatedAt = DateTime.UtcNow , 
-                NotificationTypeId = 2,
+                NotificationTypeId = notificationTypId,
                 Description = message
             };
             await _context.UserNotifications.AddAsync(notificationhandle);
@@ -122,13 +123,13 @@ namespace Hoshi.Repositories.NotificationService
         /// <summary>
         /// Persist a worker notification and broadcast to the worker group.
         /// </summary>
-        public async Task sendMessagetoWorker(string message, int Id)
+        public async Task sendMessagetoWorker(int notificationTypId, int workerId, string message)
         {
             var notificationhandle = new UserNotification
             {
-                UserId = Id,
+                UserId = workerId,
                 CreatedAt = DateTime.UtcNow , 
-                NotificationTypeId = 1,
+                NotificationTypeId = notificationTypId,
                 Description = message
             };
             await _context.UserNotifications.AddAsync(notificationhandle);

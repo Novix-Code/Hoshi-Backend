@@ -168,7 +168,7 @@ namespace Hoshi.Repositories.ClientOrderService
                     _Context.Orders.Update(targetOrder);
                     await _Context.SaveChangesAsync();
                     await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+                    await notificationServiceHandler.sendMessagetoWorker(11 , (int)targetOrder.WorkerId , "قام العميل بإلغاء الطلب");
                     return ResultDTO<string>.Success("Successfully deleted");
                 }
 
@@ -215,7 +215,7 @@ namespace Hoshi.Repositories.ClientOrderService
 
                     //2.7 send notification with indept
                     await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker($"قام العميل بإلغاء الطلب وقيمه الغرامه هي : {clientIndebtFee}", (int)targetOrder.WorkerId);
+                    await notificationServiceHandler.sendMessagetoWorker( 11, (int)targetOrder.WorkerId,  $"قام العميل بإلغاء الطلب وقيمه الغرامه هي : {clientIndebtFee}");
                     return ResultDTO<string>.Success("Successfully deleted");
 
                 }
@@ -226,7 +226,7 @@ namespace Hoshi.Repositories.ClientOrderService
                     _Context.Orders.Update(targetOrder);
                     await _Context.SaveChangesAsync();
                     await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+                    await notificationServiceHandler.sendMessagetoWorker( 11 , (int)targetOrder.WorkerId, "قام العميل بإلغاء الطلب");
                     return ResultDTO<string>.Success("Successfully deleted");
                 }
 
@@ -241,7 +241,7 @@ namespace Hoshi.Repositories.ClientOrderService
                 targetOrder.OrderStatus = Enums.OrderStatus.Cancelled.ToString();
                 await _Context.SaveChangesAsync();
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                await notificationServiceHandler.sendMessagetoWorker("قام العميل بإلغاء الطلب", (int)targetOrder.WorkerId);
+                await notificationServiceHandler.sendMessagetoWorker( 11, (int)targetOrder.WorkerId, "قام العميل بإلغاء الطلب");
                 return ResultDTO<string>.Success("Successfully deleted");
 
 

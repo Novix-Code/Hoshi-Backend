@@ -72,7 +72,7 @@ namespace Hoshi.Repositories.OrderVisitService
         public async Task sendNoificationforclient(int orderId , string message)
         {
             var targetOrder = await _context.Orders.FirstOrDefaultAsync(p => p.Id == orderId);
-            await notificationServiceHandler.sendMessagetoClient(message, targetOrder.ClientId);
+            await notificationServiceHandler.sendMessagetoClient(12, targetOrder.ClientId , message);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Hoshi.Repositories.OrderVisitService
         {
             var targetVisit = await _context.OrderVisits.FindAsync(VisitId);
             var targetOrder = await _context.Orders.FindAsync(targetVisit.OrderId);
-            await notificationServiceHandler.sendMessagetoClient(message, targetOrder.ClientId);
+            await notificationServiceHandler.sendMessagetoClient(2, targetOrder.ClientId , message);
 
         }
     }

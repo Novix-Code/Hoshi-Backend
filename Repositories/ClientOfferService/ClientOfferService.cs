@@ -143,7 +143,7 @@ namespace Hoshi.Repositories.ClientOfferService
                 await transaction.CommitAsync();
 
                 // 6. Send notification to the worker that his offer is accepted
-                await _notificationServiceHandler.sendMessagetoWorker("تم قبول العرض الخاص بك", targetOffer.WorkerId);
+                await _notificationServiceHandler.sendMessagetoWorker( 7 ,targetOffer.WorkerId , "تم قبول العرض الخاص بك");
                 _logger.LogInformation("Notification sent to Worker {WorkerId}", targetOffer.WorkerId);
 
                 // 7. Handle result section -- this DTOs to match business logic that required

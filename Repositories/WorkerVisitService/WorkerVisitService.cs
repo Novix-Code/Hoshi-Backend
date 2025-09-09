@@ -258,7 +258,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                 _hoshiDbContext.ClientSpecifications.Update(client);
                 await transaction.CommitAsync();
                 await _hoshiDbContext.SaveChangesAsync();
-                await _notificationServiceHandler.sendMessagetoWorker("تم قبول طلب زيارتك", (int)targetorder.WorkerId);
+                await _notificationServiceHandler.sendMessagetoWorker( 1, (int)targetorder.WorkerId, "تم قبول طلب زيارتك");
 
                 return ResultDTO<bool>.Success(true);
             }

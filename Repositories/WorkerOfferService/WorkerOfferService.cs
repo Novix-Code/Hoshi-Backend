@@ -202,7 +202,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 await transaction.CommitAsync();
                 // send notification
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة عرض", offer.Id);
-                await notificationServiceHandler.sendMessagetoClient("تم اضافة عرض على الطلب الخاص بك", order.ClientId);
+                await notificationServiceHandler.sendMessagetoClient( 6, order.ClientId , "تم اضافة عرض على الطلب الخاص بك");
                 return ResultDTO<CreateOfferResponseDto>.Success(response);
             }
             catch (Exception ex)
@@ -314,7 +314,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     });
 
                     await _hoshiDbContext.SaveChangesAsync();
-                    await notificationServiceHandler.sendMessagetoClient($"   قام العامل ب إلغاء الطلب والغرامه هي: {workerCancellationFee}", order.ClientId);
+                    await notificationServiceHandler.sendMessagetoClient(11, order.ClientId, $"   قام العامل ب إلغاء الطلب والغرامه هي: {workerCancellationFee}");
 
                 }
 
