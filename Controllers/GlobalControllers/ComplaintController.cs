@@ -9,10 +9,12 @@ using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.ComplaintDTOs;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Repositories.NotificationService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.GlobalControllers.ComplaintControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ComplaintController : SoftDeleteGenericFSPController<

@@ -52,9 +52,22 @@ namespace Hoshi.Repositories.WorkerVisitService
                 var (cancelMain, cancelMin, cancelMax) = await GetFeeAsync(FeeType.CancellationFee, order);
                 var (commissionMain, commissionMin, commissionMax) = await GetFeeAsync(FeeType.CommissionFee, order);
 
-                var visitingFeeValue = Clamp(visitMain, visitMin, visitMax);
-                var cancellationFeeValue = Clamp(cancelMain, cancelMin, cancelMax);
-                var commissionFeeValue = Clamp(commissionMain, commissionMin, commissionMax);
+                // This to get the value of the Fee according to its range
+                var visitFeeValue = Clamp(
+                    ValueFromPercentage(dto.VisitPrice, visitMain),
+                    visitMin,
+                    visitMax
+                );
+                var cancellationFeeValue = Clamp(
+                    ValueFromPercentage(dto.VisitPrice, cancelMain),
+                    cancelMin,
+                    cancelMax
+                );
+                var commissionFeeValue = Clamp(
+                    ValueFromPercentage(dto.VisitPrice, commissionMain),
+                    commissionMin,
+                    commissionMax
+                );
 
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
@@ -69,7 +82,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                     {
                         OrderPrice = visit.VisitPrice,
                         CommissionFee = commissionFeeValue,
-                        VisitingFee = visitingFeeValue,
+                        VisitingFee = visitFeeValue,
                         CancellationFee = cancellationFeeValue,
                         WorkerPromotionFee = 0,
                         ClientPromotionFee = 0,
@@ -83,7 +96,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                 {
                     existingTemp.OrderPrice = visit.VisitPrice;
                     existingTemp.CommissionFee = commissionFeeValue;
-                    existingTemp.VisitingFee = visitingFeeValue;
+                    existingTemp.VisitingFee = visitFeeValue;
                     existingTemp.CancellationFee = cancellationFeeValue;
                     existingTemp.ClientIndebtednessFee = 0.0;
                     existingTemp.ClientTotalPrice = clientWillPay;
@@ -119,7 +132,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                         .ThenInclude(o => o.Client)
                     .Include(v => v.Order)
                         .ThenInclude(o => o.Worker).Include(p=>p.OrderId)
-                    .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Completed);
+                    .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Completed.ToString());
                 var targetorder = await _hoshiDbContext.Orders.FindAsync(visit.OrderId);
                 if (visit == null)
                 {
@@ -131,7 +144,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                 }
                 
                 // Update visit status
-                visit.VisitStatus = VisitStatus.Completed;
+                visit.VisitStatus = VisitStatus.Completed.ToString();
                 
                 // Get client and validate
                 var client = await _hoshiDbContext.ClientSpecifications.FirstOrDefaultAsync(c => c.UserId == visit.Order.ClientId);
@@ -158,7 +171,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                 // Get fees from Fee table for this service
                 int serviceId = visit.Order.ServiceId;
                 double commissionFee = await _hoshiDbContext.Fees
-                    .Where(f => f.ServiceId == serviceId && f.FeeType == FeeType.CommissionFee && !f.IsSpecial)
+                    .Where(f => f.ServiceId == serviceId && f.FeeType == FeeType.CommissionFee.ToString() && !f.IsSpecial)
                     .Select(f => f.MainFees)
                     .FirstOrDefaultAsync();
 
@@ -270,7 +283,7 @@ namespace Hoshi.Repositories.WorkerVisitService
             {
                 var visit = await _hoshiDbContext.OrderVisits
                     .Include(v => v.Order)
-                    .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Cancelled);
+                    .FirstOrDefaultAsync(v => v.Id == visitId && v.VisitStatus != VisitStatus.Cancelled.ToString());
 
                 if (visit == null)
                 {
@@ -282,13 +295,13 @@ namespace Hoshi.Repositories.WorkerVisitService
                 }
 
                 // Mark as canceled
-                visit.VisitStatus = VisitStatus.Cancelled;
+                visit.VisitStatus = VisitStatus.Cancelled.ToString();
 
                 // Apply cancellation fee logic (for worker)
                 if (visit.Order != null)
                 {
                     double visitCancellationFee = await _hoshiDbContext.Fees
-                        .Where(f => f.ServiceId == visit.Order.ServiceId && f.FeeType == FeeType.CancellationFee && !f.IsSpecial)
+                        .Where(f => f.ServiceId == visit.Order.ServiceId && f.FeeType == FeeType.CancellationFee.ToString() && !f.IsSpecial)
                         .Select(f => f.MainFees)
                         .FirstOrDefaultAsync();
 
@@ -351,19 +364,18 @@ namespace Hoshi.Repositories.WorkerVisitService
             }
         }
 
-
         // Create/Update TempInvoice for the visit with full fee and promotion logic
         public async Task<(double main, double min, double max)> GetFeeAsync(FeeType type,Order order)
         {
             var special = await _hoshiDbContext.Fees
-                .Where(f => f.ServiceId == order.ServiceId && f.FeeType == type && f.IsSpecial)
+                .Where(f => f.ServiceId == order.ServiceId && f.FeeType == type.ToString() && f.IsSpecial)
                 .Select(f => new { f.MainFees, f.MinFees, f.MaxFees })
                 .FirstOrDefaultAsync();
             if (special != null)
                 return (special.MainFees, special.MinFees, special.MaxFees);
 
             var basic = await _hoshiDbContext.Fees
-                .Where(f => f.FeeType == type && !f.IsSpecial)
+                .Where(f => f.FeeType == type.ToString() && !f.IsSpecial)
                 .Select(f => new { f.MainFees, f.MinFees, f.MaxFees })
                 .FirstOrDefaultAsync();
             if (basic == null)
@@ -376,6 +388,13 @@ namespace Hoshi.Repositories.WorkerVisitService
             if (max > 0 && value > max) return max;
             if (min > 0 && value < min) return min;
             return value;
+        }
+
+        public double ValueFromPercentage(double value, double percentage)
+        {
+            if(percentage <= 0) return value;
+
+            return value * (percentage / 100) ;
         }
     }
 }

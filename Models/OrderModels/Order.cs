@@ -34,7 +34,7 @@ namespace Hoshi.Models.OrderModels
 
 
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
-        public OrderStatus OrderStatus { get; set; } = OrderStatus.Published;
+        public string OrderStatus { get; set; } = Enums.OrderStatus.Published.ToString();
 
         public int ClientId { get; set; }
         public User? Client { get; set; }

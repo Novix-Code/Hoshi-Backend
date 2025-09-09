@@ -141,13 +141,13 @@ namespace Hoshi.Repositories.OrderService
 
                 // 2. Change order status to Completed and add status history
 
-                if (order.OrderStatus == OrderStatus.Completed)
+                if (order.OrderStatus == OrderStatus.Completed.ToString())
                     return ResultDTO<object>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "الطلب مكتمل بالفعل.",
                         ErrorEn = "Order already completed."
                     });
-                order.OrderStatus = OrderStatus.Completed;
+                order.OrderStatus = OrderStatus.Completed.ToString();
                 order.OrderStatusHistory!.Add(new OrderStatusHistory
                 {
                     OrderStatus = OrderStatus.Completed,
@@ -196,11 +196,6 @@ namespace Hoshi.Repositories.OrderService
 
                 double totalCommission = invoices.Sum(i => i.CommissionFee);
                 double totalIndebtednessFee = invoices.Sum(i => i.ClientIndebtednessFee);
-                // Suggested: consider using decimal for monetary values to avoid floating point rounding issues
-                // decimal totalClientCost = invoices.Sum(i => (decimal)i.ClientTotalPrice);
-                // decimal totalWorkerCost = invoices.Sum(i => (decimal)i.WorkerTotalPrice);
-                // decimal totalCommission = invoices.Sum(i => (decimal)i.CommissionFee);
-                // decimal totalIndebtednessFee = invoices.Sum(i => (decimal)i.ClientIndebtednessFee);
 
                 if (totalClientCost < 0 || totalWorkerCost < 0 || totalCommission < 0 || totalIndebtednessFee < 0)
                     return ResultDTO<object>.BadRequest(new ErrorDTO
@@ -481,7 +476,7 @@ namespace Hoshi.Repositories.OrderService
 
             // Get Cancelled Offers Count
             int cancelledOffers = await _hoshiDbContext.Offers
-                .CountAsync(o => o.WorkerId == workerDataDto!.Id && o.OfferStatus == OfferStatus.Cancelled);            
+                .CountAsync(o => o.WorkerId == workerDataDto!.Id && o.OfferStatus == OfferStatus.Cancelled.ToString());            
             
             var workerData = new WorkerDataDTO
             {

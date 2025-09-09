@@ -8,10 +8,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.FeeDTOs;
 using Hoshi.Models.GlobalModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.GlobalControllers.FeeControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

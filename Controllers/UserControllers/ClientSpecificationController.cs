@@ -8,11 +8,13 @@ using Hoshi.DTOs.UserDTOs.ClientSpecificationDTOs;
 using Hoshi.Models.UserModels;
 using Hoshi.Repositories.ClientSpecificationService;
 using Hoshi.Repositories.UserService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoshi.Controllers.UserControllers.ClientSpecificationControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Client")]

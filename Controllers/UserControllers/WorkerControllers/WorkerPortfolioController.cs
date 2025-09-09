@@ -7,10 +7,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
 using Hoshi.Models.UserModels.WorkerModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerPortfolioControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Worker")]

@@ -1,4 +1,5 @@
-﻿using Hoshi.Models.GlobalModels;
+﻿using Hoshi.Enums;
+using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ namespace Hoshi.Data.IdentitySeeders
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-            string[] roles = { "client", "admin", "worker" };
+            string[] roles = { "SuperAdmin", UserType.Admin.ToString(), UserType.Client.ToString(), UserType.Worker.ToString() };
 
             foreach (var role in roles)
             {
@@ -33,8 +34,12 @@ namespace Hoshi.Data.IdentitySeeders
                 { "adminPassword" , new List<string>{"Novix@12345" , "Hoshi@12345"}}
             };
             // Create Admin role if it doesn't exist
-            if (!await roleManager.RoleExistsAsync("admin"))
-                await roleManager.CreateAsync(new IdentityRole<int>("admin"));
+            if (!await roleManager.RoleExistsAsync("SuperAdmin"))
+                await roleManager.CreateAsync(new IdentityRole<int>("SuperAdmin"));
+
+            if (!await roleManager.RoleExistsAsync(UserType.Admin.ToString()))
+                await roleManager.CreateAsync(new IdentityRole<int>(UserType.Admin.ToString()));
+
             // Check if admin is exist , if not we will go to create it
             await CheckThenAddAdminUser(userManager, dictionaryAdminUsers["adminEmail"][0], dictionaryAdminUsers["adminPassword"][0]);
             await CheckThenAddAdminUser(userManager, dictionaryAdminUsers["adminEmail"][1], dictionaryAdminUsers["adminPassword"][1]);   
@@ -55,7 +60,8 @@ namespace Hoshi.Data.IdentitySeeders
                 var result = await userManager.CreateAsync(newAdmin, adminPassword);
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(newAdmin, "admin");
+                    await userManager.AddToRoleAsync(newAdmin, "SuperAdmin");
+                    await userManager.AddToRoleAsync(newAdmin, UserType.Admin.ToString());
                 }
                 else
                 {

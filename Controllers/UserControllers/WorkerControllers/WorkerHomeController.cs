@@ -9,9 +9,10 @@ using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 
 namespace Hoshi.Controllers.UserControllers.WorkerControllers
 {
+    [Authorize]
+    [ApiController]
     [Route("api/[controller]")]
     [EndpointGroupName("Worker")]
-    [ApiController]
     public class WorkerHomeController : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

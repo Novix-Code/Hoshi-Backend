@@ -1,5 +1,4 @@
 ﻿using Hoshi.Data.LookupSeeders;
-using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.Models.ChatModels;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.DashboardModels.StatisticsModels;
@@ -42,19 +41,6 @@ namespace Hoshi.Data
                 }
             }
 
-            // Suggested improvement (configure decimal precision and string lengths globally):
-            // foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            // {
-            //     foreach (var property in entityType.GetProperties())
-            //     {
-            //         if (property.ClrType == typeof(decimal))
-            //         {
-            //             property.SetPrecision(18);
-            //             property.SetScale(2);
-            //         }
-            //     }
-            // }
-
             // Add Main Data Seeders:
             LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
@@ -62,41 +48,33 @@ namespace Hoshi.Data
 
             // Add Views
             modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
-            modelBuilder.Entity<clientPageModel>().HasNoKey().ToView("ClientPageView4");
-            modelBuilder.Entity<NewClient>().HasNoKey().ToView("NewClientView");
+            modelBuilder.Entity<ClientPageViewModel>().HasNoKey().ToView("ClientPageView");
+            modelBuilder.Entity<NewClientViewModel>().HasNoKey().ToView("NewClientView");
             modelBuilder.Entity<AllClientModelForView>().HasNoKey().ToView("AllClientView");
             modelBuilder.Entity<SuspendedUserModelForView>().HasNoKey().ToView("SuspendedUser");
             modelBuilder.Entity<ClientDetailsModelView>().HasNoKey().ToView("ClientDetailsView");
             modelBuilder.Entity<WorkerDetailsViewModel>().HasNoKey().ToView("WorkerDetailsView");
             modelBuilder.Entity<CitiesViewModel>().HasNoKey().ToView("CitiesgetView");
-            modelBuilder.Entity<orderViewModelDetails>().HasNoKey().ToView("OrdersGetView");
-            modelBuilder.Entity<WorkerPageModelForView>().HasNoKey().ToView("WorkerPageView");
+            modelBuilder.Entity<OrderDetailsViewModel>().HasNoKey().ToView("OrderDetailsView");
+            modelBuilder.Entity<WorkerPageViewModel>().HasNoKey().ToView("WorkerPageView");
             modelBuilder.Entity<NewWorkerModelForView>().HasNoKey().ToView("NewWorkerView");
             modelBuilder.Entity<AllWorkersModelForView>().HasNoKey().ToView("AllWorkertView");
             modelBuilder.Entity<SuspendedWorkerModelForView>().HasNoKey().ToView("SuspendedWorker");
             modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
             modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
-            // Suggested improvement (schema-qualified views):
-            // modelBuilder.Entity<OverViewPage>().ToView("dbo.OverviewView");
         }
 
-
-
-
-
-        /// <summary>
-        /// Database views (read-only projections).
-        /// </summary>
+        // Database views (read-only projections).
         public DbSet<OverViewPage> OverviewView { get; set; }
-        public DbSet<clientPageModel> ClientPageView4 { get; set; }
-        public DbSet<NewClient> NewClientView { get; set; }
+        public DbSet<ClientPageViewModel> ClientPageView { get; set; }
+        public DbSet<NewClientViewModel> NewClientView { get; set; }
         public DbSet<AllClientModelForView> AllClientView { get; set; }
         public DbSet<SuspendedUserModelForView> SuspendedUserView { get; set; }
         public DbSet<ClientDetailsModelView> ClientDetailsView { get; set; }
         public DbSet<WorkerDetailsViewModel> WorkerDetailsView { get; set; }
         public DbSet<CitiesViewModel> CitiesgetView { get; set; }
-        public DbSet<orderViewModelDetails> OrdersGetView { get; set; }
-        public DbSet<WorkerPageModelForView> WorkerPageView { get; set; }
+        public DbSet<OrderDetailsViewModel> OrderDetailsView { get; set; }
+        public DbSet<WorkerPageViewModel> WorkerPageView { get; set; }
         public DbSet<NewWorkerModelForView> NewWorkerView { get; set; }
         public DbSet<AllWorkersModelForView> AllWorkertView { get; set; }
         public DbSet<SuspendedWorkerModelForView> SuspendedWorker { get; set; }

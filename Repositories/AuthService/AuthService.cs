@@ -84,10 +84,18 @@ namespace Hoshi.Repositories.AuthService
         public async Task<ResultDTO<string>> CreateResetPasswordTokenAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+            if (user is null) return ResultDTO<string>.BadRequest(new ErrorDTO()
+            {
+                ErrorAr = "هذا الحساب غير صحيح.",
+                ErrorEn = "This Accunt not valid."
+            });
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            if (string.IsNullOrEmpty(token)) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+            if (string.IsNullOrEmpty(token)) return ResultDTO<string>.InternalServerError(new ErrorDTO()
+            {
+                ErrorAr = "يوجد مشكلة في النظام.",
+                ErrorEn = "There is a problem in system."
+            });
 
             // Hash the token before storing
             var hashedToken = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
@@ -99,6 +107,7 @@ namespace Hoshi.Repositories.AuthService
                 ResetToken = hashedToken,
                 UserId = user.Id
             };
+
             var passwordResetTokenRequestRepo = await _context.PasswordResetRequests.ToListAsync();
             _context.PasswordResetRequests.Add(passwordResetRequest);
             await _context.SaveChangesAsync();
@@ -109,7 +118,11 @@ namespace Hoshi.Repositories.AuthService
         public async Task<ResultDTO<string>> ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto)
         {
             var user = await _userManager.FindByEmailAsync(resetPasswordRequestDto.Email);
-            if (user is null) return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+            if (user is null) return ResultDTO<string>.BadRequest(new ErrorDTO()
+            {
+                ErrorAr = "هذا الحساب غير صحيح.",
+                ErrorEn = "This Accunt not valid."
+            });
 
             // Hash the received token for comparison
             var hashedRecievedToken = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(resetPasswordRequestDto.Token)));
@@ -138,31 +151,114 @@ namespace Hoshi.Repositories.AuthService
             return ResultDTO<string>.Success("Password has been changed successfully");
         }
 
+        /// <summary>
+        /// Soft deletes a user account by setting the <c>IsDeleted</c> flag instead of permanently removing the record.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user to delete.</param>
+        /// <remarks>
+        /// <para>
+        /// Deletion rules enforced:
+        /// </para>
+        /// <list type="number">
+        ///   <item><description>Normal users can delete only their own accounts.</description></item>
+        ///   <item><description>Admins cannot delete themselves.</description></item>
+        ///   <item><description>Admins cannot delete other admins unless the current user is a super admin.</description></item>
+        ///   <item><description>Super admins can delete any account, including admins.</description></item>
+        /// </list>
+        /// </remarks>
+
         public async Task<ResultDTO<string>> Delete(string id)
         {
-            var applicationUser = await _userManager.FindByIdAsync(id);
-            if (applicationUser is null)
-                return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
-
-            var logoutResult = await Logout();
-            if ((int)logoutResult.StatusCode < 200 || (int)logoutResult.StatusCode > 299)
-                return logoutResult;
-            // Prevent the admin from deleting himself
-            var isAdmin = await _userManager.IsInRoleAsync(applicationUser, "admin");
-            if (isAdmin)
-                return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
-
-
-            var identityResult = await _userManager.UpdateAsync(applicationUser);
-            if (!identityResult.Succeeded)
+            try
             {
-                var errors = identityResult.Errors.Select(e => e.Description).ToList();
-                return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+                var applicationUser = await _userManager.FindByIdAsync(id);
+                if (applicationUser is null)
+                    return ResultDTO<string>.Failure(
+                        new ErrorDTO { ErrorEn = "User not found.", ErrorAr = "المستخدم غير موجود." },
+                        ResponseStatusCodes.BadRequest
+                    );
+
+                // Current logged-in user
+                var currentUserId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
+                var currentUser = await _userManager.FindByIdAsync(currentUserId);
+
+                // Role checks
+                var isTargetAdmin = await _userManager.IsInRoleAsync(applicationUser, "admin");
+                var isCurrentAdmin = currentUser != null && await _userManager.IsInRoleAsync(currentUser, "admin");
+                var isCurrentSuperAdmin = currentUser != null && await _userManager.IsInRoleAsync(currentUser, "superadmin");
+
+                // 1. Normal user can delete only themselves
+                if (!isCurrentAdmin && !isCurrentSuperAdmin)
+                {
+                    if (currentUserId != id)
+                    {
+                        return ResultDTO<string>.Failure(
+                            new ErrorDTO
+                            {
+                                ErrorEn = "You can only delete your own account.",
+                                ErrorAr = "يمكنك حذف حسابك الشخصي فقط."
+                            },
+                            ResponseStatusCodes.Forbidden
+                        );
+                    }
+                }
+
+                // 2. Admin cannot delete themselves
+                if (isCurrentAdmin && currentUserId == id)
+                {
+                    return ResultDTO<string>.Failure(
+                        new ErrorDTO
+                        {
+                            ErrorEn = "Admins cannot delete themselves.",
+                            ErrorAr = "لا يمكن للمشرف حذف نفسه."
+                        },
+                        ResponseStatusCodes.Forbidden
+                    );
+                }
+
+                // 3. Admin cannot delete other admins (only super admin can)
+                if (isCurrentAdmin && isTargetAdmin && !isCurrentSuperAdmin)
+                {
+                    return ResultDTO<string>.Failure(
+                        new ErrorDTO
+                        {
+                            ErrorEn = "Admins cannot delete other admins.",
+                            ErrorAr = "لا يمكن للمشرف حذف مشرف آخر."
+                        },
+                        ResponseStatusCodes.Forbidden
+                    );
+                }
+
+                // 4. Soft delete
+                applicationUser.IsDeleted = true;
+                applicationUser.ModifiedAt = DateTime.UtcNow;
+
+                var identityResult = await _userManager.UpdateAsync(applicationUser);
+                if (!identityResult.Succeeded)
+                {
+                    var errors = string.Join(", ", identityResult.Errors.Select(e => e.Description));
+                    return ResultDTO<string>.Failure(
+                        new ErrorDTO { ErrorEn = $"Failed to delete user: {errors}", ErrorAr = "فشل في حذف المستخدم." },
+                        ResponseStatusCodes.InternalServerError
+                    );
+                }
+
+                return ResultDTO<string>.Success(new MessageDTO()
+                {
+                    MessageAr = "تم حذف الحساب بنجاح.",
+                    MessageEn = "Account successfully deleted."
+                });
             }
-
-
-            return ResultDTO<string>.NoContent();
+            catch (Exception ex)
+            {
+                return ResultDTO<string>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ أثناء معالجة طلبك.",
+                    ErrorEn = $"An error occurred while processing your request. {ex.InnerException?.Message ?? ex.Message}"
+                });
+            }
         }
+
 
         public async Task<ResultDTO<string>> Edit(ApplicationUserEditRequestDto userEditRequestDto)
         {
@@ -196,10 +292,17 @@ namespace Hoshi.Repositories.AuthService
         {
             var applicationUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
 
+            if (applicationUser is null || applicationUser.IsDeleted is true)
+                return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = ".الحساب او كلمة السر خاطئة",
+                    ErrorEn = "Invalid email or password."
+                });
+
             var signInResult = await _signInManager.CheckPasswordSignInAsync(
                 applicationUser!, loginRequestDto.Password, false);
 
-            if (applicationUser is null || !signInResult.Succeeded || applicationUser.IsDeleted is true)
+            if (!signInResult.Succeeded)
                 return ResultDTO<UserGetDTO>.BadRequest(new ErrorDTO
                 {
                     ErrorAr = ".الحساب او كلمة السر خاطئة",
@@ -285,6 +388,8 @@ namespace Hoshi.Repositories.AuthService
                 CreatedAt = DateTime.UtcNow
             };
 
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
                 var identityResult = await _userManager.CreateAsync(applicationUser, registerRequestDto.Password);
@@ -296,7 +401,7 @@ namespace Hoshi.Repositories.AuthService
                 _context.Set<User>().Update(applicationUser);
 
                 // Add main role to user
-                string role = userType.ToString().ToLower();
+                string role = userType.ToString();
 
                 if (!await _roleManager.RoleExistsAsync(role))
                 {
@@ -334,8 +439,8 @@ namespace Hoshi.Repositories.AuthService
                 {
                     WorkerSpecification workerSpecification = new WorkerSpecification
                     {
-                        UserId = applicationUser.Id
-
+                        UserId = applicationUser.Id,
+                        CreatedAt = DateTime.UtcNow
                     };
                     await _context.Set<WorkerSpecification>().AddAsync(workerSpecification);
 
@@ -343,7 +448,6 @@ namespace Hoshi.Repositories.AuthService
 
 
                 var token = await _tokenService.CreateTokenAsync(applicationUser);
-                await _context.SaveChangesAsync();
 
                 /// Handle Send Notification for admin that there are new worker registered
 
@@ -358,6 +462,9 @@ namespace Hoshi.Repositories.AuthService
                 if (!otpResult.IsSuccess)
                     return ResultDTO<UserGetDTO>.BadRequest(otpResult.Error!);
 
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 return ResultDTO<UserGetDTO>.Success(
                     _mapper.Map<UserGetDTO>(applicationUser),
                     token,
@@ -370,6 +477,7 @@ namespace Hoshi.Repositories.AuthService
             }
             catch (DbUpdateException ex)
             {
+                await transaction.RollbackAsync();
                 return ResultDTO<UserGetDTO>.InternalServerError(
                     new ErrorDTO
                     {

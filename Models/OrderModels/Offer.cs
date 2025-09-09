@@ -1,7 +1,6 @@
 ﻿using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericInterfaces;
 using GenericCRUDLibrary.GenericModels;
-using Hoshi.Enums;
 using Hoshi.Models.PromotionModels;
 using Hoshi.Models.UserModels;
 
@@ -27,7 +26,7 @@ namespace Hoshi.Models.OrderModels
 
 
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
-        public OfferStatus OfferStatus { get; set; } = OfferStatus.Waitting;
+        public string OfferStatus { get; set; } = Enums.OfferStatus.Waitting.ToString();
 
         public int WorkerId { get; set; }
         public User? Worker { get; set; }

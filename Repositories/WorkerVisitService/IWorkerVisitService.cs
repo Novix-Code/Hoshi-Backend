@@ -30,6 +30,10 @@ namespace Hoshi.Repositories.WorkerVisitService
         /// Clamp a value to min/max if applicable.
         /// </summary>
         double Clamp(double value, double min, double max);
+        /// <summary>
+        /// Calculate a value from percentage.
+        /// </summary>
+        double ValueFromPercentage(double value, double percentage);
 
     }
 }

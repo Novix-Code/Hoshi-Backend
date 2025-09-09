@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Hoshi.Controllers.GlobalControllers.UserNotificationControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserNotificationController : GenericFSPController<

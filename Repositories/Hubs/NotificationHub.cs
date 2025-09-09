@@ -31,12 +31,12 @@ namespace Hoshi.Repositories.Hubs
                     await Groups.AddToGroupAsync(Context.ConnectionId, "Worker");
                 }
 
-                await Clients.Caller.ReceiveMessage("✔️ تم إضافتك للجروب حسب دورك");
+                await Clients.Caller.ReceiveMessage("تم إضافتك للجروب حسب دورك");
             }
             else
             {
-                //await Clients.Caller.ReceiveMessage("❌ غير مصرح لك بالاتصال");
-                //Context.Abort(); // إنهاء الاتصال لو مش متسجل
+                await Clients.Caller.ReceiveMessage("غير مصرح لك بالاتصال");
+                Context.Abort(); // إنهاء الاتصال لو مش متسجل
             }
 
             await base.OnConnectedAsync();

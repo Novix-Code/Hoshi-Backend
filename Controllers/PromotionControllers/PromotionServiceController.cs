@@ -6,10 +6,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.PromotionDTOs.PromotionServiceDTOs;
 using Hoshi.Models.PromotionModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.PromotionControllers.PromotionServiceControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]

@@ -3953,7 +3953,7 @@ namespace Hoshi.Migrations
 
                     b.ToTable((string)null);
 
-                    b.ToView("ClientPageView4", (string)null);
+                    b.ToView("ClientPageView", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.orderViewModelDetails", b =>
@@ -4001,7 +4001,7 @@ namespace Hoshi.Migrations
 
                     b.ToTable((string)null);
 
-                    b.ToView("OrdersGetView", (string)null);
+                    b.ToView("OrderDetailsView", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>

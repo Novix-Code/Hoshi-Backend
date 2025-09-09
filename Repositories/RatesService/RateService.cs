@@ -9,14 +9,12 @@ namespace Hoshi.Repositories.RatesService
     public class RateService : IRateService
 
     {
-        #region private Fields
         private readonly HoshiDbContext context;
         public RateService(HoshiDbContext context)
         {
             this.context = context;
         }
-        #endregion
-        #region mian services
+
         public async Task<ResultDTO<object>> AddRateForClient(RatePostDTO dto)  
         {
             // 1. Get details about client from client specification
@@ -65,8 +63,7 @@ namespace Hoshi.Repositories.RatesService
             });
 
         }
-        #endregion
-        #region helper Function
+
         public async Task<double> GetWorkerAverageRateAsync(int workerId)
         {
             var rates = await context.Set<Rate>()
@@ -92,8 +89,6 @@ namespace Hoshi.Repositories.RatesService
 
             return rates.Average();
         }
-
-        #endregion
 
     }
 }

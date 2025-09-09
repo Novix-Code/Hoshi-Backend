@@ -15,6 +15,7 @@ using Hoshi.Models.UserModels.WorkerModels;
 namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerWalletControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Worker")]

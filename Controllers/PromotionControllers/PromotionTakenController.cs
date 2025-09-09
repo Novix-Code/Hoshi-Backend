@@ -6,10 +6,12 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.PromotionDTOs.PromotionTakenDTOs;
 using Hoshi.Models.PromotionModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.PromotionControllers.PromotionTakenControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PromotionTakenController : GenericJustFSPController<

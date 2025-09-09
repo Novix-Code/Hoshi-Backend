@@ -33,7 +33,7 @@ namespace Hoshi.Repositories.ClientHomeService
                 .ToListAsync();
 
             var clientPromotions = await _context.Promotions
-                .Where(p => p.PromotionFor == Enums.PromotionFor.Client)
+                .Where(p => p.PromotionFor == Enums.PromotionFor.Client.ToString())
                 .ToListAsync();
 
             var allCategories = await _context.ServiceCategories
@@ -97,7 +97,7 @@ namespace Hoshi.Repositories.ClientHomeService
                 .ToListAsync();
 
             var clientPromotions = await _context.Promotions
-                .Where(p => p.PromotionFor == Enums.PromotionFor.Client)
+                .Where(p => p.PromotionFor == Enums.PromotionFor.Client.ToString())
                 .ToListAsync();
 
             var nonTakenPromotions = clientPromotions

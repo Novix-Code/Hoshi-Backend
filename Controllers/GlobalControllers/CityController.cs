@@ -5,10 +5,12 @@ using GenericCRUDLibrary.GenericRepositories.GenericCRUDService;
 using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.CityDTOs;
 using Hoshi.Models.GlobalModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.GlobalControllers.CityControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CityController : GenericController<

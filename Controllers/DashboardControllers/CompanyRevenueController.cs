@@ -6,11 +6,13 @@ using GenericCRUDLibrary.GenericDTOs.InputsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.DashboardDTOs.CompanyRevenueDTOs;
 using Hoshi.Models.DashboardModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoshi.Controllers.DashboardControllers.CompanyRevenueControllers
 {
+    [Authorize]
     [NonController]
-    [ApiController]
+    //[ApiController]
     [Route("api/[controller]")]
 	[EndpointGroupName("Admin")]
     public class CompanyRevenueController : GenericJustFSPController<

@@ -18,7 +18,7 @@ namespace Hoshi.Data.LookupSeeders
                     MainFees = 25.0,
                     MinFees = 25.0,
                     MaxFees = 200.0,
-                    FeeType = Enums.FeeType.CommissionFee,
+                    FeeType = Enums.FeeType.CommissionFee.ToString(),
                     CreatedAt = createdAt,
                 },
                 new Fee()
@@ -27,7 +27,7 @@ namespace Hoshi.Data.LookupSeeders
                     MainFees = 15.0,
                     MinFees = 15.0,
                     MaxFees = 180.0,
-                    FeeType = Enums.FeeType.VisitingFee,
+                    FeeType = Enums.FeeType.VisitingFee.ToString(),
                     CreatedAt = createdAt,
                 },
                 new Fee()
@@ -36,7 +36,7 @@ namespace Hoshi.Data.LookupSeeders
                     MainFees = 18.0,
                     MinFees = 20.0,
                     MaxFees = 300.0,
-                    FeeType = Enums.FeeType.CancellationFee,
+                    FeeType = Enums.FeeType.CancellationFee.ToString(),
                     CreatedAt = createdAt,
                 },
                 new Fee()
@@ -45,7 +45,7 @@ namespace Hoshi.Data.LookupSeeders
                     MainFees = 0.0,
                     MinFees = 0.0,
                     MaxFees = 250.0,
-                    FeeType = Enums.FeeType.ClientIndebtednessFee,
+                    FeeType = Enums.FeeType.ClientIndebtednessFee.ToString(),
                     CreatedAt = createdAt,
                 },
                 new Fee()
@@ -54,7 +54,7 @@ namespace Hoshi.Data.LookupSeeders
                     MainFees = 0.0,
                     MinFees = 0.0,
                     MaxFees = 200.0,
-                    FeeType = Enums.FeeType.WorkerIndebtednessFee,
+                    FeeType = Enums.FeeType.WorkerIndebtednessFee.ToString(),
                     CreatedAt = createdAt,
                 },
             };

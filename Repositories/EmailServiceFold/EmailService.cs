@@ -217,7 +217,7 @@ namespace Hoshi.Repositories.EmailServiceFold
             try
             {
                 var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Ahmed Toba", _configuration["SmtpSettings:Username"]));
+                emailMessage.From.Add(new MailboxAddress("Hoshi", _configuration["SmtpSettings:Username"]));
                 emailMessage.To.Add(new MailboxAddress("", email));
                 emailMessage.Subject = "Complete Login";
                 if (!string.IsNullOrEmpty(Template))
@@ -237,7 +237,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                     // Suggested improvement (do not bypass SSL in production):
                     // client.ServerCertificateValidationCallback = null;
 
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.ConnectAsync(_configuration["SmtpSettings:Host"], 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
                     await client.SendAsync(emailMessage);
                     await client.DisconnectAsync(true);
@@ -260,7 +260,7 @@ namespace Hoshi.Repositories.EmailServiceFold
             {
                 var OTP = GenerateOtp();
                 var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Ahmed Toba", _configuration["SmtpSettings:Username"]));
+                emailMessage.From.Add(new MailboxAddress("Hoshi", _configuration["SmtpSettings:Username"]));
                 emailMessage.To.Add(new MailboxAddress("", email));
                 emailMessage.Subject = "Verification Code";
                 if (!string.IsNullOrEmpty(Template))
@@ -279,7 +279,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
                     // Suggested improvement: remove the bypass in production.
 
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.ConnectAsync(_configuration["SmtpSettings:Host"], 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
                     await client.SendAsync(emailMessage);
                     await client.DisconnectAsync(true);
@@ -309,7 +309,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                 var OTP = GenerateOtp();
 
                 var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Ahmed Toba", _configuration["SmtpSettings:Username"]));
+                emailMessage.From.Add(new MailboxAddress("Hoshi", _configuration["SmtpSettings:Username"]));
                 emailMessage.To.Add(new MailboxAddress("", email));
                 emailMessage.Subject = "Complete Login";
                 if (!string.IsNullOrEmpty(TemplateOTP2))
@@ -328,7 +328,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
                     // Suggested improvement: remove the bypass in production.
 
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.ConnectAsync(_configuration["SmtpSettings:Host"], 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
                     await client.SendAsync(emailMessage);
                     await client.DisconnectAsync(true);
@@ -406,7 +406,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                 // prepare the email contant
                 var OTP = GenerateOtp();
                 var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("Ahmed Toba", _configuration["SmtpSettings:Username"]));
+                emailMessage.From.Add(new MailboxAddress("Hoshi", _configuration["SmtpSettings:Username"]));
                 emailMessage.To.Add(new MailboxAddress("", email));
                 emailMessage.Subject = "Complete Login";
                 if (!string.IsNullOrEmpty(TemplateOTP2))
@@ -436,7 +436,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                     client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
                     // Suggested improvement: remove the bypass in production.
 
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.ConnectAsync(_configuration["SmtpSettings:Host"], 587, SecureSocketOptions.StartTls);
                     await client.AuthenticateAsync(_configuration["SmtpSettings:Username"], _configuration["SmtpSettings:Password"]);
                     await client.SendAsync(emailMessage);
                     await client.DisconnectAsync(true);

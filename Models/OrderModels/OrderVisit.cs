@@ -23,7 +23,7 @@ namespace Hoshi.Models.OrderModels
         public Order? Order { get; set; }
         
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
-        public VisitStatus VisitStatus { get; set; } = VisitStatus.Waitting;
+        public string VisitStatus { get; set; } = Enums.VisitStatus.Waitting.ToString();
 
         // This prop auto generated in post process
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]

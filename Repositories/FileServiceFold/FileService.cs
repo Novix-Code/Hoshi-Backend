@@ -72,8 +72,6 @@ namespace Hoshi.Repositories.FileServiceFold
             }
 
             return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName).Replace("\\" ,"/"));
-            // Suggested improvement (virus scan or image validation step):
-            // - Integrate a scanning/validation service before saving user-uploaded files.
         }
 
         public bool ValidateFileExtension(IFormFile file)

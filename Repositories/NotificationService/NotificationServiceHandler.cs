@@ -96,9 +96,7 @@ namespace Hoshi.Repositories.NotificationService
                     });
                     await _context.SaveChangesAsync();
                 }
-                await _hubContext.Clients.Group("admin").ReceiveMessage(messge);
-                // Suggested improvement (consistent group name casing):
-                // await _hubContext.Clients.Group("Admin").ReceiveMessage(messge);
+                await _hubContext.Clients.Group("Admin").ReceiveMessage(messge);
 
             }
         }
@@ -117,9 +115,7 @@ namespace Hoshi.Repositories.NotificationService
             };
             await _context.UserNotifications.AddAsync(notificationhandle);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.Group("client").ReceiveMessage(message);
-            // Suggested improvement (target specific user via connection mapping):
-            // await _hubContext.Clients.User(Id.ToString()).ReceiveMessage(message);
+            await _hubContext.Clients.Group("Client").ReceiveMessage(message);
 
         }
 
@@ -137,9 +133,7 @@ namespace Hoshi.Repositories.NotificationService
             };
             await _context.UserNotifications.AddAsync(notificationhandle);
             await _context.SaveChangesAsync();
-            await _hubContext.Clients.Group("worker").ReceiveMessage(message);
-            // Suggested improvement (target specific user via connection mapping):
-            // await _hubContext.Clients.User(Id.ToString()).ReceiveMessage(message);
+            await _hubContext.Clients.Group("Worker").ReceiveMessage(message);
 
         }
     }

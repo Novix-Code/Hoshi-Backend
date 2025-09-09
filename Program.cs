@@ -105,14 +105,15 @@ public class Program
             });
 
             // Suggested improvement(JWT auth for Swagger UI):
-             op.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-             {
-                 Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
-                 Name = "Authorization",
-                 In = ParameterLocation.Header,
-                 Type = SecuritySchemeType.Http,
-                 Scheme = JwtBearerDefaults.AuthenticationScheme
-             });
+            op.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = JwtBearerDefaults.AuthenticationScheme
+            });
+
             op.AddSecurityRequirement(new OpenApiSecurityRequirement
              {
                  {
@@ -243,7 +244,7 @@ public class Program
 
         builder.Services.AddTransient(typeof(IOrderImageService), typeof(OrderImageService));
 
-			  builder.Services.AddTransient(typeof(IRateService), typeof(RateService));
+		builder.Services.AddTransient(typeof(IRateService), typeof(RateService));
       
         builder.Services.AddTransient(typeof(IFileService), typeof(FileService));
 
@@ -263,8 +264,8 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
-        //{
+        if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+        {
             app.UseSwagger();
             app.UseSwaggerUI(op =>
             {
@@ -286,7 +287,7 @@ public class Program
                 // Make all Endpoints and Controllers Collapse
                 op.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
             });
-        //}
+        }
 
 
         app.UseHttpsRedirection();

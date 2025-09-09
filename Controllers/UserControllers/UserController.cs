@@ -8,23 +8,23 @@ using Hoshi.DTOs.UserDTOs.UserRegistiration;
 using Hoshi.Models.UserModels;
 using Hoshi.Repositories.AuthService;
 using Hoshi.Repositories.Hubs;
-
 using Hoshi.Repositories.UserService;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Hoshi.Controllers.UserControllers.UserControllers
 {
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-	[EndpointGroupName("Admin")]
+    [EndpointGroupName("Admin")]
     public class UserController : SoftDeleteGenericFSPController<
-        HoshiDbContext, 
-        User, 
-        UserGetDTO, 
-        UserPostDTO, 
+        HoshiDbContext,
+        User,
+        UserGetDTO,
+        UserPostDTO,
         UserPutDTO>
     {
         private readonly IMapper mapper;
@@ -61,14 +61,14 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         {
             // Update the other data anyware
             var serviceResponse = await authService.Register(
-                postDTO.UserType, 
+                postDTO.UserType,
                 mapper.Map<ApplicationUserRegisterRequestDto>(postDTO)
             );
             // Check if image is not null to be updated
             if (postDTO.Image is not null)
             {
                 // Update image by adding a the new one
-                Tuple<bool, string> result = 
+                Tuple<bool, string> result =
                     await userService.AddUserImage(serviceResponse.Data!.Id, postDTO.Image, false);
 
                 // Chekc if it done successfully or not
@@ -99,57 +99,57 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         [HttpGet("OverViewPage")]
         public async Task<IActionResult> overView()
         {
-            var reponse = await userService.overViewPage();
+            var reponse = await userService.OverViewPage();
             return StatusCode((int)Response.StatusCode, reponse);
         }
-        
+
         [HttpGet("ClientPage")]
         public async Task<IActionResult> clientpage()
         {
             var response = await userService.Clientpage();
-            return StatusCode((int)Response.StatusCode, response);  
+            return StatusCode((int)Response.StatusCode, response);
         }
-        
+
         [HttpGet("ClientDetails{id}")]
         public async Task<IActionResult> clientDetails(int id)
         {
-            var response = await userService.ClientDetails(id);    
-            return StatusCode((int)response.StatusCode, response);  
+            var response = await userService.ClientDetails(id);
+            return StatusCode((int)response.StatusCode, response);
         }
-        
+
         [HttpGet("WorkerPage")]
         public async Task<IActionResult> workerPage()
         {
             var response = await userService.WorkerPage();
             return StatusCode((int)response.StatusCode, response);
         }
-        
+
         [HttpGet("BeWorkerRequest{id}")]
         public async Task<IActionResult> beWorkerReq(int id)
         {
-            var response   =  await userService.WorkerDetails(id);
-            return StatusCode((int)response.StatusCode, response);   
+            var response = await userService.WorkerDetails(id);
+            return StatusCode((int)response.StatusCode, response);
         }
-        
+
         [HttpPost("BeWorkerApproved{id}")]
         public async Task<IActionResult> beworkerapproved(int id)
         {
-            var resonse  = await userService.BeWorkerApproved(id);
+            var resonse = await userService.BeWorkerApproved(id);
             return StatusCode((int)resonse.StatusCode, resonse);
         }
-        
+
         [HttpPost("BeWorkerRejected")]
-        public async Task<IActionResult> beworkerreject(int id , string RejectResoun)
+        public async Task<IActionResult> beworkerreject(int id, string RejectResoun)
         {
-            var resonse  = await userService.BeWorkerReject(id , RejectResoun);
+            var resonse = await userService.BeWorkerReject(id, RejectResoun);
             return StatusCode((int)resonse.StatusCode, resonse);
         }
-        
+
         [HttpGet("DashbordWorkerDetails{id}")]
         public async Task<IActionResult> dashWOrker(int id)
         {
-            var response = await userService.DashbordWorkerDetails(id);    
-            return StatusCode(response.StatusCode, response);   
+            var response = await userService.DashbordWorkerDetails(id);
+            return StatusCode(response.StatusCode, response);
         }
 
         [HttpGet("OrdersPage")]
@@ -158,7 +158,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             var response = await userService.OrderPage();
             return StatusCode(response.StatusCode, response);
         }
-        
+
         [HttpGet("DashbordOrderDetails{id}")]
         public async Task<IActionResult> dashorderDetls(int id)
         {
@@ -167,6 +167,6 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         }
 
 
-       
+
     }
 }
