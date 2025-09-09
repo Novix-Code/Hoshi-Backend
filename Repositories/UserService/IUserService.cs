@@ -16,7 +16,7 @@ namespace Hoshi.Repositories.UserService
         /// <summary>
         /// Overview metrics (users, orders, income, complaints) for admin.
         /// </summary>
-        Task<ResultDTO<object>> overViewPage();
+        Task<ResultDTO<object>> OverViewPage();
         /// <summary>
         /// Client page metrics and lists.
         /// </summary>

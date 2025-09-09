@@ -140,7 +140,7 @@ namespace Hoshi.Controllers.UserControllers
         /// Delete a user (admin only).
         /// </summary>
         [HttpDelete("delete/{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
             var serviceResponse = await authService.Delete(id);

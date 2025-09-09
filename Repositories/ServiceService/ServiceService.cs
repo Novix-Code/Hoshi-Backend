@@ -72,10 +72,6 @@ namespace Hoshi.Repositories.ServiceService
                 Service service = _mapper.Map<Service>(postDTO);
 
                 var imageResult = await fileService.SaveFileAsync(postDTO.Image, "images\\services");
-                // Suggested: standardize path separators (FileService returns normalized) and validate duplicates
-                // var imageResult = await fileService.SaveFileAsync(postDTO.Image, "images/services");
-                // bool duplicate = await _context.Services.AnyAsync(s => s.ServiveName == postDTO.ServiveName && s.ServiceCategoryId == postDTO.ServiceCategoryId);
-                // if (duplicate) return ResultDTO<ServiceGetDTO>.BadRequest(new ErrorDTO { ErrorAr = "الخدمة موجودة مسبقاً.", ErrorEn = "Service already exists in this category." });
 
                 if (imageResult.Item1 is false)
                     return ResultDTO<ServiceGetDTO>.BadRequest(new ErrorDTO()
@@ -233,11 +229,7 @@ namespace Hoshi.Repositories.ServiceService
                         .Select(service =>
                         {
                             var totalRelatedOrders = allOrders.Count(o => o.ServiceId == service.Id);
-                            var totalRelatedWorkers = _context.WorkerServices.Count(s => s.Id == service.Id);
-                            // Suggested FIX: Count by ServiceId instead of WorkerService.Id
-                            // var totalRelatedWorkers = _context.WorkerServices.Count(ws => ws.ServiceId == service.Id);
-                            // Suggested improvement (correct join key):
-                            // var totalRelatedWorkers = _context.WorkerServices.Count(ws => ws.ServiceId == service.Id);
+                            var totalRelatedWorkers = _context.WorkerServices.Count(ws => ws.ServiceId == service.Id);
                             var incomeAvg = allOrders.Where(o => o.ServiceId == service.Id).Any()
                                 ? (int)allOrders.Where(o => o.ServiceId == service.Id).Average(o => o.ProposalPrice)
                                 : 0;
@@ -282,7 +274,7 @@ namespace Hoshi.Repositories.ServiceService
                     TotalOrdersIncome = g.Sum(i => i.WorkerTotalPrice),
                     TotalOrdersPrices = g.Sum(i => i.OrderPrice),
                     TotalOrdersFees = g.Sum(i => i.CommissionFee + i.VisitingFee + i.CancellationFee),
-                    TotalUncollectedFees = g.Where(i => i.Order != null && i.Order.OrderStatus != OrderStatus.Completed)
+                    TotalUncollectedFees = g.Where(i => i.Order != null && i.Order.OrderStatus != OrderStatus.Completed.ToString())
                         .Sum(i => i.CommissionFee + i.VisitingFee + i.CancellationFee)
                 })
                 .FirstOrDefaultAsync();
@@ -293,8 +285,6 @@ namespace Hoshi.Repositories.ServiceService
                 .Select(w => new { w.WorkerId, w.Balance })
                 .ToListAsync();
             var workerBalanceDict = workerBalances.ToDictionary(w => w.WorkerId, w => w.Balance);
-            // Suggested: precompute additional lookups (e.g., cancelled offers per worker, worker specs) as dictionaries to avoid repeated queries below
-            // var workerCancelledOffers = await _context.Offers.Where(o => o.OfferStatus == OfferStatus.Cancelled).GroupBy(o => o.WorkerId).Select(g => new { WorkerId = g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.WorkerId, x => x.Count);
 
             // Preload notification user IDs
             var notifiedUserIds = await _context.UserNotifications
@@ -370,7 +360,7 @@ namespace Hoshi.Repositories.ServiceService
                     Client = _mapper.Map<ClientSpecificationGetDTO>(cs),
                     RateRatio = cs.RateRito,
                     TotalCompletedOrders = cs.CompletedOrders,
-                    TotalCancelledOrders = _context.Orders.Count(o => o.ClientId == cs.UserId && o.OrderStatus == OrderStatus.Cancelled),
+                    TotalCancelledOrders = _context.Orders.Count(o => o.ClientId == cs.UserId && o.OrderStatus == OrderStatus.Cancelled.ToString()),
                     Indebtedness = cs.Indebtedness,
                     HasCollectionAlert = notifiedUserSet.Contains(cs.UserId)
                 })
@@ -422,7 +412,7 @@ namespace Hoshi.Repositories.ServiceService
 
             var cancelledOffers = await _context.Offers
                 .AsNoTracking()
-                .CountAsync(o => o.WorkerId == workerSpec.UserId && o.OfferStatus == OfferStatus.Cancelled);
+                .CountAsync(o => o.WorkerId == workerSpec.UserId && o.OfferStatus == OfferStatus.Cancelled.ToString());
             
             var WorkerDataDTO = new WorkerDataDTO
             {
@@ -480,9 +470,6 @@ namespace Hoshi.Repositories.ServiceService
                     });
 
                 workerWallet.Balance = paymentValue;
-                // Suggested: consider using decimal for money to avoid floating point drift
-                // decimal value = (decimal)paymentValue;
-                // workerWallet.Balance = (double)value;
                 workerWallet.HitLimit = false;
 
                 // 4- Add it to wallet history
@@ -530,8 +517,8 @@ namespace Hoshi.Repositories.ServiceService
                 .Include(c => c.ComplaintType);
 
             var total = await query.CountAsync();
-            var opened = await query.CountAsync(c => c.ComplaintStatus != ComplaintStatus.Solved);
-            var closed = await query.CountAsync(c => c.ComplaintStatus == ComplaintStatus.Solved);
+            var opened = await query.CountAsync(c => c.ComplaintStatus != ComplaintStatus.Solved.ToString());
+            var closed = await query.CountAsync(c => c.ComplaintStatus == ComplaintStatus.Solved.ToString());
 
             var complaints = await query
                 .OrderByDescending(c => c.CreatedAt)
@@ -608,7 +595,7 @@ namespace Hoshi.Repositories.ServiceService
             if (complaint == null)
                 return ResultDTO<bool>.NotFound(new ErrorDTO { ErrorAr = "الشكوى غير موجودة.", ErrorEn = "Complaint not found." });
 
-            complaint.ComplaintStatus = ComplaintStatus.Solved;
+            complaint.ComplaintStatus = ComplaintStatus.Solved.ToString();
             complaint.ModifiedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

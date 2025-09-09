@@ -24,6 +24,6 @@ namespace Hoshi.Models.PromotionModels
         public bool UntilBeUsed { get; set; } = true;
         public bool IsDeleted { get; set; }
 
-        public PromotionFor PromotionFor { get; set; }
+        public string PromotionFor { get; set; } = string.Empty;
     }
 }

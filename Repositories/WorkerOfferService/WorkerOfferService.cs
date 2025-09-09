@@ -55,7 +55,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     });
 
                 // Ensure only Published orders accept new offers
-                if (order.OrderStatus != OrderStatus.Published)
+                if (order.OrderStatus != OrderStatus.Published.ToString())
                     return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "لا يمكن تقديم عرض لهذا الطلب.",
@@ -137,7 +137,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                         : $"{promotion.TitleFirstPart} {promotion.Value}% {promotion.TitleSecondPart}".Trim();
                     double promotionAmount = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
 
-                    if (promotion.PromotionFor == PromotionFor.Worker)
+                    if (promotion.PromotionFor == PromotionFor.Worker.ToString())
                         workerPromotionFee = promotionAmount;
                 }
 
@@ -234,7 +234,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     });
                 }
 
-                offer.OfferStatus = OfferStatus.Waitting;
+                offer.OfferStatus = OfferStatus.Waitting.ToString();
                 offer.IsConfirmed = true;
                 _hoshiDbContext.Offers.Update(offer);
                 await _hoshiDbContext.SaveChangesAsync();
@@ -271,7 +271,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 }
 
                 offer.IsDeleted = true;
-                offer.OfferStatus = OfferStatus.Cancelled;
+                offer.OfferStatus = OfferStatus.Cancelled.ToString();
 
                 // Apply cancellation fee logic (for worker)
                 // Get the cancellation fee for this service
@@ -279,7 +279,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 if (order != null)
                 {
                     double workerCancellationFee = await _hoshiDbContext.Fees
-                        .Where(f => f.ServiceId == order.ServiceId && f.FeeType == FeeType.CancellationFee && !f.IsSpecial)
+                        .Where(f => f.ServiceId == order.ServiceId && f.FeeType == FeeType.CancellationFee.ToString() && !f.IsSpecial)
                         .Select(f => f.MainFees)
                         .FirstOrDefaultAsync();
 

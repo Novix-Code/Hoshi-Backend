@@ -18,7 +18,7 @@ namespace Hoshi.Repositories.OrderImageService
         private readonly IFileService fileService;
 
         public OrderImageService(
-            IMapper mapper, 
+            IMapper mapper,
             HoshiDbContext context,
             IFileService fileService
         )
@@ -44,6 +44,8 @@ namespace Hoshi.Repositories.OrderImageService
 
                 return ResultDTO<List<OrderImageGetDTO>>.BadRequest(error);
             }
+
+            using var tx = await context.Database.BeginTransactionAsync();
 
             try
             {
@@ -71,18 +73,20 @@ namespace Hoshi.Repositories.OrderImageService
                 await context.Set<OrderImage>().AddRangeAsync(orderImages);
 
                 await context.SaveChangesAsync();
-
+                await tx.CommitAsync();
                 return ResultDTO<List<OrderImageGetDTO>>.Success(mapper.Map<List<OrderImageGetDTO>>(orderImages));
             }
             catch (Exception ex)
             {
+                await tx.RollbackAsync();
+
                 error.ErrorAr = "يوجد مشكلة في عملية الاضافة.";
                 error.ErrorEn = "There is a problem in Adding proccess.";
 
-                return ResultDTO<List<OrderImageGetDTO>>.InternalServerError(error, ex.InnerException!.Message);
-                // Suggested improvement (wrap in transaction to ensure all-or-nothing for multi-file):
-                // using var tx = await context.Database.BeginTransactionAsync();
-                // try { ... await tx.CommitAsync(); } catch { await tx.RollbackAsync(); throw; }
+                return ResultDTO<List<OrderImageGetDTO>>.InternalServerError(
+                    error,
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
             }
         }
     }

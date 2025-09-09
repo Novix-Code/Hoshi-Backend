@@ -99,7 +99,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
         [HttpGet("OverViewPage")]
         public async Task<IActionResult> overView()
         {
-            var reponse = await userService.overViewPage();
+            var reponse = await userService.OverViewPage();
             return StatusCode((int)Response.StatusCode, reponse);
         }
 

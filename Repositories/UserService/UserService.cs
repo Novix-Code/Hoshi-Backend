@@ -5,6 +5,8 @@ using Hoshi.DTOs.UserDTOs.AdminDTOs.PermissionDTOs;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
 using Hoshi.DTOs.UserDTOs.SuspendedUserDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
+using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
@@ -222,7 +224,7 @@ namespace Hoshi.Repositories.UserService
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "client not found"} , ResponseStatusCodes.NotFound);
 
            
-            var targetOrders = await _context.OrdersGetView
+            var targetOrders = await _context.OrderDetailsView
                 .Where(p => p.ClientId == Id)
                 .ToListAsync();
 
@@ -237,18 +239,17 @@ namespace Hoshi.Repositories.UserService
             return ResultDTO<object>.Success(result);
         }
 
-
         public async Task<ResultDTO<object>> Clientpage()
         {
-            var clientPage = await _context.ClientPageView4.FirstOrDefaultAsync();
+            var clientPage = await _context.ClientPageView.FirstOrDefaultAsync();
             var newClient = await _context.NewClientView.ToListAsync();
             var allClient = await _context.AllClientView.ToListAsync();
             var susClient = await _context.SuspendedUserView.ToListAsync();
             var result = new
             {
-                TotalClients = clientPage.totalClients,
-                TotalNewClients = clientPage.totalNewClients,
-                TotalActiveClients = clientPage.totalActiveClients,
+                TotalClients = clientPage.TotalClients,
+                TotalNewClients = clientPage.TotalNewClients,
+                TotalActiveClients = clientPage.TotalActiveClients,
                 averageOrder = clientPage.AverageOrdering,
                 NewClients = newClient,
                 AllClient  = allClient,
@@ -277,9 +278,9 @@ namespace Hoshi.Repositories.UserService
             var targetPortfolios = await _context.PortfolioView.Where(p => p.WorkerId == id).ToListAsync();
             var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == workerDetails.LivingCityId);
             var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p=>p.WorkerId == id);
-            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == id && p.OfferStatus == Enums.OfferStatus.Cancelled).CountAsync();
-            var targetOrders = await _context.OrdersGetView.Where(p => p.WorkerId == id).ToListAsync();
-            var totalIncomeforWorker = await _context.OrdersGetView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed).Select(p => p.TotalWorkerCost).SumAsync();
+            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == id && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
+            var targetOrders = await _context.OrderDetailsView.Where(p => p.WorkerId == id).ToListAsync();
+            var totalIncomeforWorker = await _context.OrderDetailsView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed).Select(p => p.TotalWorkerCost).SumAsync();
 
             var result = new
             {
@@ -305,7 +306,7 @@ namespace Hoshi.Repositories.UserService
 
         public async Task<ResultDTO<object>> OrderDetails(int id)
         {
-            var TargetOrder = await _context.OrdersGetView.FirstOrDefaultAsync(p=>p.Id == id);
+            var TargetOrder = await _context.OrderDetailsView.FirstOrDefaultAsync(p=>p.Id == id);
             if (TargetOrder == null)
                 return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr ="Order Not Found"}, ResponseStatusCodes.NotFound);
             var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.ClientId);
@@ -337,7 +338,7 @@ namespace Hoshi.Repositories.UserService
                     ErrorEn = "worker Job Not Found",
                     ErrorAr = "لم يتم  اضافة وظيفة للعامل بعد"
                 });
-            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled).CountAsync();
+            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
             var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == targetOffer.WorkerId);
             if (targetwallet == null)
                 return ResultDTO<object>.NotFound(new ErrorDTO
@@ -347,6 +348,7 @@ namespace Hoshi.Repositories.UserService
                 });
             var clientData = new
             {
+                WorkerId = targetOffer.WorkerId,
                 ImageURL = targetClient.ImageURL,
                 FullName = targetClient.FullName , 
                 Email    = targetClient.Email 
@@ -390,12 +392,12 @@ namespace Hoshi.Repositories.UserService
 
         public async Task<ResultDTO<object>> OrderPage()
         {
-            var totalOrders = await _context.OrdersGetView.CountAsync();
-            var totalActiveOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).CountAsync();
-            var totalCompletedOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed).CountAsync();
-            var totalCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled).CountAsync();
-            var ActiveOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).ToListAsync();
-            var CompletedAndCancelledOrders = await _context.OrdersGetView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed || p.OrderStatus== Enums.OrderStatus.Cancelled).ToListAsync();
+            var totalOrders = await _context.OrderDetailsView.CountAsync();
+            var totalActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).CountAsync();
+            var totalCompletedOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed).CountAsync();
+            var totalCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled).CountAsync();
+            var ActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).ToListAsync();
+            var CompletedAndCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed || p.OrderStatus== Enums.OrderStatus.Cancelled).ToListAsync();
             // Suggested FIX: previous filter used && which is unsatisfiable; using || to include completed or cancelled
             var result = new
             {
@@ -411,12 +413,12 @@ namespace Hoshi.Repositories.UserService
 
         }
 
-        public async Task<ResultDTO<object>> overViewPage()
+        public async Task<ResultDTO<object>> OverViewPage()
         {
             var overResult = await _context.OverviewView.FirstOrDefaultAsync();
-            var newOrders = await _context.Orders.Where(p => p.OrderStatus == Enums.OrderStatus.Published).ToListAsync();
-            var completedOrders = await _context.Orders.Where(p => p.OrderStatus == Enums.OrderStatus.Completed).ToListAsync();
-            var newComplaints = await _context.Complaints.Where(p => p.ComplaintStatus == Enums.ComplaintStatus.Waitting).ToListAsync();
+            var newOrders = _context.Orders.Where(p => p.OrderStatus == Enums.OrderStatus.Published.ToString()).Take(10);
+            var completedOrders = _context.Orders.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString()).Take(10);
+            var newComplaints = _context.Complaints.Where(p => p.ComplaintStatus == Enums.ComplaintStatus.Waitting.ToString()).Take(10);
             if (overResult == null)
             {
                 return ResultDTO<object>.Failure(new ErrorDTO() , ResponseStatusCodes.NotFound);
@@ -441,29 +443,41 @@ namespace Hoshi.Repositories.UserService
 
         public async Task<ResultDTO<object>> WorkerDetails(int Id)
         {
-            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
-            if (workerDetails == null) 
+            try
             {
-                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
+                var workerSpecs = await _context.WorkerSpecifications
+                    .Include(i => i.User)
+                    .Include(i => i.LivingCity)
+                    .Include(i => i.Job)
+                    .FirstOrDefaultAsync(ws => ws.UserId == Id);
+
+                if( workerSpecs == null)
+                    return ResultDTO<object>.BadRequest(new ErrorDTO()
+                    {
+                        ErrorAr = "هذا المعرف غير صالح.",
+                        ErrorEn = "Is Id is not valid."
+                    });
+
+                var workerDeltails = _mapper.Map<WorkerSpecificationGetDTO>(workerSpecs);
+
+                var workerPortfolio = await _context.WorkerPortfolios.Where(wp => wp.WorkerId == workerSpecs.UserId).ToListAsync();
+
+                if( workerPortfolio != null )
+                    workerDeltails.Portfolios = _mapper.Map<List<WorkerPortfolioBasicDTO>>(workerPortfolio);
+
+                return ResultDTO<object>.Success(workerDeltails);
             }
-            var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
-            var targetPortfolio = await _context.PortfolioView.FirstOrDefaultAsync(p => p.WorkerId == Id);
-            var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p=>p.Id == workerDetails.LivingCityId);
-
-            var result = new
+            catch (Exception ex)
             {
-                ImageURL = workerDetails.ImageURL , 
-                Email    = workerDetails.Email ,
-                Phone    = workerDetails.PhoneNumber , 
-                Job      = targetJob ,
-                IsCompany= workerDetails.IsCompany ,
-                City     = targetCity , 
-                Location = workerDetails.Address , 
-                Portfolio= targetPortfolio
-
-            };
-            return ResultDTO<object>.Success(result);
-
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "يوجد مشكلة في النظام.",
+                        ErrorEn = "There is a Internal Server Error."
+                    },
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
         }
 
         public async Task<ResultDTO<object>> WorkerPage()
@@ -474,10 +488,10 @@ namespace Hoshi.Repositories.UserService
             var suspendedWorkers= await _context.SuspendedWorker.ToListAsync();
             var result = new
             {
-                TotalWorkers = workerDetails.totalClients,
-                TotalNewWorkers = workerDetails.totalNewClients,
-                TotalActiveWorker = workerDetails.totalActiveClients,
-                AverageWorkersperService = workerDetails.AverageOrdering ,
+                TotalWorkers = workerDetails.TotalWorkers,
+                TotalNewWorkers = workerDetails.TotalNewWorkers,
+                TotalActiveWorker = workerDetails.TotalActiveWorkers,
+                AverageWorkersperService = workerDetails.AverageWorkersPerService ,
                 NewWorkers = newWorkers,
                 AllWorkers = allWorkers,
                 SuspendedWorkers = suspendedWorkers,

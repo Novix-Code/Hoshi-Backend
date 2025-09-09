@@ -15,7 +15,7 @@ namespace Hoshi.Models.GlobalModels
         public bool IsDeleted { get; set; }
 
         [PropNotMapped(DtoType.Get, exceptInThisDTO: true)]
-        public ComplaintStatus ComplaintStatus { get; set; } = ComplaintStatus.Waitting;
+        public string ComplaintStatus { get; set; } = Enums.ComplaintStatus.Waitting.ToString();
 
         public int ComplaintTypeId { get; set; }
         public ComplaintType? ComplaintType { get; set; }

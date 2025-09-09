@@ -53,7 +53,7 @@ namespace Hoshi.Repositories.WorkerHomeService
 
             var unconsumedOffers = await _hoshiDbContext.Offers
                 .Where(o => o.WorkerId == workerId &&
-                            (o.OfferStatus == OfferStatus.Waitting || o.OfferStatus == OfferStatus.Accepted) &&
+                            (o.OfferStatus == OfferStatus.Waitting.ToString() || o.OfferStatus == OfferStatus.Accepted.ToString()) &&
                             !o.IsDeleted)
                 .ToListAsync();
 
@@ -63,7 +63,7 @@ namespace Hoshi.Repositories.WorkerHomeService
                 .ToListAsync();
 
             var publishedOrders = upcomingOrders
-                .Where(o => o.OrderStatus == OrderStatus.Published);
+                .Where(o => o.OrderStatus == OrderStatus.Published.ToString());
 
             var nearbyOrders = publishedOrders
                 .OrderBy(o => GetDistance(workerSpec.Latitude, workerSpec.Longitude, o.Latitude, o.Longitude))
@@ -108,7 +108,7 @@ namespace Hoshi.Repositories.WorkerHomeService
                 .Include(o => o.Service)
                     .ThenInclude(s => s.ServiceCategory)
                 .Include(o => o.City)
-                .Where(o => o.OrderStatus == OrderStatus.Published);
+                .Where(o => o.OrderStatus == OrderStatus.Published.ToString());
 
             // Filter by service name if provided
             if (!string.IsNullOrEmpty(searchRequest.ServiceName))

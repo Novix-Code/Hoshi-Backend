@@ -4,6 +4,7 @@ using Hoshi.Data;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerWalletDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerWalletHistoryDTOs;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.FileServiceFold;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.WorkerWalletService
@@ -16,12 +17,19 @@ namespace Hoshi.Repositories.WorkerWalletService
         private readonly HoshiDbContext _context;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _environment;
+        private readonly IFileService _fileService;
 
-        public WorkerWalletService(HoshiDbContext context, IMapper mapper, IWebHostEnvironment environment)
+        public WorkerWalletService(
+            HoshiDbContext context,
+            IMapper mapper,
+            IWebHostEnvironment environment,
+            IFileService fileService
+        )
         {
             _context = context;
             _mapper = mapper;
             _environment = environment;
+            this._fileService = fileService;
         }
 
         /// <summary>
@@ -100,29 +108,19 @@ namespace Hoshi.Repositories.WorkerWalletService
                 }
 
                 // Save the image file
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "bills");
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                var fileName = $"{Guid.NewGuid()}_{request.BillImage.FileName}";
-                var filePath = Path.Combine(uploadsFolder, fileName);
-                var fileUrl = $"/uploads/bills/{fileName}";
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await request.BillImage.CopyToAsync(fileStream);
-                }
-                // Suggested improvement (reuse central FileService & validate extension):
-                // var saveResult = await _fileService.SaveFileAsync(request.BillImage, "uploads/bills");
-                // if (!saveResult.Item1) return ResultDTO<string>.BadRequest(new ErrorDTO { ErrorEn = saveResult.Item2 });
+                var saveResult = await _fileService.SaveFileAsync(request.BillImage, "uploads/bills");
+                if (!saveResult.Item1)
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "يوجد مشكلة في اضافة الصورة.",
+                        ErrorEn = saveResult.Item2
+                    });
 
                 // Create payment history record
                 var paymentHistory = new WorkerPaymentHistroy
                 {
                     WorkerId = workerId,
-                    BillImageURL = fileUrl,
+                    BillImageURL = saveResult.Item2,
                     IsApproved = false
                 };
 
