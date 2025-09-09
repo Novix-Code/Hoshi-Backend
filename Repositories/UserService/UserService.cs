@@ -324,19 +324,19 @@ namespace Hoshi.Repositories.UserService
                     ErrorAr = "لا يوجد صور لهذا الطلب"
                 });*/
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
-            if (workerDetails == null)
-                return ResultDTO<object>.NotFound(new ErrorDTO
+           // if (workerDetails == null)
+              /*  return ResultDTO<object>.NotFound(new ErrorDTO
                 {
                     ErrorEn = "Worker Not Found",
                     ErrorAr = "لم يتم تحديد عامل لهذا العرض"
-                });
+                });*/
             var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
-            if (targetJob == null)
+           /* if (targetJob == null)
                 return ResultDTO<object>.NotFound(new ErrorDTO
                 {
                     ErrorEn = "worker Job Not Found",
                     ErrorAr = "لم يتم  اضافة وظيفة للعامل بعد"
-                });
+                });*/
             var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
             var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == targetOffer.WorkerId);
             if (targetwallet == null)
