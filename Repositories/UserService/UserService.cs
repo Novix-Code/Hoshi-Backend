@@ -484,7 +484,7 @@ namespace Hoshi.Repositories.UserService
         {
             var workerDetails = await _context.WorkerPageView.FirstOrDefaultAsync();
             var newWorkers    = await _context.NewWorkerView.ToListAsync();
-            var allWorkers    = await _context.AllWorkertView.ToListAsync();    
+            var allWorkers    = await _context.AllWorkersView.ToListAsync();    
             var suspendedWorkers= await _context.SuspendedWorker.ToListAsync();
             var result = new
             {

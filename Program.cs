@@ -317,7 +317,7 @@ public class Program
             var services = scope.ServiceProvider;
             await IdentitySeeder.SeedRolesAsync(services);
             await IdentitySeeder.SeedAdminUserAsync(services);
-            await IdentitySeeder.SeedNotificationTypesAsync(services);
+            //await IdentitySeeder.SeedNotificationTypesAsync(services);
         }
 
         app.Run();

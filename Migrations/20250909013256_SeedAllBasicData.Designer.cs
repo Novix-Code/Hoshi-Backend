@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hoshi.Migrations
 {
     [DbContext(typeof(HoshiDbContext))]
-    [Migration("20250902211206_FinalMIGForViews")]
-    partial class FinalMIGForViews
+    [Migration("20250909013256_SeedAllBasicData")]
+    partial class SeedAllBasicData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1180,8 +1180,9 @@ namespace Hoshi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ComplaintStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("ComplaintStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ComplaintTypeId")
                         .HasColumnType("int");
@@ -1243,6 +1244,92 @@ namespace Hoshi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ComplaintTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Type = "تأخر العامل"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Type = "آداء العامل ليس احترافيا"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Type = "المواد المستخدمة رديئة"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Type = "مشكلة في الدفع"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Type = "أسلوب غير لائق"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Type = "أخرى"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Type = "العميل غير موجود في الموعد"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Type = "أسلوب العميل غير لائق"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Type = "طلب العميل غير متوفر"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Type = "مشكلة في الدفع"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Type = "العميل طلب خدمات اضافية"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Type = "أخرى"
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.Fee", b =>
@@ -1256,8 +1343,8 @@ namespace Hoshi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("FeeType")
-                        .HasColumnType("int");
+                    b.Property<string>("FeeType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -1291,7 +1378,7 @@ namespace Hoshi.Migrations
                         {
                             Id = 1,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 0,
+                            FeeType = "CommissionFee",
                             IsDeleted = false,
                             IsSpecial = false,
                             MainFees = 25.0,
@@ -1302,7 +1389,7 @@ namespace Hoshi.Migrations
                         {
                             Id = 2,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 1,
+                            FeeType = "VisitingFee",
                             IsDeleted = false,
                             IsSpecial = false,
                             MainFees = 15.0,
@@ -1313,7 +1400,7 @@ namespace Hoshi.Migrations
                         {
                             Id = 3,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 2,
+                            FeeType = "CancellationFee",
                             IsDeleted = false,
                             IsSpecial = false,
                             MainFees = 18.0,
@@ -1324,7 +1411,7 @@ namespace Hoshi.Migrations
                         {
                             Id = 4,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 3,
+                            FeeType = "ClientIndebtednessFee",
                             IsDeleted = false,
                             IsSpecial = false,
                             MainFees = 0.0,
@@ -1335,7 +1422,7 @@ namespace Hoshi.Migrations
                         {
                             Id = 5,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            FeeType = 4,
+                            FeeType = "WorkerIndebtednessFee",
                             IsDeleted = false,
                             IsSpecial = false,
                             MainFees = 0.0,
@@ -1372,6 +1459,104 @@ namespace Hoshi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NotificationTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = "تم قبول طلبك. اضغط هنا للذهاب إلى تفاصيل الطلب.",
+                            Type = "الطلب مقبول"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = "تم تأكيد طلبك. اضغط هنا لاختيار احد العروض المقدمة من العمال.",
+                            Type = "تم تأكيد الطلب"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = "تم قبول العرض المقدم من العامل. اضغط هنا لاستكمال الدفع.",
+                            Type = "تم تعيين العامل"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = "تم انتهاء طلبك. اضغط هنا لتقييم مدى رضاك عن آداء العامل.",
+                            Type = "انتهاء الطلب"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = "تم إلغاء طلبك. اذا كنت مازلت تحتاج الخدمة برجاء انشاء طلب جديد.",
+                            Type = "الطلب ملغي"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = " تفاصيل الاشعار.",
+                            Type = "اشعار جديد"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "تم قبول عرضك على الطلب رقم <id># اضغط هنا للذهاب إلى تفاصيل الطلب.",
+                            Type = "العرض مقبول"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "تم إضافة مبلغ <price> دينار إلى محفظتك لدفع رسوم الطلب رقم <id>#. الذهاب الى المحفظة",
+                            Type = "تم تعديل الرصيد"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "يتوافق الطلب رقم <id># مع خدماتك. اضغط هنا للاطلاع على التفاصيل ",
+                            Type = "طلب خدمة جديد"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "تم انتهاء الطلب رقم <id># اضغط هنا لتقييم تجربتك مع العميل.",
+                            Type = "انتهاء الطلب"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "تم إلغاء الطلب رقم <id># وإلغاء الموعد المسجل لتقديم الخدمة.",
+                            Type = "الطلب ملغي"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "تفاصيل الاشعار.",
+                            Type = "اشعار جديد"
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.Rate", b =>
@@ -1532,8 +1717,9 @@ namespace Hoshi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("OfferStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("OfferStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("OfferedPrice")
                         .HasColumnType("float");
@@ -1592,8 +1778,9 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("OrderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("ProposalPrice")
                         .HasColumnType("float");
@@ -1704,8 +1891,9 @@ namespace Hoshi.Migrations
                     b.Property<double>("VisitPrice")
                         .HasColumnType("float");
 
-                    b.Property<int>("VisitStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("VisitStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("VisitingDateTime")
                         .HasColumnType("datetime2");
@@ -1800,8 +1988,9 @@ namespace Hoshi.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PromotionFor")
-                        .HasColumnType("int");
+                    b.Property<string>("PromotionFor")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
@@ -3673,7 +3862,7 @@ namespace Hoshi.Migrations
 
                     b.ToTable((string)null);
 
-                    b.ToView("AllWorkertView", (string)null);
+                    b.ToView("AllWorkersView", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.CitiesViewModel", b =>
@@ -3725,6 +3914,25 @@ namespace Hoshi.Migrations
                     b.ToView("ClientDetailsView", (string)null);
                 });
 
+            modelBuilder.Entity("Hoshi.Models.ViewModels.ClientPageViewModel", b =>
+                {
+                    b.Property<double>("AverageOrdering")
+                        .HasColumnType("float");
+
+                    b.Property<int>("TotalActiveClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalClients")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalNewClients")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("ClientPageView", (string)null);
+                });
+
             modelBuilder.Entity("Hoshi.Models.ViewModels.JobViewModel", b =>
                 {
                     b.Property<int>("Id")
@@ -3742,7 +3950,7 @@ namespace Hoshi.Migrations
                     b.ToView("JobView", (string)null);
                 });
 
-            modelBuilder.Entity("Hoshi.Models.ViewModels.NewClient", b =>
+            modelBuilder.Entity("Hoshi.Models.ViewModels.NewClientViewModel", b =>
                 {
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -3753,6 +3961,10 @@ namespace Hoshi.Migrations
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
+
+                    b.Property<string>("ImageURL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -3782,6 +3994,54 @@ namespace Hoshi.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("NewWorkerView", (string)null);
+                });
+
+            modelBuilder.Entity("Hoshi.Models.ViewModels.OrderDetailsViewModel", b =>
+                {
+                    b.Property<int>("CityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<double>("ProposalPrice")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("ServicingDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("TotalClientCost")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("TotalWorkerCost")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("OrderDetailsView", (string)null);
                 });
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.OverViewPage", b =>
@@ -3921,90 +4181,23 @@ namespace Hoshi.Migrations
                     b.ToView("WorkerDetailsView", (string)null);
                 });
 
-            modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerPageModelForView", b =>
+            modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerPageViewModel", b =>
                 {
-                    b.Property<double>("AverageOrdering")
+                    b.Property<double>("AverageWorkersPerService")
                         .HasColumnType("float");
 
-                    b.Property<int>("totalActiveClients")
+                    b.Property<int>("TotalActiveWorkers")
                         .HasColumnType("int");
 
-                    b.Property<int>("totalClients")
+                    b.Property<int>("TotalNewWorkers")
                         .HasColumnType("int");
 
-                    b.Property<int>("totalNewClients")
+                    b.Property<int>("TotalWorkers")
                         .HasColumnType("int");
 
                     b.ToTable((string)null);
 
                     b.ToView("WorkerPageView", (string)null);
-                });
-
-            modelBuilder.Entity("Hoshi.Models.ViewModels.clientPageModel", b =>
-                {
-                    b.Property<double>("AverageOrdering")
-                        .HasColumnType("float");
-
-                    b.Property<int>("totalActiveClients")
-                        .HasColumnType("int");
-
-                    b.Property<int>("totalClients")
-                        .HasColumnType("int");
-
-                    b.Property<int>("totalNewClients")
-                        .HasColumnType("int");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("ClientPageView", (string)null);
-                });
-
-            modelBuilder.Entity("Hoshi.Models.ViewModels.orderViewModelDetails", b =>
-                {
-                    b.Property<int>("CityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
-
-                    b.Property<double>("ProposalPrice")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("ServicingDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double?>("TotalClientCost")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("TotalWorkerCost")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("WorkerId")
-                        .HasColumnType("int");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("OrderDetailsView", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>

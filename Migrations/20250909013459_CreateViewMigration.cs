@@ -5,7 +5,7 @@
 namespace Hoshi.Migrations
 {
     /// <inheritdoc />
-    public partial class FinalMIGForViews : Migration
+    public partial class CreateViewMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,10 +24,9 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql("DROP VIEW IF EXISTS ClientPageView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS ClientDetailsView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS CitiesgetView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkertView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkersView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView;");
-            //////////////////////////
-            /////////////////////////
+
             migrationBuilder.Sql(
                 @"CREATE VIEW AllClientView AS
                     SELECT 
@@ -40,7 +39,7 @@ namespace Hoshi.Migrations
             );
 
             migrationBuilder.Sql(
-                @"CREATE VIEW AllWorkertView AS
+                @"CREATE VIEW AllWorkersView AS
                     SELECT 
                         u.Id,
                         u.UserName,
@@ -52,7 +51,7 @@ namespace Hoshi.Migrations
 
             migrationBuilder.Sql(
                 @"CREATE VIEW CitiesgetView AS
-                    SELECT * FROM Cities"
+                    SELECT * FROM Cities;"
             );
 
             migrationBuilder.Sql(
@@ -108,7 +107,7 @@ namespace Hoshi.Migrations
 
             migrationBuilder.Sql(
                 @"CREATE VIEW JobView AS
-                    SELECT JobTitle, IsDeleted,Id FROM Jobs"
+                    SELECT JobTitle, IsDeleted,Id FROM Jobs;"
             );
 
             migrationBuilder.Sql(
@@ -153,7 +152,7 @@ namespace Hoshi.Migrations
                         ClientId,
                         WorkerId,
                         OrderStatus 
-                    FROM Orders"
+                    FROM Orders;"
             );
 
             migrationBuilder.Sql(
@@ -174,7 +173,7 @@ namespace Hoshi.Migrations
 
             migrationBuilder.Sql(
                 @"CREATE VIEW PortfolioView AS
-                    SELECT FileURL, WorkerId FROM WorkerPortfolios"
+                    SELECT FileURL, WorkerId FROM WorkerPortfolios;"
             );
 
             migrationBuilder.Sql(
@@ -204,7 +203,7 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql(
                 @"CREATE VIEW WorkerDetailsView AS
                     SELECT 
-                        u.Id AS UserId,
+                        u.Id,
                         u.FullName,
                         u.Email,
                         u.PhoneNumber,
@@ -256,7 +255,6 @@ namespace Hoshi.Migrations
 	                        ) AS Base
                         ), 0) AS AverageWorkersPerService;"
             );
-
         }
 
         /// <inheritdoc />
@@ -275,7 +273,7 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql("DROP VIEW IF EXISTS ClientPageView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS ClientDetailsView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS CitiesgetView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkertView;");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkersView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView;");
         }
     }

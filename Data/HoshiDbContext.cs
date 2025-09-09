@@ -45,6 +45,7 @@ namespace Hoshi.Data
             LibyanCitiesSeeder.SeedLibyanCities(modelBuilder);
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
             FeesSeeder.SeedFees(modelBuilder);
+            ModelTypesSeeder.Seeder(modelBuilder);
 
             // Add Views
             modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
@@ -58,7 +59,7 @@ namespace Hoshi.Data
             modelBuilder.Entity<OrderDetailsViewModel>().HasNoKey().ToView("OrderDetailsView");
             modelBuilder.Entity<WorkerPageViewModel>().HasNoKey().ToView("WorkerPageView");
             modelBuilder.Entity<NewWorkerModelForView>().HasNoKey().ToView("NewWorkerView");
-            modelBuilder.Entity<AllWorkersModelForView>().HasNoKey().ToView("AllWorkertView");
+            modelBuilder.Entity<AllWorkersModelForView>().HasNoKey().ToView("AllWorkersView");
             modelBuilder.Entity<SuspendedWorkerModelForView>().HasNoKey().ToView("SuspendedWorker");
             modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
             modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
@@ -76,7 +77,7 @@ namespace Hoshi.Data
         public DbSet<OrderDetailsViewModel> OrderDetailsView { get; set; }
         public DbSet<WorkerPageViewModel> WorkerPageView { get; set; }
         public DbSet<NewWorkerModelForView> NewWorkerView { get; set; }
-        public DbSet<AllWorkersModelForView> AllWorkertView { get; set; }
+        public DbSet<AllWorkersModelForView> AllWorkersView { get; set; }
         public DbSet<SuspendedWorkerModelForView> SuspendedWorker { get; set; }
         public DbSet<JobViewModel> JobView { get; set; }
         public DbSet<PortfolioViewModel> PortfolioView { get; set; }
