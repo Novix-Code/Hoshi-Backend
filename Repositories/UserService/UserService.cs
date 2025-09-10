@@ -248,7 +248,7 @@ namespace Hoshi.Repositories.UserService
             var result = new
             {
                 TotalClients = clientPage.TotalClients,
-                TotalNewClients = clientPage.TotalNewClients,
+                TotalNewClients = clientPage.TotalNewClientsThisMonth,
                 TotalActiveClients = clientPage.TotalActiveClients,
                 averageOrder = clientPage.AverageOrdering,
                 NewClients = newClient,
@@ -261,7 +261,7 @@ namespace Hoshi.Repositories.UserService
 
         public async Task<ResultDTO<object>> DashbordWorkerDetails(int id)
             {
-            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == id);
+            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.Id == id);
 
             if (workerDetails == null)
             {
@@ -280,24 +280,26 @@ namespace Hoshi.Repositories.UserService
             var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p=>p.WorkerId == id);
             var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == id && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
             var targetOrders = await _context.OrderDetailsView.Where(p => p.WorkerId == id).ToListAsync();
-            var totalIncomeforWorker = await _context.OrderDetailsView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed).Select(p => p.TotalWorkerCost).SumAsync();
-
+            var totalIncomeforWorker = await _context.OrderDetailsView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed.ToString()).Select(p => p.TotalWorkerCost).SumAsync();
+            var balance = 0.0;
+            if (targetwallet is not null)
+                balance = targetwallet.Balance;
             var result = new
             {
-                ImageURL = workerDetails.ImageURL ,
-                Email    = workerDetails.Email ,
-                Phone    = workerDetails.PhoneNumber ,
+                ImageURL = workerDetails.ImageURL ?? string.Empty,
+                Email    = workerDetails.Email?? string.Empty ,
+                Phone    = workerDetails.PhoneNumber?? string.Empty  ,
                 Job      = targetJob , 
-                IsCompany= workerDetails.IsCompany ,
+                IsCompany= workerDetails.IsCompany  ,
                 City     = targetCity,
-                Location = workerDetails.Address , 
-                Bio      = workerDetails.Bio,
+                Location = workerDetails.Address ?? string.Empty , 
+                Bio      = workerDetails.Bio ?? string.Empty    ,
                 RateRatio= workerDetails.RateRito,
                 CompletedOrders = workerDetails.CompletedOrders ,
                 CancelledOffers = targetCanceldOffers ,
                 TotalIncome     = totalIncomeforWorker ,
-                Balance         = targetwallet.Balance ,
-                IdentityImageURL= workerDetails.IdentityImageURL ,
+                Balance         = balance,
+                IdentityImageURL= workerDetails.IdentityImageURL?? string.Empty  ,
                 Portfolies      = targetPortfolios ,
                 Orders          = targetOrders 
             };
@@ -323,7 +325,7 @@ namespace Hoshi.Repositories.UserService
                     ErrorEn = "Order Image Not Found",
                     ErrorAr = "لا يوجد صور لهذا الطلب"
                 });*/
-            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.UserId == targetOffer.WorkerId);
+            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.Id == targetOffer.WorkerId);
            // if (workerDetails == null)
               /*  return ResultDTO<object>.NotFound(new ErrorDTO
                 {
@@ -347,28 +349,28 @@ namespace Hoshi.Repositories.UserService
                 });
             var clientData = new
             {
-                WorkerId = targetOffer.WorkerId,
-                ImageURL = targetClient.ImageURL,
-                FullName = targetClient.FullName , 
-                Email    = targetClient.Email 
+                WorkerId = targetOffer.WorkerId   ,
+                ImageURL = targetClient.ImageURL?? string.Empty,
+                FullName = targetClient.FullName??string.Empty , 
+                Email    = targetClient.Email ?? string.Empty    
             };
             var OrderData = new
             {
                 OrderId = id , 
                 ClientData = clientData,
-                Description= TargetOrder.Description , 
-                OrderStatus= TargetOrder.OrderStatus , 
-                Adress       = targetClient.Address,
-                Location   = TargetOrder.Location ,
+                Description= TargetOrder.Description?? string.Empty , 
+                OrderStatus= TargetOrder.OrderStatus ?? string.Empty , 
+                Adress       = targetClient.Address ?? string.Empty,
+                Location   = TargetOrder.Location ?? string.Empty ,
                 ServicingDatetime = TargetOrder.ServicingDateTime ,
                 OfferedPrice        = targetOffer.OfferedPrice,
                 OrderImages         = targetimages 
             };
             var workerData = new
             {
-                ImageURL = workerDetails.ImageURL , 
-                Email    = workerDetails.Email ,
-                FullName = workerDetails.FullName,
+                ImageURL = workerDetails.ImageURL?? string.Empty , 
+                Email    = workerDetails.Email ?? string.Empty   ,
+                FullName = workerDetails.FullName?? string.Empty,
                 Job      = targetJob , 
                 IsCompany= workerDetails.IsCompany , 
                 RateRatio= workerDetails.RateRito , 
@@ -392,11 +394,11 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> OrderPage()
         {
             var totalOrders = await _context.OrderDetailsView.CountAsync();
-            var totalActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).CountAsync();
-            var totalCompletedOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed).CountAsync();
-            var totalCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled).CountAsync();
-            var ActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress).ToListAsync();
-            var CompletedAndCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed || p.OrderStatus== Enums.OrderStatus.Cancelled).ToListAsync();
+            var totalActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress.ToString()).CountAsync();
+            var totalCompletedOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString()).CountAsync();
+            var totalCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled.ToString()).CountAsync();
+            var ActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress.ToString()).ToListAsync();
+            var CompletedAndCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString() || p.OrderStatus== Enums.OrderStatus.Cancelled.ToString()).ToListAsync();
             // Suggested FIX: previous filter used && which is unsatisfiable; using || to include completed or cancelled
             var result = new
             {

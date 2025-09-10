@@ -139,7 +139,8 @@ namespace Hoshi.Migrations
 
             migrationBuilder.Sql(
                 @"CREATE VIEW OrderDetailsView AS
-                    SELECT Id,
+                    SELECT 
+                        Id,
                         CityId, 
                         Description,
                         ProposalPrice,
