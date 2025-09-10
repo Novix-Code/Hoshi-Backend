@@ -4,6 +4,7 @@ using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OrderImageDTOs;
 using Hoshi.Models.OrderModels;
 using Hoshi.Repositories.FileServiceFold;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Hoshi.Repositories.OrderImageService
@@ -31,7 +32,10 @@ namespace Hoshi.Repositories.OrderImageService
         /// <summary>
         /// Save images for a given order and return the created image DTOs.
         /// </summary>
-        public async Task<ResultDTO<List<OrderImageGetDTO>>> AddImages(int orderId, List<IFormFile> images)
+        public async Task<ResultDTO<List<OrderImageGetDTO>>> AddImages(
+            int orderId, 
+            List<IFormFile> images
+        )
         {
 
             ErrorDTO error = new();
@@ -44,8 +48,6 @@ namespace Hoshi.Repositories.OrderImageService
 
                 return ResultDTO<List<OrderImageGetDTO>>.BadRequest(error);
             }
-
-            using var tx = await context.Database.BeginTransactionAsync();
 
             try
             {
@@ -73,13 +75,11 @@ namespace Hoshi.Repositories.OrderImageService
                 await context.Set<OrderImage>().AddRangeAsync(orderImages);
 
                 await context.SaveChangesAsync();
-                await tx.CommitAsync();
+
                 return ResultDTO<List<OrderImageGetDTO>>.Success(mapper.Map<List<OrderImageGetDTO>>(orderImages));
             }
             catch (Exception ex)
             {
-                await tx.RollbackAsync();
-
                 error.ErrorAr = "يوجد مشكلة في عملية الاضافة.";
                 error.ErrorEn = "There is a problem in Adding proccess.";
 

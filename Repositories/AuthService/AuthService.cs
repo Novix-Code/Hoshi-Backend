@@ -574,92 +574,114 @@ namespace Hoshi.Repositories.AuthService
                     });
                 }
 
-                // Check if worker specification already exists
+                // Get existing worker specification (should always exist now due to default creation)
                 var existingWorkerSpec = await _context.WorkerSpecifications
                                                 .Include(p => p.User)
                                                 .FirstOrDefaultAsync(ws => ws.UserId == request.UserId);
-                if (existingWorkerSpec != null)
+
+                if (existingWorkerSpec == null)
                 {
-                    // Adding User personal image
-                    if (existingWorkerSpec.User.ImageURL != null)
+                    // This should not happen with the new logic, but handle as fallback
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
                     {
-                        var perImgResult = await AddPersonalImage(
-                       existingWorkerSpec.UserId,
-                       request.PersonalImage,
-                       new Tuple<bool, string?>(true, existingWorkerSpec.User!.ImageURL));
+                        ErrorAr = "لم يتم العثور على بيانات العامل.",
+                        ErrorEn = "Worker specification not found."
+                    });
+                }
 
-                        if (perImgResult.IsSuccess is false)
-                            return perImgResult;
-                    }
-                    // Update existing worker specification (re-application case)
-                    existingWorkerSpec.Bio = request.Bio;
-                    existingWorkerSpec.IsCompany = request.IsCompany;
-                    existingWorkerSpec.Address = request.Address;
-                    existingWorkerSpec.Latitude = request.Latitude;
-                    existingWorkerSpec.Longitude = request.Longitude;
-                    existingWorkerSpec.JobId = request.JobId;
-                    existingWorkerSpec.LivingCityId = request.CityId;
-                    existingWorkerSpec.IsApproved = null; // Reset approval status for re-review
-                    existingWorkerSpec.ModifiedAt = DateTime.UtcNow;
+                // Check if this is the first time completing the profile (not a re-application)
+                bool isFirstTimeCompletion = string.IsNullOrEmpty(existingWorkerSpec.Bio) &&
+                                           existingWorkerSpec.JobId == null;
 
-                    // Adding Identity image
-                    var idImgResult = await AddIdentityImage(
-                        request.IdentityImage,
-                        new Tuple<bool, string?>(true, existingWorkerSpec.IdentityImageURL)
-                    );
+                // Adding User personal image
+                var perImgResult = await AddPersonalImage(
+                    request.UserId,
+                    request.PersonalImage,
+                    new Tuple<bool, string?>(
+                        !string.IsNullOrEmpty(existingWorkerSpec.User?.ImageURL),
+                        existingWorkerSpec.User?.ImageURL
+                    )
+                );
 
-                    if (idImgResult.IsSuccess)
-                        existingWorkerSpec.IdentityImageURL = idImgResult.Data!;
-                    else
-                        return idImgResult;
+                if (perImgResult.IsSuccess is false)
+                    return perImgResult;
 
+                // Update worker specification
+                existingWorkerSpec.Bio = request.Bio;
+                existingWorkerSpec.IsCompany = request.IsCompany;
+                existingWorkerSpec.Address = request.Address;
+                existingWorkerSpec.Latitude = request.Latitude;
+                existingWorkerSpec.Longitude = request.Longitude;
+                existingWorkerSpec.JobId = request.JobId;
+                existingWorkerSpec.LivingCityId = request.CityId;
 
-                    // Get old service Ids for this worker
-                    var oldServiceIds = await _context.WorkerServices
-                        .Where(ws => ws.WorkerId == request.UserId)
-                        .Select(ws => ws.ServiceId)
+                // Reset approval status for review (both first time and re-application)
+                existingWorkerSpec.IsApproved = null;
+                existingWorkerSpec.ModifiedAt = DateTime.UtcNow;
+
+                // Adding Identity image
+                var idImgResult = await AddIdentityImage(
+                    request.IdentityImage,
+                    new Tuple<bool, string?>(
+                        !string.IsNullOrEmpty(existingWorkerSpec.IdentityImageURL),
+                        existingWorkerSpec.IdentityImageURL
+                    )
+                );
+
+                if (idImgResult.IsSuccess)
+                    existingWorkerSpec.IdentityImageURL = idImgResult.Data!;
+                else
+                    return idImgResult;
+
+                // Handle Services
+                // Get old service Ids for this worker
+                var oldServiceIds = await _context.WorkerServices
+                    .Where(ws => ws.WorkerId == request.UserId)
+                    .Select(ws => ws.ServiceId)
+                    .ToListAsync();
+
+                // Requested service Ids
+                var requestedServiceIds = request.ServicesIds;
+
+                // Services to remove (old - requested)
+                var servicesToRemove = oldServiceIds.Except(requestedServiceIds).ToList();
+
+                // Services to add (requested - old)
+                var servicesToAdd = requestedServiceIds.Except(oldServiceIds).ToList();
+
+                // Remove services that are no longer selected
+                if (servicesToRemove.Any())
+                {
+                    var workerServicesToRemove = await _context.WorkerServices
+                        .Where(ws => ws.WorkerId == request.UserId && servicesToRemove.Contains(ws.ServiceId))
                         .ToListAsync();
 
-                    // Requested service Ids
-                    var requestedServiceIds = request.ServicesIds;
+                    _context.WorkerServices.RemoveRange(workerServicesToRemove);
+                }
 
-                    // Services to remove (old - requested)
-                    var servicesToRemove = oldServiceIds.Except(requestedServiceIds).ToList();
-
-                    // Services to add (requested - old)
-                    var servicesToAdd = requestedServiceIds.Except(oldServiceIds).ToList();
-
-
-                    // Remove services (direct query, no need to load objects one by one)
-                    if (servicesToRemove.Any())
+                // Add new services
+                if (servicesToAdd.Any())
+                {
+                    var newWorkerServices = servicesToAdd.Select(serviceId => new WorkerService
                     {
-                        var workerServicesToRemove = await _context.WorkerServices
-                            .Where(ws => ws.WorkerId == request.UserId && servicesToRemove.Contains(ws.ServiceId))
-                            .ToListAsync();
+                        WorkerId = request.UserId,
+                        ServiceId = serviceId,
+                        CreatedAt = DateTime.UtcNow
+                    });
 
-                        _context.WorkerServices.RemoveRange(workerServicesToRemove);
-                    }
+                    await _context.WorkerServices.AddRangeAsync(newWorkerServices);
+                }
 
-                    // Add new services
-                    if (servicesToAdd.Any())
+                // Handle Portfolio
+                if (request.PortfolioFiles != null && request.PortfolioFiles.Any())
+                {
+                    // Remove existing portfolio files
+                    var existingPortfolio = await _context.WorkerPortfolios
+                        .Where(wp => wp.WorkerId == request.UserId)
+                        .ToListAsync();
+
+                    if (existingPortfolio.Any())
                     {
-                        var newWorkerServices = servicesToAdd.Select(serviceId => new WorkerService
-                        {
-                            WorkerId = request.UserId,
-                            ServiceId = serviceId,
-                            CreatedAt = DateTime.UtcNow
-                        });
-
-                        await _context.WorkerServices.AddRangeAsync(newWorkerServices);
-                    }
-
-                    // Update portfolio if provided
-                    if (request.PortfolioFiles != null && request.PortfolioFiles.Any())
-                    {
-                        // Remove existing portfolio files
-                        var existingPortfolio = await _context.WorkerPortfolios
-                            .Where(wp => wp.WorkerId == request.UserId)
-                            .ToListAsync();
                         _context.WorkerPortfolios.RemoveRange(existingPortfolio);
 
                         // Delete old portfolio files
@@ -667,132 +689,44 @@ namespace Hoshi.Repositories.AuthService
                         {
                             if (portfolio.FileURL != null)
                                 _fileService.DeleteFile(portfolio.FileURL);
-
-                        }
-
-                        // Add new portfolio files
-                        foreach (var file in request.PortfolioFiles)
-                        {
-                            Tuple<bool, string> fileResult =
-                                await _fileService.SaveFileAsync(file, "files/portfolios");
-
-                            // Chekc if it done successfuly or not
-                            if (fileResult.Item1 is false)
-                                return ResultDTO<string>.BadRequest(new ErrorDTO
-                                {
-                                    ErrorAr = "يوجد مشكلة في اضافة الملف.",
-                                    ErrorEn = fileResult.Item2
-                                });
-                            else
-                            {
-                                var portfolio = new WorkerPortfolio
-                                {
-                                    FileURL = fileResult.Item2,
-                                    WorkerId = request.UserId,
-                                    CreatedAt = DateTime.UtcNow,
-                                    ModifiedAt = DateTime.UtcNow
-                                };
-                                _context.WorkerPortfolios.Add(portfolio);
-                            }
                         }
                     }
-                }
-                else
-                {
-                    // Adding User personal image
-                    var perImgResult = await AddPersonalImage(
-                        request.UserId,
-                        request.PersonalImage,
-                        new Tuple<bool, string?>(false, null)
-                    );
 
-                    if (perImgResult.IsSuccess is false)
-                        return perImgResult;
-
-                    // Create new worker specification
-                    var workerSpec = new WorkerSpecification
+                    // Add new portfolio files
+                    foreach (var file in request.PortfolioFiles)
                     {
-                        Bio = request.Bio,
-                        IsCompany = request.IsCompany,
-                        Address = request.Address,
-                        Latitude = request.Latitude,
-                        Longitude = request.Longitude,
-                        JobId = request.JobId,
-                        LivingCityId = request.CityId,
-                        UserId = request.UserId,
-                        IsApproved = null, // Pending approval
-                        CompletedOrders = 0,
-                        RateRito = 0.0,
-                        CreatedAt = DateTime.UtcNow,
-                        ModifiedAt = DateTime.UtcNow
-                    };
+                        Tuple<bool, string> fileResult =
+                            await _fileService.SaveFileAsync(file, "files/portfolios");
 
-                    // Adding Identity image
-                    var idImgResult = await AddIdentityImage(
-                        request.IdentityImage,
-                        new Tuple<bool, string?>(false, null)
-                    );
-
-                    if (idImgResult.IsSuccess)
-                        workerSpec.IdentityImageURL = idImgResult.Data!;
-                    else
-                        return idImgResult;
-
-                    // Add services
-                    var servicesIds = await _context.Services
-                        .Where(s => request.ServicesIds.Contains(s.Id))
-                        .Select(s => s.Id)
-                        .ToListAsync();
-
-                    List<WorkerService> workerServices = new();
-
-                    foreach (var serviceId in servicesIds)
-                    {
-                        workerServices.Add(new()
-                        {
-                            ServiceId = serviceId,
-                            WorkerId = request.UserId,
-                            CreatedAt = DateTime.UtcNow
-                        });
-                    }
-
-                    await _context.AddRangeAsync(workerServices);
-
-                    await _context.WorkerSpecifications.AddAsync(workerSpec);
-                    await _context.SaveChangesAsync(); // Save to get the ID
-
-                    // Add portfolio files if provided
-                    if (request.PortfolioFiles != null && request.PortfolioFiles.Any())
-                    {
-                        foreach (var file in request.PortfolioFiles)
-                        {
-                            Tuple<bool, string> fileResult =
-                                await _fileService.SaveFileAsync(file, "files/portfolios");
-
-                            // Chekc if it done successfuly or not
-                            if (fileResult.Item1 is false)
-                                return ResultDTO<string>.BadRequest(new ErrorDTO
-                                {
-                                    ErrorAr = "يوجد مشكلة في اضافة الملف.",
-                                    ErrorEn = fileResult.Item2
-                                });
-                            else
+                        // Check if it done successfully or not
+                        if (fileResult.Item1 is false)
+                            return ResultDTO<string>.BadRequest(new ErrorDTO
                             {
-                                var portfolio = new WorkerPortfolio
-                                {
-                                    FileURL = fileResult.Item2,
-                                    WorkerId = request.UserId,
-                                    CreatedAt = DateTime.UtcNow
-                                };
-                                _context.WorkerPortfolios.Add(portfolio);
-                            }
+                                ErrorAr = "يوجد مشكلة في اضافة الملف.",
+                                ErrorEn = fileResult.Item2
+                            });
+                        else
+                        {
+                            var portfolio = new WorkerPortfolio
+                            {
+                                FileURL = fileResult.Item2,
+                                WorkerId = request.UserId,
+                                CreatedAt = DateTime.UtcNow,
+                                ModifiedAt = DateTime.UtcNow
+                            };
+                            _context.WorkerPortfolios.Add(portfolio);
                         }
                     }
                 }
 
-                // Send notification to all admin users
-                await notificationServiceHandler.sendMessagetoAdmin(" Worker application submitted by user with ID ", request.UserId);
+                // Send notifications
+                string notificationMessage = isFirstTimeCompletion ?
+                    $"تم تقديم طلب عامل من قبل المستخدم رقم {existingWorkerSpec.UserId} " :
+                    $" تم تقديم طلب إعادة تسجيل عامل من قبل المستخدم رقم {existingWorkerSpec.UserId} ";
+
+                await notificationServiceHandler.sendMessagetoAdmin(notificationMessage, request.UserId);
                 await notificationServiceHandler.sendMessagetoWorker(6, request.UserId, "تم ارسال طلب ان تصبح عامل");
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 

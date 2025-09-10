@@ -45,7 +45,7 @@ namespace Hoshi.Repositories.FileServiceFold
 
         public async Task<Tuple<bool, string>> SaveFileAsync(IFormFile file, string folderShortPath)
         {
-            if (file?.Length == 0 || file == null)
+            if (file == null || file.Length == 0)
                 return new Tuple<bool, string>(false, FileServiceResults.EmptyFile);
 
             if (!ValidateFileExtension(file))

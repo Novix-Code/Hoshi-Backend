@@ -9,7 +9,9 @@ using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
+using Hoshi.Models.OrderModels;
 using Hoshi.Models.UserModels;
+using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.FileServiceFold;
 using Hoshi.Repositories.TokenService;
 using Microsoft.AspNetCore.Identity;
@@ -31,9 +33,9 @@ namespace Hoshi.Repositories.UserService
         private readonly IMapper _mapper;
 
         public UserService(
-            UserManager<User> userManager, 
-            SignInManager<User> signInManager, 
-            HoshiDbContext context, 
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            HoshiDbContext context,
             ITokenService tokenService,
             IMapper mapper,
             IFileService fileService
@@ -61,17 +63,17 @@ namespace Hoshi.Repositories.UserService
                 User? user = await _context.Set<User>().FindAsync(id);
 
                 // Check if this user is there or not
-                if(user == null)
+                if (user == null)
                     return new Tuple<bool, string>(false, "Invalid User Id.");
 
                 if (isUpdate)
                 {
-                    if(user.ImageURL !=null)
-                    _fileService.DeleteFile(user.ImageURL!);
+                    if (user.ImageURL != null)
+                        _fileService.DeleteFile(user.ImageURL!);
                 }
 
                 // Use FileService to save the image to images/personalimages in wwwroot
-                var imageResult = await _fileService.SaveFileAsync(image, "images/personalimages");
+                var imageResult = await _fileService.SaveFileAsync(image, "images\\personalimages");
 
                 // Check if the image saved successfuly
                 if (imageResult.Item1)
@@ -96,10 +98,14 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> BeWorkerApproved(int Id)
         {
             var tergetWorkerSpecif = await _context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
-            if( tergetWorkerSpecif == null)
+            if (tergetWorkerSpecif == null)
             {
-                return ResultDTO<object>.NotFound(new ErrorDTO { ErrorEn = "worker Specification not found" 
-                    ,ErrorAr="لم يتم اضافة بيانات للعامل بعد"});
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker Specification not found"
+                    ,
+                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
+                });
             }
 
             // Check if the worker is approved once before so cannot be approved again
@@ -107,8 +113,9 @@ namespace Hoshi.Repositories.UserService
             {
                 return ResultDTO<object>.BadRequest
                 (
-                    new ErrorDTO { 
-                        ErrorAr= "تم قبول العامل بالفعل.",
+                    new ErrorDTO
+                    {
+                        ErrorAr = "تم قبول العامل بالفعل.",
                         ErrorEn = "Worker already be approved."
                     }
                 );
@@ -117,8 +124,9 @@ namespace Hoshi.Repositories.UserService
             tergetWorkerSpecif.IsApproved = true;
 
             // handle add notifications 
-            var checkexcist = await _context.NotificationTypes.Where(p=>p.Type == "Success Message").Select(p=>p.Id).FirstOrDefaultAsync(); 
-            if (checkexcist ==0){
+            var checkexcist = await _context.NotificationTypes.Where(p => p.Type == "Success Message").Select(p => p.Id).FirstOrDefaultAsync();
+            if (checkexcist == 0)
+            {
                 var notiType = new NotificationType
                 {
                     Title = "Successfully Approved",
@@ -127,7 +135,7 @@ namespace Hoshi.Repositories.UserService
                 };
                 await _context.NotificationTypes.AddAsync(notiType);
                 await _context.SaveChangesAsync();
-                _context.UserNotifications.Add( new UserNotification
+                _context.UserNotifications.Add(new UserNotification
                 {
                     NotificationTypeId = notiType.Id,
                     Description = "success Message",
@@ -150,7 +158,7 @@ namespace Hoshi.Repositories.UserService
                 await _context.SaveChangesAsync();
                 return ResultDTO<object>.Success("Worker is now approved");
             }
-            
+
         }
 
         public async Task<ResultDTO<object>> BeWorkerReject(int Id, string rejectResoun)
@@ -221,9 +229,9 @@ namespace Hoshi.Repositories.UserService
         {
             var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
             if (targetClient == null)
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "client not found"} , ResponseStatusCodes.NotFound);
+                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "client not found" }, ResponseStatusCodes.NotFound);
 
-           
+
             var targetOrders = await _context.OrderDetailsView
                 .Where(p => p.ClientId == Id)
                 .ToListAsync();
@@ -252,32 +260,32 @@ namespace Hoshi.Repositories.UserService
                 TotalActiveClients = clientPage.TotalActiveClients,
                 averageOrder = clientPage.AverageOrdering,
                 NewClients = newClient,
-                AllClient  = allClient,
-                SuspendedClients = susClient,  
+                AllClient = allClient,
+                SuspendedClients = susClient,
 
             };
             return ResultDTO<object>.Success(result);
         }
 
         public async Task<ResultDTO<object>> DashbordWorkerDetails(int id)
-            {
+        {
             var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.Id == id);
 
             if (workerDetails == null)
             {
-                
+
                 return ResultDTO<object>.NotFound(new ErrorDTO
                 {
                     ErrorEn = "worker Specification not found"
                     ,
                     ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
                 });
-                
+
             }
             var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
             var targetPortfolios = await _context.PortfolioView.Where(p => p.WorkerId == id).ToListAsync();
             var targetCity = await _context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == workerDetails.LivingCityId);
-            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p=>p.WorkerId == id);
+            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == id);
             var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == id && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
             var targetOrders = await _context.OrderDetailsView.Where(p => p.WorkerId == id).ToListAsync();
             var totalIncomeforWorker = await _context.OrderDetailsView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed.ToString()).Select(p => p.TotalWorkerCost).SumAsync();
@@ -286,109 +294,144 @@ namespace Hoshi.Repositories.UserService
                 balance = targetwallet.Balance;
             var result = new
             {
-                ImageURL = workerDetails.ImageURL ?? string.Empty,
-                Email    = workerDetails.Email?? string.Empty ,
-                Phone    = workerDetails.PhoneNumber?? string.Empty  ,
-                Job      = targetJob , 
-                IsCompany= workerDetails.IsCompany  ,
-                City     = targetCity,
-                Location = workerDetails.Address ?? string.Empty , 
-                Bio      = workerDetails.Bio ?? string.Empty    ,
-                RateRatio= workerDetails.RateRito,
-                CompletedOrders = workerDetails.CompletedOrders ,
-                CancelledOffers = targetCanceldOffers ,
-                TotalIncome     = totalIncomeforWorker ,
-                Balance         = balance,
-                IdentityImageURL= workerDetails.IdentityImageURL?? string.Empty  ,
-                Portfolies      = targetPortfolios ,
-                Orders          = targetOrders 
+                ImageURL = workerDetails.ImageURL,
+                Email = workerDetails.Email,
+                Phone = workerDetails.PhoneNumber,
+                Job = targetJob,
+                IsCompany = workerDetails.IsCompany,
+                City = targetCity,
+                Location = workerDetails.Address,
+                Bio = workerDetails.Bio,
+                RateRatio = workerDetails.RateRito,
+                CompletedOrders = workerDetails.CompletedOrders,
+                CancelledOffers = targetCanceldOffers,
+                TotalIncome = totalIncomeforWorker,
+                Balance = balance,
+                IdentityImageURL = workerDetails.IdentityImageURL,
+                Portfolies = targetPortfolios,
+                Orders = targetOrders
             };
             return ResultDTO<object>.Success(result);
         }
 
         public async Task<ResultDTO<object>> OrderDetails(int id)
         {
-            var TargetOrder = await _context.OrderDetailsView.FirstOrDefaultAsync(p=>p.Id == id);
-            if (TargetOrder == null)
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr ="Order Not Found"}, ResponseStatusCodes.NotFound);
-            var targetClient = await _context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == TargetOrder.ClientId);
-            if (targetClient == null)
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorAr="Client Not Found"}, ResponseStatusCodes.NotFound);
-        
-            var targetOffer = await _context.Offers.FirstOrDefaultAsync(p=>p.OrderId == id);
-            // if (targetOffer == null)
-                // return ResultDTO<object>.NotFound(new ErrorDTO {ErrorEn="offered Not Found",ErrorAr="لا يوجد عروض على هذا الطلب"});
-            var targetimages = await _context.Orders.Where(p => p.Id == id).Select(p => p.OrderImages).ToListAsync();
-            // if(targetimages == null)
-                /* return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "Order Image Not Found",
-                    ErrorAr = "لا يوجد صور لهذا الطلب"
-                });*/
-            var workerDetails = await _context.WorkerDetailsView.FirstOrDefaultAsync(p => p.Id == targetOffer.WorkerId);
-           // if (workerDetails == null)
-              /*  return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "Worker Not Found",
-                    ErrorAr = "لم يتم تحديد عامل لهذا العرض"
-                });*/
-            var targetJob = await _context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
-           /* if (targetJob == null)
-                return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "worker Job Not Found",
-                    ErrorAr = "لم يتم  اضافة وظيفة للعامل بعد"
-                });*/
-            var targetCanceldOffers = await _context.Offers.Where(p => p.WorkerId == TargetOrder.WorkerId && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
-            var targetwallet = await _context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == targetOffer.WorkerId);
-            if (targetwallet == null)
-                return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "worker wallet not found",
-                    ErrorAr = "لم يتم اضافة محفظه للعالم"
-                });
-            var clientData = new
+            try
             {
-                WorkerId = targetOffer.WorkerId   ,
-                ImageURL = targetClient.ImageURL?? string.Empty,
-                FullName = targetClient.FullName??string.Empty , 
-                Email    = targetClient.Email ?? string.Empty    
-            };
-            var OrderData = new
+                Order? targetOrder = await _context.Orders
+                    .Include(i => i.Worker)
+                    .Include(i => i.Client)
+                    .Include(i => i.City)
+                    .Include(i => i.Service)
+                    .Include(i => i.OrderImages)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+
+                if (targetOrder == null)
+                {
+                    return ResultDTO<object>.NotFound(
+                        new ErrorDTO
+                        {
+                            ErrorAr = "الطلب غير موجود",
+                            ErrorEn = "Order not found"
+                        }
+                    );
+                }
+
+                Offer? acceptedOffer = new();
+                WorkerSpecification? workerDetails = new();
+                double workerBalance = 0.0;
+                int workerCancelledOffers = 0;
+
+                // If worker id is not null that means that the order has an accepted offer
+                if (targetOrder.WorkerId is not null)
+                {
+                    acceptedOffer = await _context.Offers
+                        .FirstOrDefaultAsync(of =>
+                            of.OrderId == targetOrder.Id
+                            && of.WorkerId == targetOrder.WorkerId
+                            && of.OfferStatus == Enums.OfferStatus.Accepted.ToString()
+                        );
+
+                    workerDetails = await _context.WorkerSpecifications
+                        .Include(i => i.User)
+                        .Include(i => i.Job)
+                        .Include(i => i.LivingCity)
+                        .FirstOrDefaultAsync(ws => ws.UserId == targetOrder.WorkerId);
+
+                    workerBalance = await _context.WorkerWallets
+                        .Where(ww => ww.WorkerId == targetOrder.WorkerId)
+                        .Select(r => r.Balance)
+                        .FirstOrDefaultAsync();
+
+                    workerCancelledOffers = await _context.Offers
+                        .Where(of =>
+                            of.WorkerId == targetOrder.WorkerId
+                            && of.OfferStatus == Enums.OfferStatus.Cancelled.ToString()
+                        ).CountAsync();
+                }
+
+                var clientData = new
+                {
+                    ClientId = targetOrder.Client?.Id,
+                    ImageURL = targetOrder.Client?.ImageURL,
+                    FullName = targetOrder.Client?.FullName,
+                    Email = targetOrder.Client?.Email
+                };
+
+                var orderData = new
+                {
+                    OrderId = id,
+                    Description = targetOrder.Description,
+                    OrderStatus = targetOrder.OrderStatus,
+                    Location = targetOrder.Location,
+                    ServicingDatetime = targetOrder.ServicingDateTime,
+                    OrderImages = targetOrder.OrderImages?.Select(i => i.ImageURL).ToList(),
+                    Service = targetOrder.Service?.ServiveName,
+                    City = targetOrder.City?.CityName,
+
+                    // if the order has an accepted offer will return the offerd price else will return the order price
+                    OrderPrice = (targetOrder.WorkerId is not null) ? acceptedOffer?.OfferedPrice : targetOrder.ProposalPrice,
+                };
+
+                dynamic workerData;
+
+                if (targetOrder.WorkerId is null)
+                    workerData = new { IsSuccess = false, Message = "لم يتم تعيين عامل على هذا الطلب حتى الان." };
+                else
+                    workerData = new
+                    {
+                        IsSuccess = true, 
+                        WorkerId = workerDetails?.UserId,
+                        ImageURL = workerDetails?.User?.ImageURL,
+                        Email = workerDetails?.User?.Email,
+                        FullName = workerDetails?.User?.FullName,
+                        Job = workerDetails?.Job?.JobTitle,
+                        IsCompany = workerDetails?.IsCompany,
+                        RateRatio = workerDetails?.RateRito,
+                        CompletedOrders = workerDetails?.CompletedOrders,
+                        CancelledOffers = workerCancelledOffers,
+                        Balance = workerBalance
+                    };
+
+                var result = new
+                {
+                    ClientData = clientData,
+                    OrderData = orderData,
+                    WorkerData = workerData
+                };
+                return ResultDTO<object>.Success(result);
+            }
+            catch (Exception ex)
             {
-                OrderId = id , 
-                ClientData = clientData,
-                Description= TargetOrder.Description?? string.Empty , 
-                OrderStatus= TargetOrder.OrderStatus ?? string.Empty , 
-                Adress       = targetClient.Address ?? string.Empty,
-                Location   = TargetOrder.Location ?? string.Empty ,
-                ServicingDatetime = TargetOrder.ServicingDateTime ,
-                OfferedPrice        = targetOffer.OfferedPrice,
-                OrderImages         = targetimages 
-            };
-            var workerData = new
-            {
-                ImageURL = workerDetails.ImageURL?? string.Empty , 
-                Email    = workerDetails.Email ?? string.Empty   ,
-                FullName = workerDetails.FullName?? string.Empty,
-                Job      = targetJob , 
-                IsCompany= workerDetails.IsCompany , 
-                RateRatio= workerDetails.RateRito , 
-                CompletedOrders = workerDetails.CompletedOrders ,
-                CancelledOffers = targetCanceldOffers,
-                Balance = targetwallet.Balance
-
-
-
-
-            };
-            var result = new
-            {
-                OrderData = OrderData,
-                WorkerData = workerData
-            };
-            return ResultDTO<object>.Success(result);
-
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "يوجد مشكلة في النظام.",
+                        ErrorEn = "There is a Internal Server Error."
+                    },
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
         }
 
         public async Task<ResultDTO<object>> OrderPage()
@@ -398,7 +441,7 @@ namespace Hoshi.Repositories.UserService
             var totalCompletedOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString()).CountAsync();
             var totalCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled.ToString()).CountAsync();
             var ActiveOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress.ToString()).ToListAsync();
-            var CompletedAndCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString() || p.OrderStatus== Enums.OrderStatus.Cancelled.ToString()).ToListAsync();
+            var CompletedAndCancelledOrders = await _context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString() || p.OrderStatus == Enums.OrderStatus.Cancelled.ToString()).ToListAsync();
             // Suggested FIX: previous filter used && which is unsatisfiable; using || to include completed or cancelled
             var result = new
             {
@@ -422,7 +465,7 @@ namespace Hoshi.Repositories.UserService
             var newComplaints = _context.Complaints.Where(p => p.ComplaintStatus == Enums.ComplaintStatus.Waitting.ToString()).Take(10);
             if (overResult == null)
             {
-                return ResultDTO<object>.Failure(new ErrorDTO() , ResponseStatusCodes.NotFound);
+                return ResultDTO<object>.Failure(new ErrorDTO(), ResponseStatusCodes.NotFound);
             }
             var result = new
             {
@@ -452,7 +495,7 @@ namespace Hoshi.Repositories.UserService
                     .Include(i => i.Job)
                     .FirstOrDefaultAsync(ws => ws.UserId == Id);
 
-                if( workerSpecs == null)
+                if (workerSpecs == null)
                     return ResultDTO<object>.BadRequest(new ErrorDTO()
                     {
                         ErrorAr = "هذا المعرف غير صالح.",
@@ -463,7 +506,7 @@ namespace Hoshi.Repositories.UserService
 
                 var workerPortfolio = await _context.WorkerPortfolios.Where(wp => wp.WorkerId == workerSpecs.UserId).ToListAsync();
 
-                if( workerPortfolio != null )
+                if (workerPortfolio != null)
                     workerDeltails.Portfolios = _mapper.Map<List<WorkerPortfolioBasicDTO>>(workerPortfolio);
 
                 return ResultDTO<object>.Success(workerDeltails);
@@ -484,22 +527,22 @@ namespace Hoshi.Repositories.UserService
         public async Task<ResultDTO<object>> WorkerPage()
         {
             var workerDetails = await _context.WorkerPageView.FirstOrDefaultAsync();
-            var newWorkers    = await _context.NewWorkerView.ToListAsync();
-            var allWorkers    = await _context.AllWorkersView.ToListAsync();    
-            var suspendedWorkers= await _context.SuspendedWorker.ToListAsync();
+            var newWorkers = await _context.NewWorkerView.ToListAsync();
+            var allWorkers = await _context.AllWorkersView.ToListAsync();
+            var suspendedWorkers = await _context.SuspendedWorker.ToListAsync();
             var result = new
             {
                 TotalWorkers = workerDetails.TotalWorkers,
                 TotalNewWorkers = workerDetails.TotalNewWorkers,
                 TotalActiveWorker = workerDetails.TotalActiveWorkers,
-                AverageWorkersperService = workerDetails.AverageWorkersPerService ,
+                AverageWorkersperService = workerDetails.AverageWorkersPerService,
                 NewWorkers = newWorkers,
                 AllWorkers = allWorkers,
                 SuspendedWorkers = suspendedWorkers,
             };
             return ResultDTO<object>.Success(result);
         }
-        
+
         public async Task<ResultDTO<List<AdminWithRolesAndPermissionsDTO>>> GetAllAdminsWithRolesAndPermissionsAsync()
         {
             var admins = await _context.Users
@@ -514,7 +557,7 @@ namespace Hoshi.Repositories.UserService
                     ErrorEn = "There is no admins in the system"
                 });
             }
-            
+
             var allRoles = await _context.Roles.ToListAsync();
             var allRolePermissions = await _context.RolePermissions.Include(rp => rp.Permission).ToListAsync();
 
@@ -560,8 +603,8 @@ namespace Hoshi.Repositories.UserService
 
                 if (user == null)
                     return ResultDTO<object>.BadRequest(
-                        new ErrorDTO() 
-                        { 
+                        new ErrorDTO()
+                        {
                             ErrorAr = "هذا المستخدم غير موجود.",
                             ErrorEn = "This user not existed."
                         }
@@ -572,8 +615,8 @@ namespace Hoshi.Repositories.UserService
 
                 if (reason == null)
                     return ResultDTO<object>.BadRequest(
-                        new ErrorDTO() 
-                        { 
+                        new ErrorDTO()
+                        {
                             ErrorAr = "هذا السبب غير موجود.",
                             ErrorEn = "This reason not existed."
                         }
@@ -612,11 +655,11 @@ namespace Hoshi.Repositories.UserService
                 await transaction.RollbackAsync();
 
                 return ResultDTO<object>.InternalServerError(
-                    new ErrorDTO() 
-                    { 
+                    new ErrorDTO()
+                    {
                         ErrorAr = "يوجد مشكلة في عملية التعليق.",
                         ErrorEn = "There is a problem in Suspending process."
-                    }, 
+                    },
                     ex.InnerException != null ? ex.InnerException.Message : ex.Message
                 );
             }
