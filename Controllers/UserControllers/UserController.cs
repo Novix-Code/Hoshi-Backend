@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Hoshi.Controllers.UserControllers.UserControllers
 {
 
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     [EndpointGroupName("Admin")]
