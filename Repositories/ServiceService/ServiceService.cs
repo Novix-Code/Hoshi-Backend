@@ -298,6 +298,7 @@ namespace Hoshi.Repositories.ServiceService
             var workerPaymentRequests = await _context.WorkerPaymentHistroys
                 .AsNoTracking()
                 .Include(u => u.Worker)
+                .Where(p => p.IsApproved == false)
                 .Select(r => new
                 {
                     WorkerData = _context.WorkerSpecifications
@@ -438,7 +439,7 @@ namespace Hoshi.Repositories.ServiceService
         /// <summary>
         /// Add worker payment by top-up value, append wallet history, and clear HitLimit.
         /// </summary>
-        public async Task<ResultDTO<string>> AddWorkerPayment(int workerId, double paymentValue)
+        public async Task<ResultDTO<string>> AddWorkerPayment(int workerId, int requestId, double paymentValue)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -454,12 +455,21 @@ namespace Hoshi.Repositories.ServiceService
 
                 // 2- Get user wallet
                 WorkerWallet? workerWallet = await _context.WorkerWallets.FirstOrDefaultAsync(ww => ww.WorkerId == workerId);
+
+                // if there is no wallet for this worker will create a new one
                 if(workerWallet is null)
-                    return ResultDTO<string>.BadRequest(new ErrorDTO
-                    {
-                        ErrorAr = "لا توجد محفظة لهذا العامل.",
-                        ErrorEn = "There is no wallet for this user."
+                {
+                    var result = await _context.WorkerWallets.AddAsync(new WorkerWallet() 
+                    { 
+                        WorkerId = workerId,
+                        CreatedAt = DateTime.UtcNow,
                     });
+
+                    // save changes to get new wallet id
+                    await _context.SaveChangesAsync();
+
+                    workerWallet = result.Entity;
+                }
 
                 // 3- Update user balance and hitlimit
                 if(paymentValue <= 0)
@@ -471,6 +481,18 @@ namespace Hoshi.Repositories.ServiceService
 
                 workerWallet.Balance = paymentValue;
                 workerWallet.HitLimit = false;
+
+                // 4- Close Payment Request
+                WorkerPaymentHistroy? paymentRequest = await _context.WorkerPaymentHistroys.FindAsync(requestId);
+                if(paymentRequest is null)
+                    return ResultDTO<string>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "لا توجد طلب بهذا المعرف.",
+                        ErrorEn = "There is no payment request with this Id."
+                    });
+
+                paymentRequest.IsApproved = true;
+                paymentRequest.ModifiedAt = DateTime.UtcNow;
 
                 // 4- Add it to wallet history
                 await _context.WorkerWalletHistories.AddAsync(new WorkerWalletHistory

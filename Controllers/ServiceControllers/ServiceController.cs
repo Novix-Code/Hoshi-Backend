@@ -143,9 +143,9 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         }
         
         [HttpPatch("add-payment")]
-        public async Task<IActionResult> AddWorkerPayment(int workerId, double paymentValue)
+        public async Task<IActionResult> AddWorkerPayment(int workerId, int requestId, double paymentValue)
         {
-            var response = await serviceService.AddWorkerPayment(workerId, paymentValue);
+            var response = await serviceService.AddWorkerPayment(workerId, requestId, paymentValue);
             return StatusCode((int)response.StatusCode, response);
         }
         

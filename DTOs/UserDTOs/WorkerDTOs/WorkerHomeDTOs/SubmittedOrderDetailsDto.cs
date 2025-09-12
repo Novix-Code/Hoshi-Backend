@@ -6,7 +6,7 @@ public class SubmittedOrderDetailsDto
 {
     public int OrderNumber { get; set; }
     public ClientDataDto ClientData { get; set; }
-    public OrderStatus OrderStatus { get; set; }
+    public string OrderStatus { get; set; }
     public ServiceDataDto Service { get; set; }
     public DateTime ServicingDateTime { get; set; }
     public double ProposalPrice { get; set; }

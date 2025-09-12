@@ -40,7 +40,7 @@ namespace Hoshi.Repositories.ServiceService
         /// <summary>
         /// Top up worker wallet balance and record history.
         /// </summary>
-        Task<ResultDTO<string>> AddWorkerPayment(int workerId, double paymentValue);
+        Task<ResultDTO<string>> AddWorkerPayment(int workerId, int requestId, double paymentValue);
         /// <summary>
         /// Complaints page summary and listing.
         /// </summary>

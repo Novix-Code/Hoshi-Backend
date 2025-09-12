@@ -26,7 +26,7 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
         public double? TotalWorkerCost { get; set; }
 
 
-        public OrderStatus OrderStatus { get; set; } = OrderStatus.Published;
+        public string OrderStatus { get; set; } = Enums.OrderStatus.Published.ToString();
 
         public int ClientId { get; set; }
         public UserGetDTO? Client { get; set; }

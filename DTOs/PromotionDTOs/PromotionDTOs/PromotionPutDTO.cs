@@ -1,7 +1,4 @@
 using GenericCRUDLibrary.GenericInterfaces;
-using GenericCRUDLibrary.CustomAttributes;
-using GenericCRUDLibrary.GenericInterfaces;
-using GenericCRUDLibrary.GenericModels;
 using Hoshi.Enums;
 
 namespace Hoshi.DTOs.PromotionDTOs.PromotionDTOs

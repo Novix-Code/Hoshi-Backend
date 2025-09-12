@@ -1,11 +1,8 @@
-using Hoshi.DTOs.UserDTOs.UserDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderDTOs;
-using Hoshi.DTOs.GlobalDTOs.ComplaintTypeDTOs;
-using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericInterfaces;
 using GenericCRUDLibrary.GenericModels;
-using Hoshi.Enums;
-using Hoshi.Models.UserModels;
+using Hoshi.DTOs.GlobalDTOs.ComplaintTypeDTOs;
+using Hoshi.DTOs.OrderDTOs.OrderDTOs;
+using Hoshi.DTOs.UserDTOs.UserDTOs;
 
 namespace Hoshi.DTOs.GlobalDTOs.ComplaintDTOs
 {
@@ -15,7 +12,7 @@ namespace Hoshi.DTOs.GlobalDTOs.ComplaintDTOs
         public string? Response { get; set; }
         public bool IsDeleted { get; set; }
 
-        public ComplaintStatus ComplaintStatus { get; set; } = ComplaintStatus.Waitting;
+        public string ComplaintStatus { get; set; } = Enums.ComplaintStatus.Waitting.ToString();
 
         public ComplaintTypeGetDTO? ComplaintType { get; set; }
 

@@ -53,6 +53,7 @@ namespace Hoshi.Controllers.GlobalControllers.RateControllers
         public override async Task<IActionResult> Add(RatePostDTO postDTO)
         {
             var baseResponse = await base.Add(postDTO);
+
             if (postDTO.FromClient)
                 await rateService.AddRateForWorker(postDTO);
             else 

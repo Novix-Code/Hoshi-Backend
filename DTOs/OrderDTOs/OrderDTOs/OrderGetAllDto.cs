@@ -10,7 +10,7 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
         public int Id { get; set; }
         public string Description { get; set; }
         public DateTime ServicingDateTime { get; set; }
-        public OrderStatus OrderStatus { get; set; }
+        public string OrderStatus { get; set; }
         public Service? Service { get; set; }
         public City? City { get; set; }
         public List<OrderImage>? OrderImages { get; set; }

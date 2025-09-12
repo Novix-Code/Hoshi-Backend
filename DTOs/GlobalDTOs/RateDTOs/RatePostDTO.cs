@@ -5,7 +5,7 @@ namespace Hoshi.DTOs.GlobalDTOs.RateDTOs
 {
     public class RatePostDTO 
     {
-        public required string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
         public required double RateValue { get; set; }
         public required bool FromClient { get; set; }
 

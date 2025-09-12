@@ -444,6 +444,12 @@ namespace Hoshi.Repositories.AuthService
                     };
                     await _context.Set<WorkerSpecification>().AddAsync(workerSpecification);
 
+                    WorkerWallet workerWallet = new WorkerWallet()
+                    {
+                        WorkerId = applicationUser.Id,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _context.Set<WorkerWallet>().AddAsync(workerWallet);
                 }
 
 

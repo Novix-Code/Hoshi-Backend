@@ -202,6 +202,16 @@ namespace Hoshi.Mappers
 
 			CreateMap<WorkerPortfolioBasicDTO, WorkerPortfolio>().ReverseMap();
 
+            CreateMap<FeePostDTO, Fee>()
+                .ForMember(d => d.FeeType, s => s.MapFrom(s => s.FeeType.ToString()));
+
+            CreateMap<PromotionPostDTO, Promotion>()
+                .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()));
+
+            CreateMap<PromotionPutDTO, Promotion>()
+                .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()));
+
+
             // Suggested improvement (projection-friendly mappings for queries):
             // CreateMap<Order, OrderSearchResultDto>()
             //     .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.ServiveName))

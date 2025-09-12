@@ -66,8 +66,9 @@ namespace Hoshi.Repositories.RatesService
 
         public async Task<double> GetWorkerAverageRateAsync(int workerId)
         {
+            // get the rates of this worker and to get it will chick if it from clients
             var rates = await context.Set<Rate>()
-                .Where(r => r.WorkerId == workerId && r.FromClient == false)
+                .Where(r => r.WorkerId == workerId && r.FromClient == true)
                 .Select(r => r.RateValue)
                 .ToListAsync();
 
@@ -79,8 +80,9 @@ namespace Hoshi.Repositories.RatesService
 
         public async Task<double> GetClientAverageRateAsync(int clientId)
         {
+            // get the rates of this client and to get it will chick if it from workers
             var rates = await context.Set<Rate>()
-                .Where(r => r.ClientId == clientId && r.FromClient==true)
+                .Where(r => r.ClientId == clientId && r.FromClient == false)
                 .Select(r => r.RateValue)
                 .ToListAsync();
 
