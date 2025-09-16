@@ -341,10 +341,11 @@ namespace Hoshi.Repositories.AuthService
 
         public async Task<ResultDTO<UserGetDTO>> Register(
             UserType userType,
-            ApplicationUserRegisterRequestDto registerRequestDto
+            ApplicationUserRegisterRequestDto registerRequestDto,
+            bool canAddAdmin = false
         )
         {
-            if (userType is UserType.Admin)
+            if (userType is UserType.Admin && !canAddAdmin)
             {
                 return ResultDTO<UserGetDTO>.BadRequest(
                     new ErrorDTO
@@ -354,7 +355,6 @@ namespace Hoshi.Repositories.AuthService
                     }
                 );
             }
-
 
             if (registerRequestDto == null)
             {
@@ -377,6 +377,20 @@ namespace Hoshi.Repositories.AuthService
                     }
                 );
             }
+
+
+            // Check if email domain has MX records
+            if (!await _emailService.CanConnectToMailServerAsync(registerRequestDto.Email))
+            {
+                return ResultDTO<UserGetDTO>.BadRequest(
+                    new ErrorDTO
+                    {
+                        ErrorAr = "هذا الحساب غير صحيح، بالرجاء ادخال حساب فعال.",
+                        ErrorEn = "This email is invalid, please enter a valid account."
+                    }
+                );
+            }
+
 
             var applicationUser = new User
             {
@@ -848,6 +862,8 @@ namespace Hoshi.Repositories.AuthService
         {
             string username = string.Empty;
 
+            string uniqueId = Guid.NewGuid().ToString("N")[..8]; // First 8 chars
+
             var checkLang = new Regex(@"^[a-zA-Z]{3,20}(\s[a-zA-Z]{3,20}){1,4}$");
 
             if (checkLang.IsMatch(fullName))
@@ -862,16 +878,10 @@ namespace Hoshi.Repositories.AuthService
                     username += name.Substring(0, length);
                 }
 
-                int num = new Random().Next(1, 1000);
-
-                username += $"{num:D4}";
+                username += uniqueId;
             }
             else
-            {
-                int num = new Random().Next(1, 1000);
-
-                username = $"username{num:D4}";
-            }
+                username = $"user{uniqueId}";
 
             return username;
         }

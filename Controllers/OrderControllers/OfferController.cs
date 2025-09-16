@@ -45,6 +45,7 @@ namespace Hoshi.Controllers.OrderControllers.OfferControllers
 
 			includes = [
 				$"{nameof(Offer.Worker)}",
+				$"{nameof(Offer.Order)}.{nameof(Order.Client)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.City)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.Service)}",
 				$"{nameof(Offer.Order)}.{nameof(Order.OrderImages)}",

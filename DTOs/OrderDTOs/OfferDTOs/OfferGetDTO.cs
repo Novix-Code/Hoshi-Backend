@@ -16,11 +16,11 @@ namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
         public bool IsDeleted { get; set; }
 
 
-        public string OfferStatus { get; set; } = Enums.OfferStatus.Waitting.ToString();
+        public string OfferStatus { get; set; }
 
-        public UserGetDTO? Worker { get; set; }
+        public UserBasicDTO? Worker { get; set; }
 
-        public OrderGetDTO? Order { get; set; }
+        public OrderBasicDTO? Order { get; set; }
 
         public PromotionGetDTO? AppliedPromotion { get; set; }
 

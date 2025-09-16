@@ -196,20 +196,40 @@ namespace Hoshi.Mappers
                 .ForMember(dest => dest.ImagesUrl, opt => opt.MapFrom(src => src.OrderImages!.Select(img => img.ImageURL)));
 
 			// Basic DTO mappers
+			//CreateMap<BasicDTO, >().ReverseMap();
+
+			CreateMap<UserBasicDTO, User>().ReverseMap();
+
+			CreateMap<OrderBasicDTO, Order>().ReverseMap();
+
 			CreateMap<ServiceBasicDTO, Service>().ReverseMap();
 
 			CreateMap<ServiceCategoryBasicDTO, ServiceCategory>().ReverseMap();
 
 			CreateMap<WorkerPortfolioBasicDTO, WorkerPortfolio>().ReverseMap();
 
+            // Handel enums in mappers
             CreateMap<FeePostDTO, Fee>()
-                .ForMember(d => d.FeeType, s => s.MapFrom(s => s.FeeType.ToString()));
+                .ForMember(d => d.FeeType, s => s.MapFrom(s => s.FeeType.ToString()))
+                // Add current date time whithin creating a new Row
+                .ForMember(d => d.CreatedAt, s => s.MapFrom(s => DateTime.Now));
 
             CreateMap<PromotionPostDTO, Promotion>()
-                .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()));
+                .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()))
+                // Add current date time whithin creating a new Row
+                .ForMember(d => d.CreatedAt, s => s.MapFrom(s => DateTime.Now));
 
             CreateMap<PromotionPutDTO, Promotion>()
-                .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()));
+                .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()))
+                // Add current date time whithin updating a new Row
+                .ForMember(d => d.ModifiedAt, s => s.MapFrom(s => DateTime.Now))
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember, context) =>
+                {
+                    if (srcMember == null) return false;
+
+                    var type = srcMember.GetType();
+                    return !(type.IsValueType && Activator.CreateInstance(type)?.Equals(srcMember) == true);
+                }));
 
 
             // Suggested improvement (projection-friendly mappings for queries):

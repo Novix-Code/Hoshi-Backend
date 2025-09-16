@@ -4,6 +4,7 @@ using Hoshi.Data;
 using Hoshi.DTOs.OrderDTOs.OfferDTOs;
 using Hoshi.Enums;
 using Hoshi.Models.OrderModels;
+using Hoshi.Models.PromotionModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.NotificationService;
@@ -74,7 +75,11 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var offer = _mapper.Map<Offer>(dto);
 
                 // Block duplicate active offers by same worker for same order (business-dependent)
-                bool duplicate = await _hoshiDbContext.Offers.AnyAsync(o => o.OrderId == dto.OrderId && o.WorkerId == dto.WorkerId && !o.IsDeleted);
+                bool duplicate = await _hoshiDbContext.Offers.AnyAsync(o => 
+                    o.OrderId == dto.OrderId 
+                    && o.WorkerId == dto.WorkerId 
+                    && !o.IsDeleted);
+
                 if (duplicate)
                     return ResultDTO<CreateOfferResponseDto>.BadRequest(new ErrorDTO
                     {
@@ -116,15 +121,31 @@ namespace Hoshi.Repositories.WorkerOfferService
                     .Select(pt => pt.PromotionId)
                     .ToListAsync();
 
-                var promotion = await _hoshiDbContext.Promotions.FirstOrDefaultAsync(p => !promotionsUsed.Contains(p.Id));
+                // Check if the promotion not used from this worker
+                var promotion = await _hoshiDbContext.Promotions.FirstOrDefaultAsync(
+                    p => !promotionsUsed.Contains(p.Id)
+                    && p.PromotionFor == PromotionFor.Worker.ToString()
+                    );
+
+                // if there a promo for this worker will be add to the offer
                 if (promotion != null)
                 {
+                    // Add Promotion on Offer
                     offer.AppliedPromotionId = promotion.Id;
                     _hoshiDbContext.Offers.Update(offer);
+
+                    // Add Promotion to Promotion Taken
+                    await _hoshiDbContext.PromotionsTaken.AddAsync(new PromotionTaken()
+                    {
+                        OfferId = offer.Id,
+                        OrderId = offer.OrderId,
+                        UserId = offer.WorkerId,
+                        PromotionId = promotion.Id,
+                        CreatedAt = DateTime.UtcNow,
+                    });
+
                     await _hoshiDbContext.SaveChangesAsync();
                 }
-
-
 
                 string promotionTitle = string.Empty;
                 double workerPromotionFee = 0.0;
@@ -133,9 +154,9 @@ namespace Hoshi.Repositories.WorkerOfferService
                 if (promotion != null)
                 {
                     promotionTitle = promotion.IsPercentage
-                        ? $"{promotion.TitleFirstPart} {promotion.Value} {promotion.TitleSecondPart}".Trim()
-                        : $"{promotion.TitleFirstPart} {promotion.Value}% {promotion.TitleSecondPart}".Trim();
-                    double promotionAmount = promotion.IsPercentage ? (dto.OfferedPrice * promotion.Value / 100) : promotion.Value;
+                        ? $"{promotion.TitleFirstPart} {promotion.Value}% {promotion.TitleSecondPart}".Trim()
+                        : $"{promotion.TitleFirstPart} {promotion.Value} {promotion.TitleSecondPart}".Trim();
+                    double promotionAmount = promotion.IsPercentage ? (dto.OfferedPrice * (promotion.Value / 100)) : promotion.Value;
 
                     if (promotion.PromotionFor == PromotionFor.Worker.ToString())
                         workerPromotionFee = promotionAmount;
@@ -147,7 +168,10 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
-                var clientTotalPrice = dto.OfferedPrice + (invoice?.ClientIndebtednessFee ?? 0) - clientPromotionFee;
+                double clientTotalPrice =
+                    (double) (dto.OfferedPrice 
+                    + (invoice?.ClientIndebtednessFee ?? 0) 
+                    - (invoice?.ClientPromotionFee is not null or 0 ? invoice?.ClientPromotionFee : clientPromotionFee))!;
 
                 // 7. Upsert TempInvoice for this offer
                 var existingTemp = await _hoshiDbContext.TempInvoices
@@ -202,7 +226,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 await transaction.CommitAsync();
                 // send notification
                 await notificationServiceHandler.sendMessagetoAdmin("عمليه اضافة عرض", offer.Id);
-                await notificationServiceHandler.sendMessagetoClient( 6, order.ClientId , "تم اضافة عرض على الطلب الخاص بك");
+                await notificationServiceHandler.sendMessagetoClient(6, order.ClientId, "تم اضافة عرض على الطلب الخاص بك");
                 return ResultDTO<CreateOfferResponseDto>.Success(response);
             }
             catch (Exception ex)

@@ -447,7 +447,7 @@ namespace Hoshi.Repositories.OrderService
                 .Include(ws => ws.User)
                 .Include(ws => ws.Job)
                 .Include(ws => ws.LivingCity)
-                .FirstOrDefaultAsync(ws => ws.UserId == orderDto.WorkerId);
+                .FirstOrDefaultAsync(ws => ws.UserId == order.WorkerId);
             
             if (getWorkerData == null)
                 return ResultDTO<DashboardOrderDetailsResponseDTO>.NotFound(new ErrorDTO

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using OtpNet;
+using System.Net.Sockets;
 
 namespace Hoshi.Repositories.EmailServiceFold
 {
@@ -148,7 +149,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                     <p>This OTP code is valid for a limited time, so be sure to use it promptly to access your account.</p>
                 </div>
                 <div class=""email-footer"">
-                    <p>Thank you for choosing <strong>Novix</strong>. We’re here to support you every step of the way.</p>
+                    <p>Thank you for choosing <strong>Hoshi</strong>. We’re here to support you every step of the way.</p>
                 </div>
             </div>
         </body>
@@ -202,7 +203,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                     <p> your verification Code : {AdminCode}</p>          
                 </div>
                 <div class=""email-footer"">
-                    <p>Thank you for choosing <strong>Novix</strong>. We’re here to support you every step of the way.</p>
+                    <p>Thank you for choosing <strong>Hoshi</strong>. We’re here to support you every step of the way.</p>
                 </div>
             </div>
         </body>
@@ -254,6 +255,7 @@ namespace Hoshi.Repositories.EmailServiceFold
 
             }
         }
+        
         public async Task<ResultDTO<string>> SendVerifivationCode(string email)
         {
             try
@@ -296,16 +298,21 @@ namespace Hoshi.Repositories.EmailServiceFold
 
             }
         }
-        public Totp GenerateOtp(byte[] secretKey = null, int otpExpirationTime = otpDefaultSteps, int otpSize = 8) //generate otp from provided secret key and otpExpirationTime 
+        
+        //generate otp from provided secret key and otpExpirationTime 
+        public Totp GenerateOtp(byte[] secretKey = null, int otpExpirationTime = otpDefaultSteps, int otpSize = 8) 
         {
             secretKey ??= this._secretKey; //if user didn't provide a secret key it will be the same secretKey of the object
             var totp = new Totp(secretKey, step: otpExpirationTime, totpSize: otpSize);
             return totp;
         }
+        
         public async Task<ResultDTO<string>> SendOTP(string email)
         {
             try
             {
+
+
                 var OTP = GenerateOtp();
 
                 var emailMessage = new MimeMessage();
@@ -362,6 +369,7 @@ namespace Hoshi.Repositories.EmailServiceFold
             }
 
         }
+        
         public async Task<ResultDTO<object>> checkOTPVerfication(string otp, string userId)
         {
             var targetuserOtp = await _context.UserOTPs.Where(p => p.UserId == int.Parse(userId)).FirstOrDefaultAsync();
@@ -399,6 +407,7 @@ namespace Hoshi.Repositories.EmailServiceFold
             await _context.SaveChangesAsync();
             return ResultDTO<object>.Success(true);
         }
+        
         public async Task<ResultDTO<object>> ReSetOtp(string email)
         {
             try
@@ -458,6 +467,33 @@ namespace Hoshi.Repositories.EmailServiceFold
             }
         }
 
+        public async Task<bool> CanConnectToMailServerAsync(string email)
+        {
+            try
+            {
+                var domain = "smtp." + email.Split('@')[1];
+
+                using var client = new MailKit.Net.Smtp.SmtpClient();
+
+                // Bypass SSL validation for debugging only
+                client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                // Suggested improvement: remove the bypass in production.
+
+                await client.ConnectAsync(domain, 587, SecureSocketOptions.StartTls);
+
+                if (client.IsConnected)
+                {
+                    await client.DisconnectAsync(true);
+                    return true;
+                }
+                else
+                    return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         #endregion
     }
 }

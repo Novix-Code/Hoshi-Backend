@@ -55,7 +55,9 @@ namespace Hoshi.Data.IdentitySeeders
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UserType = UserType.Admin.ToString(),
                 };
                 var result = await userManager.CreateAsync(newAdmin, adminPassword);
                 if (result.Succeeded)

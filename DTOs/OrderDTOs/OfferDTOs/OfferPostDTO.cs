@@ -1,4 +1,4 @@
-using GenericCRUDLibrary.CustomAttributes;
+﻿using GenericCRUDLibrary.CustomAttributes;
 using GenericCRUDLibrary.GenericInterfaces;
 using GenericCRUDLibrary.GenericModels;
 using Hoshi.Enums;
@@ -9,7 +9,7 @@ namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
     public class OfferPostDTO 
     {
         public required double OfferedPrice { get; set; }
-        public required string Note { get; set; }
+        public string Note { get; set; } = "لا توجد ملاحظات";
 
         public required int WorkerId { get; set; }
 

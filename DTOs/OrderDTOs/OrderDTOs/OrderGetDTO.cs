@@ -6,7 +6,6 @@ using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
 using Hoshi.DTOs.ServiceDTOs.ServiceDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
-using Hoshi.Enums;
 
 namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
 {
@@ -26,19 +25,16 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
         public double? TotalWorkerCost { get; set; }
 
 
-        public string OrderStatus { get; set; } = Enums.OrderStatus.Published.ToString();
+        public string OrderStatus { get; set; }
 
-        public int ClientId { get; set; }
-        public UserGetDTO? Client { get; set; }
+        public UserBasicDTO? Client { get; set; }
 
-        public int? WorkerId { get; set; }
-        public UserGetDTO? Worker { get; set; }
+        public UserBasicDTO? Worker { get; set; }
 
         public CityGetDTO? City { get; set; }
 
-        public ServiceGetDTO? Service { get; set; }
+        public ServiceBasicDTO? Service { get; set; }
 
-        public int? AppliedPromotionId { get; set; }
         public PromotionGetDTO? AppliedPromotion { get; set; }
 
         public List<OrderImageGetDTO>? OrderImages { get; set; }

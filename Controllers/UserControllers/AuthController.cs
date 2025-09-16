@@ -161,8 +161,8 @@ namespace Hoshi.Controllers.UserControllers
         [HttpPost("reset-OTP")]
         public async Task<IActionResult> resetOtp(string Email)
         {
-            var repsonse = await emailService.ReSetOtp(Email);
-            return StatusCode(repsonse.StatusCode, Response);
+            var response = await emailService.ReSetOtp(Email);
+            return StatusCode(response.StatusCode, response);
         }
 
         /// <summary>

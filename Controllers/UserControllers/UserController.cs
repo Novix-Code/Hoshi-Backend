@@ -57,12 +57,14 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             this.userService = userService;
         }
 
-        public override async Task<IActionResult> Add(UserPostDTO postDTO)
+        [Authorize(Roles = "SuperAdmin")]
+        public override async Task<IActionResult> Add([FromForm] UserPostDTO postDTO)
         {
             // Update the other data anyware
             var serviceResponse = await authService.Register(
                 postDTO.UserType,
-                mapper.Map<ApplicationUserRegisterRequestDto>(postDTO)
+                mapper.Map<ApplicationUserRegisterRequestDto>(postDTO),
+                true
             );
             // Check if image is not null to be updated
             if (postDTO.Image is not null)
@@ -79,7 +81,7 @@ namespace Hoshi.Controllers.UserControllers.UserControllers
             return StatusCode(serviceResponse.StatusCode, serviceResponse);
         }
 
-        public override async Task<IActionResult> Update(UserPutDTO putDTO)
+        public override async Task<IActionResult> Update([FromForm] UserPutDTO putDTO)
         {
             // Check if image is not null to be updated
             if (putDTO.Image is not null)

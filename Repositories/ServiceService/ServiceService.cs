@@ -16,6 +16,7 @@ using Hoshi.Enums;
 using Microsoft.EntityFrameworkCore;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.WorkerModels;
+using System.Transactions;
 
 namespace Hoshi.Repositories.ServiceService
 {
@@ -30,7 +31,7 @@ namespace Hoshi.Repositories.ServiceService
         private readonly IFileService fileService;
 
         public ServiceService(
-            HoshiDbContext context, 
+            HoshiDbContext context,
             IMapper mapper,
             IFileService fileService
         )
@@ -48,18 +49,18 @@ namespace Hoshi.Repositories.ServiceService
 
             var selectedCategories = await _context.Services.Where(p => p.ServiveName == serviceName).Select(p => p.ServiceCategoryId).ToListAsync();
             var allCat = await _context.ServiceCategories.ToListAsync();
-            var resultLST          = new List<ServiceCategoryGetDTO>();
+            var resultLST = new List<ServiceCategoryGetDTO>();
             foreach (var CatId in selectedCategories)
             {
                 var targetCat = allCat.Where(p => p.Id == CatId).First();
                 var targetMapper = _mapper.Map<ServiceCategoryGetDTO>(targetCat);
-                var targetRelatedServiceActive = await _context.Services.Where(p => p.ServiceCategoryId == CatId && p.IsDeleted==false).ToListAsync();
+                var targetRelatedServiceActive = await _context.Services.Where(p => p.ServiceCategoryId == CatId && p.IsDeleted == false).ToListAsync();
                 var targetServices = _mapper.Map<List<ServiceBasicDTO>>(targetRelatedServiceActive);
                 targetMapper.Services = targetServices;
                 resultLST.Add(targetMapper);
 
             }
-            return ResultDTO<List<ServiceCategoryGetDTO>>.Success(resultLST);   
+            return ResultDTO<List<ServiceCategoryGetDTO>>.Success(resultLST);
         }
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace Hoshi.Repositories.ServiceService
                 });
             }
         }
-        
+
         /// <summary>
         /// Update a service and optionally replace its image (old image is deleted first).
         /// </summary>
@@ -151,7 +152,7 @@ namespace Hoshi.Repositories.ServiceService
                 });
             }
         }
-        
+
         /// <summary>
         /// Build services analytics page: per-job, per-category, and per-service aggregates.
         /// </summary>
@@ -190,8 +191,8 @@ namespace Hoshi.Repositories.ServiceService
                     };
                 })
                 .ToList();
-            
-            
+
+
             var categoryResult = jobData
                 .Where(js => js.Service.ServiceCategory != null)
                 .GroupBy(js => js.Service.ServiceCategory)
@@ -215,14 +216,14 @@ namespace Hoshi.Repositories.ServiceService
                     };
                 })
                 .ToList();
-            
+
             var categoryServicesResult = jobData
                 .Where(js => js.Service.ServiceCategory != null)
                 .GroupBy(js => js.Service.ServiceCategory)
                 .Select(categoryGroup =>
                 {
                     var category = categoryGroup.Key;
-                    
+
                     var services = categoryGroup
                         .Select(g => g.Service)
                         .Distinct()
@@ -251,12 +252,12 @@ namespace Hoshi.Repositories.ServiceService
                     };
                 })
                 .ToList();
-            
+
             return ResultDTO<object>.Success(new
             {
                 Jobs = jobResult,
                 Categories = categoryResult,
-                CategoryServices =categoryServicesResult
+                CategoryServices = categoryServicesResult
             });
         }
 
@@ -270,7 +271,8 @@ namespace Hoshi.Repositories.ServiceService
             var invoiceSums = await _context.Invoices
                 .AsNoTracking()
                 .GroupBy(i => 1)
-                .Select(g => new {
+                .Select(g => new
+                {
                     TotalOrdersIncome = g.Sum(i => i.WorkerTotalPrice),
                     TotalOrdersPrices = g.Sum(i => i.OrderPrice),
                     TotalOrdersFees = g.Sum(i => i.CommissionFee + i.VisitingFee + i.CancellationFee),
@@ -293,7 +295,7 @@ namespace Hoshi.Repositories.ServiceService
                 .Distinct()
                 .ToListAsync();
             var notifiedUserSet = new HashSet<int>(notifiedUserIds);
-            
+
             // Workers payment requests
             var workerPaymentRequests = await _context.WorkerPaymentHistroys
                 .AsNoTracking()
@@ -378,8 +380,8 @@ namespace Hoshi.Repositories.ServiceService
                 ClientsUncollectedFees = clientsUncollectedFees
             });
         }
-        
-        
+
+
         /// <summary>
         /// Retrieve payment details and worker snapshot for a given payment id.
         /// </summary>
@@ -414,7 +416,7 @@ namespace Hoshi.Repositories.ServiceService
             var cancelledOffers = await _context.Offers
                 .AsNoTracking()
                 .CountAsync(o => o.WorkerId == workerSpec.UserId && o.OfferStatus == OfferStatus.Cancelled.ToString());
-            
+
             var WorkerDataDTO = new WorkerDataDTO
             {
                 WorkerId = workerSpec.UserId,
@@ -428,7 +430,7 @@ namespace Hoshi.Repositories.ServiceService
                 CancelledOffers = cancelledOffers,
                 Balance = wallet?.Balance ?? 0.0
             };
-            
+
             return ResultDTO<PaymentDetailsResponseDTO>.Success(new PaymentDetailsResponseDTO
             {
                 BillImageUrl = payment.BillImageURL,
@@ -446,7 +448,7 @@ namespace Hoshi.Repositories.ServiceService
             {
                 // 1- Check if worker exist
                 User? worker = await _context.Users.FindAsync(workerId);
-                if(worker is null || worker.UserType != UserType.Worker.ToString())
+                if (worker is null || worker.UserType != UserType.Worker.ToString())
                     return ResultDTO<string>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "معرف العامل خاطئ.",
@@ -457,10 +459,10 @@ namespace Hoshi.Repositories.ServiceService
                 WorkerWallet? workerWallet = await _context.WorkerWallets.FirstOrDefaultAsync(ww => ww.WorkerId == workerId);
 
                 // if there is no wallet for this worker will create a new one
-                if(workerWallet is null)
+                if (workerWallet is null)
                 {
-                    var result = await _context.WorkerWallets.AddAsync(new WorkerWallet() 
-                    { 
+                    var result = await _context.WorkerWallets.AddAsync(new WorkerWallet()
+                    {
                         WorkerId = workerId,
                         CreatedAt = DateTime.UtcNow,
                     });
@@ -472,7 +474,7 @@ namespace Hoshi.Repositories.ServiceService
                 }
 
                 // 3- Update user balance and hitlimit
-                if(paymentValue <= 0)
+                if (paymentValue <= 0)
                     return ResultDTO<string>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "لا يمكن اضافة قيمة اقل من او يساوي 0.",
@@ -484,7 +486,7 @@ namespace Hoshi.Repositories.ServiceService
 
                 // 4- Close Payment Request
                 WorkerPaymentHistroy? paymentRequest = await _context.WorkerPaymentHistroys.FindAsync(requestId);
-                if(paymentRequest is null)
+                if (paymentRequest is null)
                     return ResultDTO<string>.BadRequest(new ErrorDTO
                     {
                         ErrorAr = "لا توجد طلب بهذا المعرف.",
@@ -519,15 +521,15 @@ namespace Hoshi.Repositories.ServiceService
                 await transaction.RollbackAsync();
 
                 return ResultDTO<string>.InternalServerError(new ErrorDTO
-                    {
-                        ErrorAr = "يوجد مشكلة في عملية اضافة الدفع للخطأ التالي.",
-                        ErrorEn = "There is a problem in Payment adding process."
-                    }, 
-                    innerError : ex.InnerException is null ? ex.Message : ex.InnerException.Message
+                {
+                    ErrorAr = "يوجد مشكلة في عملية اضافة الدفع للخطأ التالي.",
+                    ErrorEn = "There is a problem in Payment adding process."
+                },
+                    innerError: ex.InnerException is null ? ex.Message : ex.InnerException.Message
                 );
             }
         }
-        
+
         /// <summary>
         /// Build complaints page summary and list with essential fields.
         /// </summary>
@@ -583,7 +585,7 @@ namespace Hoshi.Repositories.ServiceService
                 return ResultDTO<ComplaintGetDTO>.NotFound(new ErrorDTO { ErrorAr = "الشكوى غير موجودة.", ErrorEn = "Complaint not found." });
 
             var response = _mapper.Map<ComplaintGetDTO>(complaint);
-            
+
             return ResultDTO<ComplaintGetDTO>.Success(response);
         }
 
@@ -592,20 +594,51 @@ namespace Hoshi.Repositories.ServiceService
         /// </summary>
         public async Task<ResultDTO<MessageDTO>> ComplaintResponse(ComplaintResponseDTO complaintCreateDto)
         {
-            var getComplaint = _context.Complaints.FirstOrDefault(c => c.Id == complaintCreateDto.ComplaintId);
-            if (getComplaint == null)
-                return ResultDTO<MessageDTO>.NotFound(new ErrorDTO { ErrorAr = "الشكوى غير موجودة.", ErrorEn = "Complaint not found." });
-            
-            getComplaint.Response = complaintCreateDto.Response;
-            getComplaint.ModifiedAt = DateTime.UtcNow;
-            _context.Complaints.Update(getComplaint);
-            await _context.SaveChangesAsync();
-            
-            return ResultDTO<MessageDTO>.Success(new MessageDTO
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                MessageAr = "تم الرد على الشكوى بنجاح.",
-                MessageEn = "Complaint response sent successfully."
-            });
+                // Basic validation
+                if (string.IsNullOrWhiteSpace(complaintCreateDto.Response))
+                    return ResultDTO<MessageDTO>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "نص الرد مطلوب.",
+                        ErrorEn = "Response text is required."
+                    });
+
+                // Use async for better performance
+                var getComplaint = await _context.Complaints.FirstOrDefaultAsync(c => c.Id == complaintCreateDto.ComplaintId);
+                if (getComplaint == null)
+                    return ResultDTO<MessageDTO>.NotFound(new ErrorDTO
+                    {
+                        ErrorAr = "الشكوى غير موجودة.",
+                        ErrorEn = "Complaint not found."
+                    });
+
+                // Update complaint
+                getComplaint.Response = complaintCreateDto.Response.Trim();
+                getComplaint.ModifiedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return ResultDTO<MessageDTO>.Success(new MessageDTO
+                {
+                    MessageAr = "تم الرد على الشكوى بنجاح.",
+                    MessageEn = "Complaint response sent successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                return ResultDTO<MessageDTO>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "يوجد مشكلة داخلية في النظام.",
+                    ErrorEn = "There is an internal server error."
+                },
+                    innerError: ex.InnerException is null ? ex.Message : ex.InnerException.Message
+                );
+            }
         }
 
         /// <summary>

@@ -27,9 +27,9 @@ namespace Hoshi.Repositories.WorkerHomeService
         /// </summary>
         public async Task<ResultDTO<WorkerOrderDetailsDto>> GetWorkerHomeAsync(int workerId)
         {
-            var workerExists = await _hoshiDbContext.Users.AnyAsync(u => u.Id == workerId);
+            var workerExists = await _hoshiDbContext.Users.FindAsync(workerId);
 
-            if (!workerExists)
+            if (workerExists is null)
             {
                 return ResultDTO<WorkerOrderDetailsDto>.NotFound(new ErrorDTO
                 {

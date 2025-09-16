@@ -10,7 +10,8 @@ namespace Hoshi.Repositories.AuthService
     {
         Task<ResultDTO<UserGetDTO>> Register(
             UserType userType,
-            ApplicationUserRegisterRequestDto registerRequestDto
+            ApplicationUserRegisterRequestDto registerRequestDto,
+            bool canAddAdmin = false
         );
         Task<ResultDTO<UserGetDTO>> Login(ApplicationUserLoginRequestDto loginRequestDto);
         Task<ResultDTO<string>> Delete(string id);

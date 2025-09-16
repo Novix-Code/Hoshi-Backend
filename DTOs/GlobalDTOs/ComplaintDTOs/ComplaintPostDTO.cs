@@ -9,7 +9,6 @@ namespace Hoshi.DTOs.GlobalDTOs.ComplaintDTOs
     public class ComplaintPostDTO 
     {
         public required string Description { get; set; }
-        public string? Response { get; set; }
         public required bool IsDeleted { get; set; }
 
 

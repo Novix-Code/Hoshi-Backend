@@ -7,6 +7,7 @@ using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
 using Hoshi.Models.PromotionModels;
 using Hoshi.Repositories.PromotionService;
 using Microsoft.AspNetCore.Authorization;
+using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 
 namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
 {
@@ -14,7 +15,7 @@ namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class PromotionController : SoftDeleteGenericController<
+    public class PromotionController : SoftDeleteGenericFSPController<
         HoshiDbContext, 
         Promotion, 
         PromotionGetDTO, 
@@ -31,8 +32,12 @@ namespace Hoshi.Controllers.PromotionControllers.PromotionControllers
                 PromotionGetDTO, 
                 PromotionPostDTO, 
                 PromotionPutDTO> genericCRUDService,
+            IGenericFSPService<
+                HoshiDbContext,
+                Promotion,
+                PromotionGetDTO> genericFSPService,
             IPromotionService promotionService
-        ) : base(mapper, genericCRUDService)
+        ) : base(mapper, genericCRUDService, genericFSPService)
         {
             this.promotionService = promotionService;
         }
