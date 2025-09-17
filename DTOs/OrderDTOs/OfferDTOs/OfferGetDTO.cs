@@ -18,9 +18,9 @@ namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
 
         public string OfferStatus { get; set; }
 
-        public UserBasicDTO? Worker { get; set; }
+        public UserGetDTO? Worker { get; set; }
 
-        public OrderBasicDTO? Order { get; set; }
+        public OrderGetDTO? Order { get; set; }
 
         public PromotionGetDTO? AppliedPromotion { get; set; }
 
