@@ -37,8 +37,8 @@ namespace Hoshi.Controllers.UserControllers
         /// <param name="registerRequestDto">Registration payload.</param>
         [HttpPost("register")]
         public async Task<IActionResult> Register(
-            [FromQuery] UserType userType,
-            [FromBody] ApplicationUserRegisterRequestDto registerRequestDto
+            [FromBody] ApplicationUserRegisterRequestDto registerRequestDto,
+            [FromQuery] UserType userType = UserType.Client
         )
         {
             var serviceResponse = await authService.Register(userType, registerRequestDto);
@@ -162,16 +162,6 @@ namespace Hoshi.Controllers.UserControllers
         public async Task<IActionResult> resetOtp(string Email)
         {
             var response = await emailService.ReSetOtp(Email);
-            return StatusCode(response.StatusCode, response);
-        }
-
-        /// <summary>
-        /// Get admins along with their roles and permissions.
-        /// </summary>
-        [HttpGet("get-all-admins-with-roles-and-permissions")]
-        public async Task<IActionResult> GetAllAdminsWithRolesAndPermissionsAsync()
-        {
-            var response = await userService.GetAllAdminsWithRolesAndPermissionsAsync();
             return StatusCode(response.StatusCode, response);
         }
     }

@@ -10,6 +10,5 @@ namespace Hoshi.Repositories.EmailServiceFold
         Task<ResultDTO<string>> SendVerifivationCode(string email);
         Task<ResultDTO<object>> checkOTPVerfication(string otp, string userId);
         Task<ResultDTO<object>> ReSetOtp(string email);
-        Task<bool> CanConnectToMailServerAsync(string email);
     }
 }
