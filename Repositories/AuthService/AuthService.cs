@@ -379,15 +379,19 @@ namespace Hoshi.Repositories.AuthService
             }
 
 
-            // Check if email domain has MX records
-            if (!await _emailService.CanConnectToMailServerAsync(registerRequestDto.Email))
+            // Use quick validation for better user experience
+            var emailValidator = new EmailValidationService();
+            var validation = await emailValidator.ValidateEmailAsync(registerRequestDto.Email);
+
+            if (!validation.IsValid)
             {
                 return ResultDTO<UserGetDTO>.BadRequest(
                     new ErrorDTO
                     {
                         ErrorAr = "هذا الحساب غير صحيح، بالرجاء ادخال حساب فعال.",
                         ErrorEn = "This email is invalid, please enter a valid account."
-                    }
+                    },
+                    innerError: validation.Reason
                 );
             }
 

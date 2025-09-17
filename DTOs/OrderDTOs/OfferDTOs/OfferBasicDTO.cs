@@ -6,6 +6,7 @@ namespace Hoshi.DTOs.OrderDTOs.OfferDTOs
     public class OfferBasicDTO : TimestampedModel
     {
         public double OfferedPrice { get; set; }
+        public string OfferStatus { get; set; }
         public string Note { get; set; }
     }
 }
