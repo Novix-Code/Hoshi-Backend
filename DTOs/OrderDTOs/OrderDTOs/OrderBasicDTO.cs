@@ -9,6 +9,7 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
 
         public string Description { get; set; }
         public double ProposalPrice { get; set; }
+        public string OrderStatus { get; set; }
 
         public string Location { get; set; }
         public DateTime ServicingDateTime { get; set; }
