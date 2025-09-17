@@ -164,5 +164,15 @@ namespace Hoshi.Controllers.UserControllers
             var response = await emailService.ReSetOtp(Email);
             return StatusCode(response.StatusCode, response);
         }
+
+        /// <summary>
+        /// Get admins along with their roles and permissions.
+        /// </summary>
+        [HttpGet("get-all-admins-with-roles-and-permissions")]
+        public async Task<IActionResult> GetAllAdminsWithRolesAndPermissionsAsync()
+        {
+            var response = await userService.GetAllAdminsWithRolesAndPermissionsAsync();
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
