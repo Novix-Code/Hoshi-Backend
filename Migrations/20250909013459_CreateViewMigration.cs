@@ -27,6 +27,24 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkersView;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView;");
 
+            // View: OverviewView — Shows global statistics (users, orders, revenue)
+            migrationBuilder.Sql(
+                @"CREATE VIEW OverviewView AS
+                    SELECT 
+                        (SELECT COUNT(*) FROM AspNetUsers u WHERE u.UserType != 'Admin') AS TotalUsers,
+                        (SELECT COUNT(*) FROM AspNetUsers u WHERE u.UserType = 'Client') AS TotalClients,
+                        (SELECT COUNT(*) FROM AspNetUsers u WHERE u.UserType = 'Worker') AS TotalWorkers,
+                        (SELECT COUNT(*) FROM Orders) AS TotalOrders,
+                        (SELECT COUNT(*) FROM Orders WHERE OrderStatus = 'Completed') AS TotalCompletedOrders,
+                        (SELECT SUM(i.OrderPrice) 
+                            FROM Orders o 
+                            JOIN Invoices i on i.OrderId = o.Id AND o.OrderStatus = 'Completed') AS TotalOrderPrice,
+                        (SELECT SUM(i.CommissionFee) 
+                            FROM Orders o 
+                            JOIN Invoices i on i.OrderId = o.Id AND o.OrderStatus = 'Completed') AS TotalOrderIncome;"
+            );
+
+            // View: AllClientView — Shows all users of type 'Client'
             migrationBuilder.Sql(
                 @"CREATE VIEW AllClientView AS
                     SELECT 
@@ -38,6 +56,7 @@ namespace Hoshi.Migrations
                     WHERE u.UserType = 'Client';"
             );
 
+            // View: AllWorkersView — Shows all users of type 'Worker'
             migrationBuilder.Sql(
                 @"CREATE VIEW AllWorkersView AS
                     SELECT 
@@ -49,11 +68,13 @@ namespace Hoshi.Migrations
                     WHERE u.UserType = 'Worker';"
             );
 
+            // View: CitiesgetView — Shows all cities from the Cities table
             migrationBuilder.Sql(
                 @"CREATE VIEW CitiesgetView AS
                     SELECT * FROM Cities;"
             );
 
+            // View: ClientDetailsView — Shows detailed info about clients and their specifications
             migrationBuilder.Sql(
                 @"CREATE VIEW ClientDetailsView AS
                     SELECT 
@@ -67,6 +88,7 @@ namespace Hoshi.Migrations
                     JOIN ClientSpecifications cl ON u.Id = cl.UserId;"
             );
 
+            // View: ClientPageView — Shows general client statistics
             migrationBuilder.Sql(
                 @"CREATE VIEW ClientPageView AS
                     SELECT 
@@ -83,16 +105,16 @@ namespace Hoshi.Migrations
                         ), 0) AS TotalNewClientsThisMonth,
 
                         ISNULL((
-							SELECT COUNT(*) 
-							FROM AspNetUsers u
+                            SELECT COUNT(*) 
+                            FROM AspNetUsers u
                             WHERE u.UserType = 'Client'
-								AND u.IsDeleted = 0
-								AND NOT EXISTS (
-									SELECT 1 
-									FROM SuspendedUsers s
-									WHERE s.UserId = u.Id 
+                                AND u.IsDeleted = 0
+                                AND NOT EXISTS (
+                                    SELECT 1 
+                                    FROM SuspendedUsers s
+                                    WHERE s.UserId = u.Id 
                                 )
-						), 0) AS TotalActiveClients,
+                        ), 0) AS TotalActiveClients,
 
                         ISNULL((SELECT AVG(OrderCount) AS AvgOrdersPerClient
                             FROM (
@@ -105,11 +127,13 @@ namespace Hoshi.Migrations
                     FROM (SELECT 1 AS Dummy) AS Base;"
             );
 
+            // View: JobView — Shows basic job information
             migrationBuilder.Sql(
                 @"CREATE VIEW JobView AS
-                    SELECT JobTitle, IsDeleted,Id FROM Jobs;"
+                    SELECT JobTitle, IsDeleted, Id FROM Jobs;"
             );
 
+            // View: NewClientView — Shows clients registered this month
             migrationBuilder.Sql(
                 @"CREATE VIEW NewClientView AS
                     SELECT 
@@ -124,6 +148,7 @@ namespace Hoshi.Migrations
                         AND u.IsDeleted = 0;"
             );
 
+            // View: NewWorkerView — Shows workers registered this month
             migrationBuilder.Sql(
                 @"CREATE VIEW NewWorkerView AS
                     SELECT 
@@ -137,6 +162,7 @@ namespace Hoshi.Migrations
                         AND u.IsDeleted = 0;"
             );
 
+            // View: OrderDetailsView — Shows full order details
             migrationBuilder.Sql(
                 @"CREATE VIEW OrderDetailsView AS
                     SELECT 
@@ -156,27 +182,13 @@ namespace Hoshi.Migrations
                     FROM Orders;"
             );
 
-            migrationBuilder.Sql(
-                @"CREATE VIEW OverviewView AS
-                    SELECT 
-	                    (SELECT COUNT(*) FROM AspNetUsers u WHERE u.UserType != 'Admin') AS TotalUsers,
-	                    (SELECT COUNT(*) FROM AspNetUsers u WHERE u.UserType = 'Client') AS TotalClients,
-	                    (SELECT COUNT(*) FROM AspNetUsers u WHERE u.UserType = 'Worker') AS TotalWorkers,
-	                    (SELECT COUNT(*) FROM Orders) AS TotalOrders,
-	                    (SELECT COUNT(*) FROM Orders WHERE OrderStatus = 'Completed') AS TotalCompletedOrders,
-	                    (SELECT SUM(i.OrderPrice) 
-                            FROM Orders o 
-                            JOIN Invoices i on i.OrderId = o.Id AND o.OrderStatus = 'Completed') AS TotalOrderPrice,
-	                    (SELECT SUM(i.CommissionFee) 
-                            FROM Orders o 
-                            JOIN Invoices i on i.OrderId = o.Id AND o.OrderStatus = 'Completed') AS TotalOrderIncome;"
-            );
-
+            // View: PortfolioView — Shows workers’ portfolio files
             migrationBuilder.Sql(
                 @"CREATE VIEW PortfolioView AS
                     SELECT FileURL, WorkerId FROM WorkerPortfolios;"
             );
 
+            // View: SuspendedUser — Shows suspended clients
             migrationBuilder.Sql(
                 @"CREATE VIEW SuspendedUser AS
                     SELECT 
@@ -189,6 +201,7 @@ namespace Hoshi.Migrations
                     JOIN SuspendedUsers sus On u.Id = sus.UserId AND u.UserType = 'Client';"
             );
 
+            // View: SuspendedWorker — Shows suspended workers
             migrationBuilder.Sql(
                 @"CREATE VIEW SuspendedWorker AS
                     SELECT 
@@ -201,6 +214,7 @@ namespace Hoshi.Migrations
                     JOIN SuspendedUsers sus On u.Id = sus.UserId AND u.UserType = 'Worker';"
             );
 
+            // View: WorkerDetailsView — Shows detailed info about workers and their specifications
             migrationBuilder.Sql(
                 @"CREATE VIEW WorkerDetailsView AS
                     SELECT 
@@ -221,6 +235,7 @@ namespace Hoshi.Migrations
                     JOIN WorkerSpecifications ws ON ws.UserId = u.Id;"
             );
 
+            // View: WorkerPageView — Shows general worker statistics
             migrationBuilder.Sql(
                 @"CREATE VIEW WorkerPageView AS
                     SELECT 
@@ -237,25 +252,26 @@ namespace Hoshi.Migrations
                         ), 0) AS TotalNewWorkers,
 
                         ISNULL((
-							SELECT COUNT(*) 
-							FROM AspNetUsers u
+                            SELECT COUNT(*) 
+                            FROM AspNetUsers u
                             WHERE u.UserType = 'Worker'
-								AND u.IsDeleted = 0
-								AND NOT EXISTS (
-									SELECT 1 
-									FROM SuspendedUsers s
-									WHERE s.UserId = u.Id 
+                                AND u.IsDeleted = 0
+                                AND NOT EXISTS (
+                                    SELECT 1 
+                                    FROM SuspendedUsers s
+                                    WHERE s.UserId = u.Id 
                                 )
-						), 0) AS TotalActiveWorkers,
+                        ), 0) AS TotalActiveWorkers,
 
-						ISNULL((
-	                        SELECT CAST(ROUND(AVG(WorkersServices * 1.0), 0) AS INT) 
-	                        FROM (
-		                        SELECT COUNT(ws.WorkerId) AS WorkersServices 
-		                        FROM WorkerServices ws GROUP BY ws.ServiceId
-	                        ) AS Base
+                        ISNULL((
+                            SELECT CAST(ROUND(AVG(WorkersServices * 1.0), 0) AS INT) 
+                            FROM (
+                                SELECT COUNT(ws.WorkerId) AS WorkersServices 
+                                FROM WorkerServices ws GROUP BY ws.ServiceId
+                            ) AS Base
                         ), 0) AS AverageWorkersPerService;"
             );
+
         }
 
         /// <inheritdoc />
