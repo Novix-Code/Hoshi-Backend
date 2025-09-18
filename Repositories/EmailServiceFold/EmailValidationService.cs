@@ -13,6 +13,8 @@ namespace Hoshi.Repositories.EmailServiceFold
     public class EmailValidationService
     {
         private readonly LookupClient _dnsClient;
+
+        // Temp emails not allow
         private static readonly HashSet<string> DisposableEmailDomains = new HashSet<string>
         {
             "10minutemail.com", "guerrillamail.com", "mailinator.com", "tempmail.org",
@@ -20,6 +22,15 @@ namespace Hoshi.Repositories.EmailServiceFold
             "sharklasers.com", "guerrillamail.info", "guerrillamail.biz", "guerrillamail.net",
             "guerrillamail.org", "guerrillamail.de", "grr.la", "guerrillamailblock.com",
             "pokemail.net", "spam4.me", "bccto.me", "chacuo.net", "027168.com"
+        };
+
+        // Whitelist commonly problematic domains
+        private static readonly HashSet<string> WhitelistedDomains = new HashSet<string>
+        {
+            "yahoo.com", "yahoo.co.uk", "yahoo.fr", "yahoo.de",
+            "hotmail.com", "outlook.com", "live.com",
+            "gmail.com", "googlemail.com",
+            "icloud.com", "me.com", "mac.com"
         };
 
         public EmailValidationService()
@@ -70,12 +81,13 @@ namespace Hoshi.Repositories.EmailServiceFold
 
                 // Step 5: SMTP server connectivity check
                 var canConnect = await CanConnectToAnyMxServerAsync(mxRecords);
-                if (!canConnect && domain != "yahoo.com")
-                {
-                    result.IsValid = false;
-                    result.Reason = "خوادم البريد غير متاحة";
-                    return result;
-                }
+                if (!WhitelistedDomains.Contains(domain))
+                    if (!canConnect)
+                    {
+                        result.IsValid = false;
+                        result.Reason = "خوادم البريد غير متاحة";
+                        return result;
+                    }
 
                 result.IsValid = true;
                 result.Reason = "البريد الإلكتروني صالح";
@@ -112,11 +124,6 @@ namespace Hoshi.Repositories.EmailServiceFold
             {
                 return false;
             }
-        }
-
-        private bool IsDisposableEmail(string domain)
-        {
-            return DisposableEmailDomains.Contains(domain);
         }
 
         private async Task<bool> DomainExistsAsync(string domain)
@@ -219,7 +226,7 @@ namespace Hoshi.Repositories.EmailServiceFold
 
                 var domain = email.Split('@')[1].ToLowerInvariant();
 
-                if (IsDisposableEmail(domain))
+                if (DisposableEmailDomains.Contains(domain))
                 {
                     result.IsValid = false;
                     result.Reason = "البريد الإلكتروني المؤقت غير مسموح";
