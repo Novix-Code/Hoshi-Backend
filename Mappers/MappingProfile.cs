@@ -64,6 +64,7 @@ using Hoshi.Models.DashboardModels;
 using GenericCRUDLibrary.GenericInterfaces;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
+using Hoshi.Models.ViewModels;
 
 namespace Hoshi.Mappers
 {
@@ -202,11 +203,15 @@ namespace Hoshi.Mappers
 
 			CreateMap<OrderBasicDTO, Order>().ReverseMap();
 
+			CreateMap<OfferBasicDTO, Offer>().ReverseMap();
+
 			CreateMap<ServiceBasicDTO, Service>().ReverseMap();
 
 			CreateMap<ServiceCategoryBasicDTO, ServiceCategory>().ReverseMap();
 
 			CreateMap<WorkerPortfolioBasicDTO, WorkerPortfolio>().ReverseMap();
+
+			CreateMap<DashbordWorkerDetailsDTO, WorkerSpecification>().ReverseMap();
 
             // Handel enums in mappers
             CreateMap<FeePostDTO, Fee>()
@@ -214,15 +219,22 @@ namespace Hoshi.Mappers
                 // Add current date time whithin creating a new Row
                 .ForMember(d => d.CreatedAt, s => s.MapFrom(s => DateTime.Now));
 
+            CreateMap<OrderPostDTO, Order>()
+                // Add current date time whithin creating a new Row
+                .ForMember(d => d.CreatedAt, s => s.MapFrom(s => DateTime.Now))
+                .ForMember(d => d.ServicingDateTime, s => s.MapFrom(s => s.ServicingDateTime.ToUniversalTime()));
+
             CreateMap<PromotionPostDTO, Promotion>()
                 .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()))
-                // Add current date time whithin creating a new Row
-                .ForMember(d => d.CreatedAt, s => s.MapFrom(s => DateTime.Now));
+                .ForMember(d => d.StartDate, s => s.MapFrom(s => s.StartDate.Value.ToUniversalTime()))
+                .ForMember(d => d.EndDate, s => s.MapFrom(s => s.EndDate.Value.ToUniversalTime()));
 
             CreateMap<PromotionPutDTO, Promotion>()
                 .ForMember(d => d.PromotionFor, s => s.MapFrom(s => s.PromotionFor.ToString()))
                 // Add current date time whithin updating a new Row
                 .ForMember(d => d.ModifiedAt, s => s.MapFrom(s => DateTime.Now))
+                .ForMember(d => d.StartDate, s => s.MapFrom(s => s.StartDate.Value.ToUniversalTime()))
+                .ForMember(d => d.EndDate, s => s.MapFrom(s => s.EndDate.Value.ToUniversalTime()))
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember, context) =>
                 {
                     if (srcMember == null) return false;
@@ -231,6 +243,14 @@ namespace Hoshi.Mappers
                     return !(type.IsValueType && Activator.CreateInstance(type)?.Equals(srcMember) == true);
                 }));
 
+            // View models mappers: used to handel the requierd mapping in GenericFSPService
+            CreateMap<NewClientViewModel, NewClientViewModel>();
+            CreateMap<AllClientModelForView, AllClientModelForView>();
+            CreateMap<SuspendedUserModelForView, SuspendedUserModelForView>();
+
+            CreateMap<NewWorkerModelForView, NewWorkerModelForView>();
+            CreateMap<AllWorkersModelForView, AllWorkersModelForView>();
+            CreateMap<SuspendedWorkerModelForView, SuspendedWorkerModelForView>();
 
             // Suggested improvement (projection-friendly mappings for queries):
             // CreateMap<Order, OrderSearchResultDto>()

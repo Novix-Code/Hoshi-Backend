@@ -15,7 +15,7 @@ namespace Hoshi.Repositories.WorkerHomeService
         /// <summary>
         /// Get worker home details including offers, upcoming and nearby orders.
         /// </summary>
-        Task<ResultDTO<WorkerOrderDetailsDto>> GetWorkerHomeAsync(int workerId);
+        Task<ResultDTO<object>> GetWorkerHomeAsync(int workerId);
         /// <summary>
         /// Search published orders by service and city names.
         /// </summary>

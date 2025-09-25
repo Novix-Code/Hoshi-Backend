@@ -1,5 +1,8 @@
-﻿using Hoshi.Models.UserModels;
+﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using Hoshi.Data;
+using Hoshi.Models.UserModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,6 +13,8 @@ namespace Hoshi.Repositories.TokenService
 {
     public class TokenService : ITokenService
     {
+        private readonly HoshiDbContext context;
+
         /// <summary>
         /// Issues JWTs and maintains an in-memory blacklist of invalidated tokens using the token's JTI.
         /// Note: Blacklist is memory-scoped; consider a distributed cache for multi-instance deployments.
@@ -17,19 +22,25 @@ namespace Hoshi.Repositories.TokenService
         private readonly IMemoryCache _cache;
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
         public TokenService(
+            HoshiDbContext context,
             IMemoryCache cache,
             IConfiguration configuration,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IHttpContextAccessor httpContextAccessor
+        )
         {
             _configuration = configuration;
             _userManager = userManager;
+            this.httpContextAccessor = httpContextAccessor;
+            this.context = context;
             _cache = cache;
 
         }
 
-        public async Task<string> CreateTokenAsync(User applicationUser)
+        public async Task<string> CreateTokenAsync(User applicationUser, bool isRefres = false)
         {
             //1-Set claims
             List<Claim> claimsList = new List<Claim>
@@ -58,7 +69,51 @@ namespace Hoshi.Repositories.TokenService
                 );
 
             //4-Return the token
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            if (isRefres)
+                await context.UserTokens
+                    .Where(t => t.UserId == applicationUser.Id)
+                    .ExecuteUpdateAsync(ut => ut.SetProperty(ut => ut.Value, accessToken));
+            else
+                await context.UserTokens.AddAsync(new IdentityUserToken<int>
+                {
+                    Name = "AccessToken",
+                    LoginProvider = "Application",
+                    UserId = applicationUser.Id,
+                    Value = accessToken
+                });
+
+            await context.SaveChangesAsync();
+
+            return accessToken;
+        }
+
+        public async Task<ResultDTO<string>> RefrshToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jsonToken = tokenHandler.ReadJwtToken(token);
+
+            var nameIdentifier = jsonToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (nameIdentifier == null) return ResultDTO<string>.Unauthorized();
+
+            int userId = int.Parse(nameIdentifier);
+
+            var checkToken = await context.UserTokens.AsNoTracking().FirstOrDefaultAsync(t => t.Value == token && t.UserId == userId);
+            if (checkToken == null)
+                return ResultDTO<string>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "التوكين غير صحيح. بالرجاء اعادة تسجيل الدخول من جديد.",
+                    ErrorEn = "The token is invalid. Please log in again."
+                });
+
+            var applicationUser = await _userManager.FindByIdAsync(nameIdentifier);
+            if (applicationUser == null) return ResultDTO<string>.Unauthorized();
+
+            string newToken = await CreateTokenAsync(applicationUser, true);
+
+            return ResultDTO<string>.Success(null, token: newToken);
         }
 
         // In your TokenService

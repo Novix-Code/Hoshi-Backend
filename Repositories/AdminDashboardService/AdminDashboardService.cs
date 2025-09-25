@@ -1,24 +1,25 @@
-﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
-using Hoshi.DTOs.DashboardDTOs.ComplaintDTOs;
-using Hoshi.DTOs.DashboardDTOs;
-using Hoshi.DTOs.GlobalDTOs.ComplaintDTOs;
-using Hoshi.DTOs.ServiceDTOs.JobDTOs;
-using Hoshi.DTOs.UserDTOs.ClientSpecificationDTOs;
-using Hoshi.Enums;
-using Hoshi.Models.UserModels.WorkerModels;
-using Hoshi.Models.UserModels;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
+﻿using AutoMapper;
+using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
-using Hoshi.Repositories.FileServiceFold;
+using Hoshi.DTOs.DashboardDTOs;
+using Hoshi.DTOs.DashboardDTOs.ComplaintDTOs;
+using Hoshi.DTOs.GlobalDTOs.ComplaintDTOs;
+using Hoshi.DTOs.OrderDTOs.OrderDTOs;
+using Hoshi.DTOs.ServiceDTOs.JobDTOs;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.PermissionDTOs;
 using Hoshi.DTOs.UserDTOs.AdminDTOs.UserPermissionDTOs;
+using Hoshi.DTOs.UserDTOs.ClientSpecificationDTOs;
 using Hoshi.DTOs.UserDTOs.UserDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerPortfolioDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
+using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
+using Hoshi.Models.UserModels;
+using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Repositories.FileServiceFold;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hoshi.Repositories.AdminDashboardService
 {
@@ -50,22 +51,69 @@ namespace Hoshi.Repositories.AdminDashboardService
             // Get top 10 new orders
             var newOrders = context.Orders
                 .Include(i => i.Client)
-                .Where(p => 
-                    p.OrderStatus == Enums.OrderStatus.Published.ToString() 
+                .Where(p =>
+                    p.OrderStatus == Enums.OrderStatus.Published.ToString()
                     || p.OrderStatus == Enums.OrderStatus.Assigned.ToString()
                 )
-                .Select(o => new { o.Id, o.Description, o.ServicingDateTime, o.Client!.FullName, o.Client!.ImageURL})
+                .Select(o => new
+                {
+                    o.Id,
+                    o.Description,
+                    o.ServicingDateTime,
+                    o.OrderStatus,
+                    o.Client!.FullName,
+                    o.Client!.ImageURL
+                })
                 .Take(10);
-            
+
             // Get top 10 completed orders
             var completedOrders = context.Orders
-                .Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString()).Take(10);
+                .Include(i => i.City)
+                .Include(i => i.Service)
+                .Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString())
+                .Select(o => new
+                {
+                    o.Id,
+                    o.Description,
+                    o.ServicingDateTime,
+                    o.OrderStatus,
+                    o.City!.CityName,
+                    o.Service!.ServiveName
+                })
+                .Take(10);
 
             // Get top 10 new complaints
-            var newComplaints = context.Complaints.Where(p => p.ComplaintStatus == Enums.ComplaintStatus.Waitting.ToString()).Take(10);
+            var newComplaints = context.Complaints
+                .Include(i => i.ComplaintType)
+                .Include(i => i.Order)
+                .ThenInclude(o => o.Service)
+                .Where(p => p.ComplaintStatus == Enums.ComplaintStatus.Waitting.ToString())
+                .Select(o => new
+                {
+                    o.Id,
+                    o.Description,
+                    o.ComplaintType!.Type,
+                    o.CreatedAt,
+                    o.ComplaintStatus,
+                    OrderId = o.Order!.Id,
+                    o.Order!.Service!.ServiveName
+                })
+                .Take(10);
 
             // Get top 10 new payment requests
-            var newPaymentRequests = context.WorkerPaymentHistroys.Where(p => !p.IsApproved).Take(10);
+            var newPaymentRequests =
+                from wp in context.WorkerPaymentHistroys
+                where wp.IsApproved == false
+                join ww in context.WorkerWallets on wp.WorkerId equals ww.WorkerId
+                join ws in context.WorkerSpecifications on wp.WorkerId equals ws.UserId
+                select new
+                {
+                    wp.Id,
+                    ww.Balance,
+                    ws.User!.FullName,
+                    ws.User!.ImageURL,
+                    ws.Job!.JobTitle
+                };
 
             if (overResult == null)
             {
@@ -83,119 +131,364 @@ namespace Hoshi.Repositories.AdminDashboardService
                 NewOrders = newOrders,
                 CompletedOrders = completedOrders,
                 NewComplients = newComplaints,
-
+                NewPaymentRequests = newPaymentRequests
             };
             return ResultDTO<object>.Success(result);
 
         }
 
-        /// <summary>
-        /// Build services analytics page: per-job, per-category, and per-service aggregates.
-        /// </summary>
-        public async Task<ResultDTO<object>> GetServicesPageAsync()
+        // ---------------------
+        // Client Page Endpoints
+        // ---------------------
+
+        public async Task<ResultDTO<object>> Clientpage()
         {
-            var jobData = await context.JobServices
-                .Include(js => js.Job)
-                .Include(js => js.Service)
-                .ThenInclude(s => s.ServiceCategory)
-                .AsNoTracking()
+            // Get page statistics
+            var clientPage = await context.ClientPageView.FirstOrDefaultAsync();
+
+            // Get top 10 new Clients
+            var newClient = context.NewClientView.Take(10);
+            int newClientPagesNum = (int)Math.Ceiling(await context.NewClientView.CountAsync() / 10.0);
+
+            // Get top 10 of all Clients
+            var allClient = context.AllClientView.Take(10);
+            int allClientPagesNum = (int)Math.Ceiling(await context.AllClientView.CountAsync() / 10.0);
+
+            // Get top 10 of Suspended Clients
+            var susClient = context.SuspendedUserView.Take(10);
+            int susClientPagesNum = (int)Math.Ceiling(await context.SuspendedUserView.CountAsync() / 10.0);
+
+            var result = new
+            {
+                TotalClients = clientPage.TotalClients,
+                TotalNewClients = clientPage.TotalNewClientsThisMonth,
+                TotalActiveClients = clientPage.TotalActiveClients,
+                AverageOrder = clientPage.AverageOrdering,
+                NewClientsFirstPage = newClient,
+                AllClientsFirstPage = allClient,
+                SuspendedClientsFirstPage = susClient,
+                NewClientPagesNum = newClientPagesNum,
+                AllClientPagesNum = allClientPagesNum,
+                SuspendedClientPagesNum = susClientPagesNum
+            };
+            return ResultDTO<object>.Success(result);
+        }
+
+        public async Task<ResultDTO<object>> ClientDetails(int Id)
+        {
+            var targetClient = await context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
+            if (targetClient == null)
+                return ResultDTO<object>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "هذا المستخدم غير موجود.",
+                    ErrorEn = "This user not exist."
+                });
+
+
+            var targetOrders = await context.OrderDetailsView
+                .Where(p => p.ClientId == Id)
                 .ToListAsync();
 
-            var allOrders = await context.Orders.AsNoTracking().ToListAsync();
-
-            var jobResult = jobData
-                .GroupBy(js => js.Job)
-                .Select(group =>
-                {
-                    var job = group.Key.JobTitle;
-                    var serviceIds = group.Select(g => g.ServiceId).Distinct().ToList();
-                    var services = group.Select(g => g.Service).Distinct().ToList();
-
-                    var categoryCount = services.Select(s => s.ServiceCategoryId).Distinct().Count();
-
-                    var relatedOrders = allOrders.Where(o => serviceIds.Contains(o.ServiceId));
-                    var incomeAvg = relatedOrders.Any() ? (int)relatedOrders.Average(o => o.ProposalPrice) : 0;
-
-                    var totalWorkers = context.WorkerSpecifications.Count(w => w.JobId == group.Key.Id);
-
-                    return new
-                    {
-                        JobTitle = job,
-                        TotalRelatedCategories = categoryCount,
-                        TotalRelatedWorkers = totalWorkers,
-                        IncomeAvg = incomeAvg
-                    };
-                })
-                .ToList();
-
-
-            var categoryResult = jobData
-                .Where(js => js.Service.ServiceCategory != null)
-                .GroupBy(js => js.Service.ServiceCategory)
-            .Select(group =>
+            var result = new
             {
-                var category = group.Key;
-                var serviceIds = group.Select(g => g.ServiceId).Distinct().ToList();
-                var totalRelatedServices = serviceIds.Count;
-                // If you want workers for all jobs in this category:
-                var jobIds = group.Select(g => g.JobId).Distinct().ToList();
-                var totalRelatedWorkers = context.WorkerSpecifications.Count(w => jobIds.Contains(w.JobId));
-                var relatedOrders = allOrders.Where(o => serviceIds.Contains(o.ServiceId));
-                var incomeAvg = relatedOrders.Any() ? (int)relatedOrders.Average(o => o.ProposalPrice) : 0;
-
-                return new
-                {
-                    CategoryTitle = category.CategoryName,
-                    TotalRelatedServices = totalRelatedServices,
-                    TotalRelatedWorkers = totalRelatedWorkers,
-                    IncomeAvg = incomeAvg
-                };
-            })
-                .ToList();
-
-            var categoryServicesResult = jobData
-                .Where(js => js.Service.ServiceCategory != null)
-                .GroupBy(js => js.Service.ServiceCategory)
-                .Select(categoryGroup =>
-                {
-                    var category = categoryGroup.Key;
-
-                    var services = categoryGroup
-                        .Select(g => g.Service)
-                        .Distinct()
-                        .Select(service =>
-                        {
-                            var totalRelatedOrders = allOrders.Count(o => o.ServiceId == service.Id);
-                            var totalRelatedWorkers = context.WorkerServices.Count(ws => ws.ServiceId == service.Id);
-                            var incomeAvg = allOrders.Where(o => o.ServiceId == service.Id).Any()
-                                ? (int)allOrders.Where(o => o.ServiceId == service.Id).Average(o => o.ProposalPrice)
-                                : 0;
-
-                            return new
-                            {
-                                ServiceTitle = service.ServiveName,
-                                ImageUrl = service.ImageURL,
-                                TotalRelatedOrders = totalRelatedOrders,
-                                TotalRelatedWorkers = totalRelatedWorkers,
-                                IncomeAvg = incomeAvg
-                            };
-                        }).ToList();
-
-                    return new
-                    {
-                        CategoryTitle = category.CategoryName,
-                        Services = services
-                    };
-                })
-                .ToList();
-
-            return ResultDTO<object>.Success(new
-            {
-                Jobs = jobResult,
-                Categories = categoryResult,
-                CategoryServices = categoryServicesResult
-            });
+                ClientData = targetClient,
+                Orders = targetOrders,
+            };
+            return ResultDTO<object>.Success(result);
         }
+
+        // ---------------------
+        // Worker Page Endpoints
+        // ---------------------
+
+        public async Task<ResultDTO<object>> WorkerPage()
+        {
+            // Get page statistics
+            var workerDetails = await context.WorkerPageView.FirstOrDefaultAsync();
+
+            // Get top 10 new Workers
+            var newWorkers = context.NewWorkerView.Take(10);
+            int newWorkerPagesNum = (int)Math.Ceiling(await context.NewWorkerView.CountAsync() / 10.0);
+
+
+            // Get top 10 of all Workers
+            var allWorkers = context.AllWorkersView.Take(10);
+            int allWorkerPagesNum = (int)Math.Ceiling(await context.AllWorkersView.CountAsync() / 10.0);
+
+
+            // Get top 10 of Suspended Workers
+            var suspendedWorkers = context.SuspendedWorker.Take(10);
+            int susWorkerPagesNum = (int)Math.Ceiling(await context.SuspendedWorker.CountAsync() / 10.0);
+
+
+            var result = new
+            {
+                TotalWorkers = workerDetails.TotalWorkers,
+                TotalNewWorkers = workerDetails.TotalNewWorkers,
+                TotalActiveWorker = workerDetails.TotalActiveWorkers,
+                AverageWorkersperService = workerDetails.AverageWorkersPerService,
+                NewWorkers = newWorkers,
+                AllWorkers = allWorkers,
+                SuspendedWorkers = suspendedWorkers,
+                NewWorkerPagesNum = newWorkerPagesNum,
+                AllWorkerPagesNum = allWorkerPagesNum,
+                SuspendedWorkerPagesNum = susWorkerPagesNum
+
+            };
+            return ResultDTO<object>.Success(result);
+        }
+
+        public async Task<ResultDTO<object>> BeWorkerRequest(int Id)
+        {
+            try
+            {
+                // 1- Get worker specifications with its includes
+                var workerSpecs = await context.WorkerSpecifications
+                    .Include(i => i.Job)
+                    .Include(i => i.User)
+                    .Include(i => i.LivingCity)
+                    .FirstOrDefaultAsync(ws => ws.UserId == Id);
+
+                // Check if it exist
+                if (workerSpecs == null)
+                    return ResultDTO<object>.BadRequest(new ErrorDTO()
+                    {
+                        ErrorAr = "هذا المعرف غير صالح.",
+                        ErrorEn = "Is Id is not valid."
+                    });
+
+                // Map result to DashbordWorkerDetailsDTO to prepare the Result
+                var workerDetails = mapper.Map<DashbordWorkerDetailsDTO>(workerSpecs);
+
+                // 2- Get worker portfolio and check if it not null add it to workerDetails.Portfolios
+                var workerPortfolio = await context.WorkerPortfolios.Where(wp => wp.WorkerId == workerSpecs.UserId).ToListAsync();
+
+                if (workerPortfolio != null)
+                    workerDetails.Portfolios = mapper.Map<List<WorkerPortfolioBasicDTO>>(workerPortfolio);
+
+                // 3- Return final WorkerDetails
+                return ResultDTO<object>.Success(workerDetails);
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "يوجد مشكلة في النظام.",
+                        ErrorEn = "There is a Internal Server Error."
+                    },
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
+        }
+
+        public async Task<ResultDTO<object>> BeWorkerApproval(int Id)
+        {
+            var tergetWorkerSpecif = await context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
+            if (tergetWorkerSpecif == null)
+            {
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker Specification not found"
+                    ,
+                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
+                });
+            }
+
+            // Check if the worker is approved once before so cannot be approved again
+            if (tergetWorkerSpecif.IsApproved is true)
+            {
+                return ResultDTO<object>.BadRequest
+                (
+                    new ErrorDTO
+                    {
+                        ErrorAr = "تم قبول العامل بالفعل.",
+                        ErrorEn = "Worker already be approved."
+                    }
+                );
+            }
+
+            tergetWorkerSpecif.IsApproved = true;
+
+            // handle add notifications 
+            var checkexcist = await context.NotificationTypes.Where(p => p.Type == "Success Message").Select(p => p.Id).FirstOrDefaultAsync();
+            if (checkexcist == 0)
+            {
+                var notiType = new NotificationType
+                {
+                    Title = "Successfully Approved",
+                    ForClient = false,
+                    Type = "Success Message"
+                };
+                await context.NotificationTypes.AddAsync(notiType);
+                await context.SaveChangesAsync();
+                context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = notiType.Id,
+                    Description = "success Message",
+                    UserId = Id
+                });
+                context.WorkerSpecifications.Update(tergetWorkerSpecif);
+                await context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now approved");
+
+            }
+            else
+            {
+                context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = checkexcist,
+                    Description = "success Message",
+                    UserId = Id
+                });
+                context.WorkerSpecifications.Update(tergetWorkerSpecif);
+                await context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now approved");
+            }
+
+        }
+
+        public async Task<ResultDTO<object>> BeWorkerRejection(int Id, string rejectResoun)
+        {
+            var tergetWorkerSpecif = await context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
+            if (tergetWorkerSpecif == null)
+            {
+                return ResultDTO<object>.NotFound(new ErrorDTO
+                {
+                    ErrorEn = "worker Specification not found"
+                    ,
+                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
+                });
+            }
+
+            // Check if the user is already approved; in this case cannot be rejected
+            if (tergetWorkerSpecif.IsApproved is true)
+            {
+                return ResultDTO<object>.BadRequest
+                (
+                    new ErrorDTO
+                    {
+                        ErrorAr = "تم قبول العامل بالفعل، ولا يمكن رفضه.",
+                        ErrorEn = "Worker already be approved and can not be rejected."
+                    }
+                );
+            }
+
+            tergetWorkerSpecif.IsApproved = false;
+            await context.SaveChangesAsync();
+            var checkexcist = await context.NotificationTypes.Where(p => p.Type == "Reject Message").Select(p => p.Id).FirstOrDefaultAsync();
+            if (checkexcist == 0)
+            {
+                var notiType = new NotificationType
+                {
+                    Title = "Successfully Reject",
+                    ForClient = false,
+                    Type = "Reject Message"
+                };
+                await context.NotificationTypes.AddAsync(notiType);
+                await context.SaveChangesAsync();
+                context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = notiType.Id,
+                    Description = rejectResoun,
+                    UserId = Id
+                });
+                context.WorkerSpecifications.Update(tergetWorkerSpecif);
+                await context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now Rejected");
+
+            }
+            else
+            {
+                context.UserNotifications.Add(new UserNotification
+                {
+                    NotificationTypeId = checkexcist,
+                    Description = rejectResoun,
+                    UserId = Id
+                });
+                context.WorkerSpecifications.Update(tergetWorkerSpecif);
+                await context.SaveChangesAsync();
+                return ResultDTO<object>.Success("Worker is now Rejected");
+            }
+        }
+
+        public async Task<ResultDTO<object>> DashbordWorkerDetails(int Id)
+        {
+            try
+            {
+                // 1- Get worker specifications with its includes
+                var workerSpecs = await context.WorkerSpecifications
+                    .Include(i => i.Job)
+                    .Include(i => i.User)
+                    .Include(i => i.LivingCity)
+                    .FirstOrDefaultAsync(ws => ws.UserId == Id);
+
+                // Check if it exist
+                if (workerSpecs == null)
+                    return ResultDTO<object>.BadRequest(new ErrorDTO()
+                    {
+                        ErrorAr = "هذا المعرف غير صالح.",
+                        ErrorEn = "Is Id is not valid."
+                    });
+
+                // Map result to DashbordWorkerDetailsDTO to prepare the Result
+                var workerDetails = mapper.Map<DashbordWorkerDetailsDTO>(workerSpecs);
+
+                // 2- Get worker portfolio and check if it not null add it to workerDetails.Portfolios
+                var workerPortfolio = await context.WorkerPortfolios.Where(wp => wp.WorkerId == workerSpecs.UserId).ToListAsync();
+                if (workerPortfolio != null)
+                    workerDetails.Portfolios = mapper.Map<List<WorkerPortfolioBasicDTO>>(workerPortfolio);
+
+                // 3- Get all worker orders and check if it not null add it to workerDetails.Orders
+                var workerOrders = await context.Orders.Where(o => o.WorkerId == Id).ToListAsync();
+                if (workerOrders != null)
+                {
+                    workerDetails.Orders = mapper.Map<List<OrderBasicDTO>>(workerOrders);
+
+                    // 4- Calculate total user income and total commission fee from completed orders only
+                    // First select completed orders from worker orders
+                    HashSet<int> completedOrdersIds = workerOrders
+                        .Where(o => o.OrderStatus == Enums.OrderStatus.Completed.ToString())
+                        .Select(o => o.Id).ToHashSet<int>();
+
+                    // Second select CommissionFee and WorkerTotalPrice from each completed order invoice
+                    // Sum those data to get the total of each one and add it to worker details
+                    var totals = await context.Invoices
+                        .Where(i => completedOrdersIds.Contains(i.OrderId))
+                        .GroupBy(i => 1) // group values to fake group to aggregate them
+                        .Select(g => new
+                        {
+                            TotalIncome = g.Sum(i => i.WorkerTotalPrice),
+                            TotalCommission = g.Sum(i => i.CommissionFee)
+                        })
+                        .FirstOrDefaultAsync();
+
+                    workerDetails.TotalWorkerIncome = totals?.TotalIncome ?? 0;
+                    workerDetails.TotalCommissionFee = totals?.TotalCommission ?? 0;
+                }
+
+                // 5- Get worker balance from worker wallet
+                workerDetails.Balance = await context.WorkerWallets.Where(w => w.WorkerId == Id).Select(w => w.Balance).FirstOrDefaultAsync();
+
+                // 6- Returt Worker Details
+                return ResultDTO<object>.Success(workerDetails);
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "يوجد مشكلة في النظام.",
+                        ErrorEn = "There is a Internal Server Error."
+                    },
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
+        }
+
+        // ---------------------
+        // Payment Page Endpoints
+        // ---------------------
 
         /// <summary>
         /// Aggregate payments page data: invoice sums, payment requests, and uncollected fees.
@@ -465,6 +758,114 @@ namespace Hoshi.Repositories.AdminDashboardService
         }
 
         /// <summary>
+        /// Build services analytics page: per-job, per-category, and per-service aggregates.
+        /// </summary>
+        public async Task<ResultDTO<object>> GetServicesPageAsync()
+        {
+            var jobData = await context.JobServices
+                .Include(js => js.Job)
+                .Include(js => js.Service)
+                .ThenInclude(s => s.ServiceCategory)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var allOrders = await context.Orders.AsNoTracking().ToListAsync();
+
+            var jobResult = jobData
+                .GroupBy(js => js.Job)
+                .Select(group =>
+                {
+                    var job = group.Key.JobTitle;
+                    var serviceIds = group.Select(g => g.ServiceId).Distinct().ToList();
+                    var services = group.Select(g => g.Service).Distinct().ToList();
+
+                    var categoryCount = services.Select(s => s.ServiceCategoryId).Distinct().Count();
+
+                    var relatedOrders = allOrders.Where(o => serviceIds.Contains(o.ServiceId));
+                    var incomeAvg = relatedOrders.Any() ? (int)relatedOrders.Average(o => o.ProposalPrice) : 0;
+
+                    var totalWorkers = context.WorkerSpecifications.Count(w => w.JobId == group.Key.Id);
+
+                    return new
+                    {
+                        JobTitle = job,
+                        TotalRelatedCategories = categoryCount,
+                        TotalRelatedWorkers = totalWorkers,
+                        IncomeAvg = incomeAvg
+                    };
+                })
+                .ToList();
+
+
+            var categoryResult = jobData
+                .Where(js => js.Service.ServiceCategory != null)
+                .GroupBy(js => js.Service.ServiceCategory)
+            .Select(group =>
+            {
+                var category = group.Key;
+                var serviceIds = group.Select(g => g.ServiceId).Distinct().ToList();
+                var totalRelatedServices = serviceIds.Count;
+                // If you want workers for all jobs in this category:
+                var jobIds = group.Select(g => g.JobId).Distinct().ToList();
+                var totalRelatedWorkers = context.WorkerSpecifications.Count(w => jobIds.Contains(w.JobId));
+                var relatedOrders = allOrders.Where(o => serviceIds.Contains(o.ServiceId));
+                var incomeAvg = relatedOrders.Any() ? (int)relatedOrders.Average(o => o.ProposalPrice) : 0;
+
+                return new
+                {
+                    CategoryTitle = category.CategoryName,
+                    TotalRelatedServices = totalRelatedServices,
+                    TotalRelatedWorkers = totalRelatedWorkers,
+                    IncomeAvg = incomeAvg
+                };
+            })
+                .ToList();
+
+            var categoryServicesResult = jobData
+                .Where(js => js.Service.ServiceCategory != null)
+                .GroupBy(js => js.Service.ServiceCategory)
+                .Select(categoryGroup =>
+                {
+                    var category = categoryGroup.Key;
+
+                    var services = categoryGroup
+                        .Select(g => g.Service)
+                        .Distinct()
+                        .Select(service =>
+                        {
+                            var totalRelatedOrders = allOrders.Count(o => o.ServiceId == service.Id);
+                            var totalRelatedWorkers = context.WorkerServices.Count(ws => ws.ServiceId == service.Id);
+                            var incomeAvg = allOrders.Where(o => o.ServiceId == service.Id).Any()
+                                ? (int)allOrders.Where(o => o.ServiceId == service.Id).Average(o => o.ProposalPrice)
+                                : 0;
+
+                            return new
+                            {
+                                ServiceTitle = service.ServiveName,
+                                ImageUrl = service.ImageURL,
+                                TotalRelatedOrders = totalRelatedOrders,
+                                TotalRelatedWorkers = totalRelatedWorkers,
+                                IncomeAvg = incomeAvg
+                            };
+                        }).ToList();
+
+                    return new
+                    {
+                        CategoryTitle = category.CategoryName,
+                        Services = services
+                    };
+                })
+                .ToList();
+
+            return ResultDTO<object>.Success(new
+            {
+                Jobs = jobResult,
+                Categories = categoryResult,
+                CategoryServices = categoryServicesResult
+            });
+        }
+
+        /// <summary>
         /// Build complaints page summary and list with essential fields.
         /// </summary>
         public async Task<ResultDTO<ComplaintPageResponseDTO>> GetComplaintsPageAsync()
@@ -619,225 +1020,6 @@ namespace Hoshi.Repositories.AdminDashboardService
             return ResultDTO<StatisticPageResponseDTO>.Success(result);
         }
 
-        public async Task<ResultDTO<object>> BeWorkerApproved(int Id)
-        {
-            var tergetWorkerSpecif = await context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
-            if (tergetWorkerSpecif == null)
-            {
-                return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "worker Specification not found"
-                    ,
-                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
-                });
-            }
-
-            // Check if the worker is approved once before so cannot be approved again
-            if (tergetWorkerSpecif.IsApproved is true)
-            {
-                return ResultDTO<object>.BadRequest
-                (
-                    new ErrorDTO
-                    {
-                        ErrorAr = "تم قبول العامل بالفعل.",
-                        ErrorEn = "Worker already be approved."
-                    }
-                );
-            }
-
-            tergetWorkerSpecif.IsApproved = true;
-
-            // handle add notifications 
-            var checkexcist = await context.NotificationTypes.Where(p => p.Type == "Success Message").Select(p => p.Id).FirstOrDefaultAsync();
-            if (checkexcist == 0)
-            {
-                var notiType = new NotificationType
-                {
-                    Title = "Successfully Approved",
-                    ForClient = false,
-                    Type = "Success Message"
-                };
-                await context.NotificationTypes.AddAsync(notiType);
-                await context.SaveChangesAsync();
-                context.UserNotifications.Add(new UserNotification
-                {
-                    NotificationTypeId = notiType.Id,
-                    Description = "success Message",
-                    UserId = Id
-                });
-                context.WorkerSpecifications.Update(tergetWorkerSpecif);
-                await context.SaveChangesAsync();
-                return ResultDTO<object>.Success("Worker is now approved");
-
-            }
-            else
-            {
-                context.UserNotifications.Add(new UserNotification
-                {
-                    NotificationTypeId = checkexcist,
-                    Description = "success Message",
-                    UserId = Id
-                });
-                context.WorkerSpecifications.Update(tergetWorkerSpecif);
-                await context.SaveChangesAsync();
-                return ResultDTO<object>.Success("Worker is now approved");
-            }
-
-        }
-
-        public async Task<ResultDTO<object>> BeWorkerReject(int Id, string rejectResoun)
-        {
-            var tergetWorkerSpecif = await context.WorkerSpecifications.Where(p => p.UserId == Id).FirstOrDefaultAsync();
-            if (tergetWorkerSpecif == null)
-            {
-                return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "worker Specification not found"
-                    ,
-                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
-                });
-            }
-
-            // Check if the user is already approved; in this case cannot be rejected
-            if (tergetWorkerSpecif.IsApproved is true)
-            {
-                return ResultDTO<object>.BadRequest
-                (
-                    new ErrorDTO
-                    {
-                        ErrorAr = "تم قبول العامل بالفعل، ولا يمكن رفضه.",
-                        ErrorEn = "Worker already be approved and can not be rejected."
-                    }
-                );
-            }
-
-            tergetWorkerSpecif.IsApproved = false;
-            await context.SaveChangesAsync();
-            var checkexcist = await context.NotificationTypes.Where(p => p.Type == "Reject Message").Select(p => p.Id).FirstOrDefaultAsync();
-            if (checkexcist == 0)
-            {
-                var notiType = new NotificationType
-                {
-                    Title = "Successfully Reject",
-                    ForClient = false,
-                    Type = "Reject Message"
-                };
-                await context.NotificationTypes.AddAsync(notiType);
-                await context.SaveChangesAsync();
-                context.UserNotifications.Add(new UserNotification
-                {
-                    NotificationTypeId = notiType.Id,
-                    Description = rejectResoun,
-                    UserId = Id
-                });
-                context.WorkerSpecifications.Update(tergetWorkerSpecif);
-                await context.SaveChangesAsync();
-                return ResultDTO<object>.Success("Worker is now Rejected");
-
-            }
-            else
-            {
-                context.UserNotifications.Add(new UserNotification
-                {
-                    NotificationTypeId = checkexcist,
-                    Description = rejectResoun,
-                    UserId = Id
-                });
-                context.WorkerSpecifications.Update(tergetWorkerSpecif);
-                await context.SaveChangesAsync();
-                return ResultDTO<object>.Success("Worker is now Rejected");
-            }
-        }
-
-        public async Task<ResultDTO<object>> ClientDetails(int Id)
-        {
-            var targetClient = await context.ClientDetailsView.FirstOrDefaultAsync(p => p.UserId == Id);
-            if (targetClient == null)
-                return ResultDTO<object>.Failure(new ErrorDTO { ErrorEn = "client not found" }, ResponseStatusCodes.NotFound);
-
-
-            var targetOrders = await context.OrderDetailsView
-                .Where(p => p.ClientId == Id)
-                .ToListAsync();
-
-            var result = new
-            {
-                ImageURL = targetClient.ImageURL,
-                Email = targetClient.Email,
-                Phone = targetClient.PhoneNumber,
-                Location = targetClient.Address,
-                Orders = targetOrders,
-            };
-            return ResultDTO<object>.Success(result);
-        }
-
-        public async Task<ResultDTO<object>> Clientpage()
-        {
-            var clientPage = await context.ClientPageView.FirstOrDefaultAsync();
-            var newClient = await context.NewClientView.ToListAsync();
-            var allClient = await context.AllClientView.ToListAsync();
-            var susClient = await context.SuspendedUserView.ToListAsync();
-            var result = new
-            {
-                TotalClients = clientPage.TotalClients,
-                TotalNewClients = clientPage.TotalNewClientsThisMonth,
-                TotalActiveClients = clientPage.TotalActiveClients,
-                averageOrder = clientPage.AverageOrdering,
-                NewClients = newClient,
-                AllClient = allClient,
-                SuspendedClients = susClient,
-
-            };
-            return ResultDTO<object>.Success(result);
-        }
-
-        public async Task<ResultDTO<object>> DashbordWorkerDetails(int id)
-        {
-            var workerDetails = await context.WorkerDetailsView.FirstOrDefaultAsync(p => p.Id == id);
-
-            if (workerDetails == null)
-            {
-
-                return ResultDTO<object>.NotFound(new ErrorDTO
-                {
-                    ErrorEn = "worker Specification not found"
-                    ,
-                    ErrorAr = "لم يتم اضافة بيانات للعامل بعد"
-                });
-
-            }
-            var targetJob = await context.JobView.FirstOrDefaultAsync(p => p.Id == workerDetails.JobId);
-            var targetPortfolios = await context.PortfolioView.Where(p => p.WorkerId == id).ToListAsync();
-            var targetCity = await context.CitiesgetView.FirstOrDefaultAsync(p => p.Id == workerDetails.LivingCityId);
-            var targetwallet = await context.WorkerWallets.FirstOrDefaultAsync(p => p.WorkerId == id);
-            var targetCanceldOffers = await context.Offers.Where(p => p.WorkerId == id && p.OfferStatus == Enums.OfferStatus.Cancelled.ToString()).CountAsync();
-            var targetOrders = await context.OrderDetailsView.Where(p => p.WorkerId == id).ToListAsync();
-            var totalIncomeforWorker = await context.OrderDetailsView.Where(p => p.WorkerId == id && p.OrderStatus == Enums.OrderStatus.Completed.ToString()).Select(p => p.TotalWorkerCost).SumAsync();
-            var balance = 0.0;
-            if (targetwallet is not null)
-                balance = targetwallet.Balance;
-            var result = new
-            {
-                ImageURL = workerDetails.ImageURL,
-                Email = workerDetails.Email,
-                Phone = workerDetails.PhoneNumber,
-                Job = targetJob,
-                IsCompany = workerDetails.IsCompany,
-                City = targetCity,
-                Location = workerDetails.Address,
-                Bio = workerDetails.Bio,
-                RateRatio = workerDetails.RateRito,
-                CompletedOrders = workerDetails.CompletedOrders,
-                CancelledOffers = targetCanceldOffers,
-                TotalIncome = totalIncomeforWorker,
-                Balance = balance,
-                IdentityImageURL = workerDetails.IdentityImageURL,
-                Portfolies = targetPortfolios,
-                Orders = targetOrders
-            };
-            return ResultDTO<object>.Success(result);
-        }
-
         public async Task<ResultDTO<object>> OrderDetails(int id)
         {
             try
@@ -960,13 +1142,31 @@ namespace Hoshi.Repositories.AdminDashboardService
 
         public async Task<ResultDTO<object>> OrderPage()
         {
+            var activeStatusSet = new HashSet<string>
+            {
+                OrderStatus.Published.ToString(),
+                OrderStatus.InProgress.ToString(),
+                OrderStatus.Assigned.ToString()
+            };
+
+            var finishedStatusSet = new HashSet<string>
+            {
+                OrderStatus.Completed.ToString(),
+                OrderStatus.Cancelled.ToString()
+            };
+
             var totalOrders = await context.OrderDetailsView.CountAsync();
-            var totalActiveOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress.ToString()).CountAsync();
+
+            var totalActiveOrders = await context.OrderDetailsView.Where( p => activeStatusSet.Contains(p.OrderStatus)).CountAsync();
+            
             var totalCompletedOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString()).CountAsync();
+            
             var totalCancelledOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled.ToString()).CountAsync();
-            var ActiveOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.InProgress.ToString()).ToListAsync();
-            var CompletedAndCancelledOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString() || p.OrderStatus == Enums.OrderStatus.Cancelled.ToString()).ToListAsync();
-            // Suggested FIX: previous filter used && which is unsatisfiable; using || to include completed or cancelled
+            
+            var ActiveOrders = await context.OrderDetailsView.Where(p => activeStatusSet.Contains(p.OrderStatus)).ToListAsync();
+            
+            var CompletedAndCancelledOrders = await context.OrderDetailsView.Where(p => finishedStatusSet.Contains(p.OrderStatus)).ToListAsync();
+            
             var result = new
             {
                 TotalOrders = totalOrders,
@@ -979,64 +1179,6 @@ namespace Hoshi.Repositories.AdminDashboardService
             };
             return ResultDTO<object>.Success(result);
 
-        }
-
-        public async Task<ResultDTO<object>> WorkerDetails(int Id)
-        {
-            try
-            {
-                var workerSpecs = await context.WorkerSpecifications
-                    .Include(i => i.User)
-                    .Include(i => i.LivingCity)
-                    .Include(i => i.Job)
-                    .FirstOrDefaultAsync(ws => ws.UserId == Id);
-
-                if (workerSpecs == null)
-                    return ResultDTO<object>.BadRequest(new ErrorDTO()
-                    {
-                        ErrorAr = "هذا المعرف غير صالح.",
-                        ErrorEn = "Is Id is not valid."
-                    });
-
-                var workerDeltails = mapper.Map<WorkerSpecificationGetDTO>(workerSpecs);
-
-                var workerPortfolio = await context.WorkerPortfolios.Where(wp => wp.WorkerId == workerSpecs.UserId).ToListAsync();
-
-                if (workerPortfolio != null)
-                    workerDeltails.Portfolios = mapper.Map<List<WorkerPortfolioBasicDTO>>(workerPortfolio);
-
-                return ResultDTO<object>.Success(workerDeltails);
-            }
-            catch (Exception ex)
-            {
-                return ResultDTO<object>.InternalServerError(
-                    new ErrorDTO()
-                    {
-                        ErrorAr = "يوجد مشكلة في النظام.",
-                        ErrorEn = "There is a Internal Server Error."
-                    },
-                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
-                );
-            }
-        }
-
-        public async Task<ResultDTO<object>> WorkerPage()
-        {
-            var workerDetails = await context.WorkerPageView.FirstOrDefaultAsync();
-            var newWorkers = await context.NewWorkerView.ToListAsync();
-            var allWorkers = await context.AllWorkersView.ToListAsync();
-            var suspendedWorkers = await context.SuspendedWorker.ToListAsync();
-            var result = new
-            {
-                TotalWorkers = workerDetails.TotalWorkers,
-                TotalNewWorkers = workerDetails.TotalNewWorkers,
-                TotalActiveWorker = workerDetails.TotalActiveWorkers,
-                AverageWorkersperService = workerDetails.AverageWorkersPerService,
-                NewWorkers = newWorkers,
-                AllWorkers = allWorkers,
-                SuspendedWorkers = suspendedWorkers,
-            };
-            return ResultDTO<object>.Success(result);
         }
 
         public async Task<ResultDTO<List<AdminWithRolesAndPermissionsDTO>>> GetAllAdminsWithRolesAndPermissionsAsync()

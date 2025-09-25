@@ -1,4 +1,5 @@
 ﻿using Hoshi.Data.LookupSeeders;
+using Hoshi.Data.TermsAndCondetionsSeeders;
 using Hoshi.Models.ChatModels;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.DashboardModels.StatisticsModels;
@@ -46,6 +47,7 @@ namespace Hoshi.Data
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
             FeesSeeder.SeedFees(modelBuilder);
             ModelTypesSeeder.Seeder(modelBuilder);
+            TermsAndCondetionsSeeder.Seeder(modelBuilder);
 
             // Add Views
             modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");

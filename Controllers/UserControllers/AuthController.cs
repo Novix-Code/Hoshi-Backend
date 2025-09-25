@@ -4,6 +4,7 @@ using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Hoshi.Repositories.AuthService;
 using Hoshi.Repositories.EmailServiceFold;
+using Hoshi.Repositories.TokenService;
 using Hoshi.Repositories.UserService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,16 +18,19 @@ namespace Hoshi.Controllers.UserControllers
         private readonly IAuthService authService;
         private readonly IUserService userService;
         private readonly IEmailService emailService;
+        private readonly ITokenService tokenService;
 
         public AuthController(
             IAuthService authService,
             IUserService userService,
-            IEmailService emailService
+            IEmailService emailService,
+            ITokenService tokenService
         )
         {
             this.authService = authService;
             this.userService = userService;
             this.emailService = emailService;
+            this.tokenService = tokenService;
         }
 
 
@@ -53,6 +57,13 @@ namespace Hoshi.Controllers.UserControllers
         {
             var serviceResponse = await authService.Login(loginRequestDto);
             return StatusCode((int)serviceResponse.StatusCode, serviceResponse);
+        }
+
+        [HttpPatch("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromHeader] string  refreshToken)
+        {
+            var result = await tokenService.RefrshToken(refreshToken);
+            return StatusCode(result.StatusCode, result);
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using Hoshi.DTOs.GlobalDTOs.RateDTOs;
 using Hoshi.Models.GlobalModels;
 using Microsoft.AspNetCore.Authorization;
 using Hoshi.Repositories.RatesService;
+using Hoshi.DTOs.DashboardDTOs.TermsAndCondetionsDTOs;
 
 namespace Hoshi.Controllers.GlobalControllers.RateControllers
 {
@@ -60,6 +61,12 @@ namespace Hoshi.Controllers.GlobalControllers.RateControllers
                await rateService.AddRateForClient(postDTO);
 
             return baseResponse;
+        }
+
+        [NonAction]
+        public override Task<IActionResult> AddList(List<RatePostDTO> postDTOsList)
+        {
+            return base.AddList(postDTOsList);
         }
 
     }

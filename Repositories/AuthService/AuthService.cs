@@ -110,6 +110,14 @@ namespace Hoshi.Repositories.AuthService
 
             var passwordResetTokenRequestRepo = await _context.PasswordResetRequests.ToListAsync();
             _context.PasswordResetRequests.Add(passwordResetRequest);
+
+            // Send OTP to user to confirm request
+            var otpResult = await _emailService.SendOTP(email);
+
+            // Suggested improvement (handle OTP failure gracefully):
+            if (!otpResult.IsSuccess)
+                return ResultDTO<string>.BadRequest(otpResult.Error!);
+
             await _context.SaveChangesAsync();
 
             return ResultDTO<string>.Success(token);
@@ -323,7 +331,7 @@ namespace Hoshi.Repositories.AuthService
                 );
             }
 
-            var token = await _tokenService.CreateTokenAsync(applicationUser);
+            var token = await _tokenService.CreateTokenAsync(applicationUser, true);
 
             await _context.SaveChangesAsync();
 
@@ -413,7 +421,7 @@ namespace Hoshi.Repositories.AuthService
                 var identityResult = await _userManager.CreateAsync(applicationUser, registerRequestDto.Password);
 
                 // Create User code from first to chars of its type and its Id
-                applicationUser.UserCode = $"{userType.ToString()[..2].ToUpper()}-{applicationUser.Id:D6}";
+                applicationUser.UserCode = $"{userType.ToString()[..2].ToUpper()}-{applicationUser.Id}";
 
                 // Update User to add the new value
                 _context.Set<User>().Update(applicationUser);
@@ -749,7 +757,10 @@ namespace Hoshi.Repositories.AuthService
                     $" تم تقديم طلب إعادة تسجيل عامل من قبل المستخدم رقم {existingWorkerSpec.UserId} ";
 
                 await notificationServiceHandler.sendMessagetoAdmin(notificationMessage, request.UserId);
-                await notificationServiceHandler.sendMessagetoWorker(6, request.UserId, "تم ارسال طلب ان تصبح عامل");
+                await notificationServiceHandler.sendMessagetoWorker(
+                    1, request.UserId, 
+                    "تم ارسال طلب ان تصبح عامل وفي قيد انتظار المواففة عليه."
+                );
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

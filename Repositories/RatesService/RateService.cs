@@ -1,6 +1,7 @@
 ﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.GlobalDTOs.RateDTOs;
+using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,14 @@ namespace Hoshi.Repositories.RatesService
 
         public async Task<ResultDTO<object>> AddRateForClient(RatePostDTO dto)  
         {
+            var result = await CheckUsersTuyps(dto.ClientId, dto.WorkerId);
+            if (result.Item1 == false)
+                return ResultDTO<object>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = result.Item2,
+                    ErrorEn = result.Item3,
+                });
+
             // 1. Get details about client from client specification
             var clientSpecifics = await context.ClientSpecifications
                                         .FirstOrDefaultAsync(c=>c.UserId == dto.ClientId);
@@ -41,6 +50,14 @@ namespace Hoshi.Repositories.RatesService
 
         public async Task<ResultDTO<object>> AddRateForWorker(RatePostDTO dto)
         {
+            var result = await CheckUsersTuyps(dto.ClientId, dto.WorkerId);
+            if (result.Item1 == false)
+                return ResultDTO<object>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = result.Item2,
+                    ErrorEn = result.Item3,
+                });
+
             // 1. get specification for worker 
             var workerSpecifics = await context.WorkerSpecifications
                 .FirstOrDefaultAsync(s => s.UserId == dto.WorkerId);
@@ -92,5 +109,19 @@ namespace Hoshi.Repositories.RatesService
             return rates.Average();
         }
 
+        public async Task<Tuple<bool, string, string>> CheckUsersTuyps(int clientId, int workerId)
+        {
+            var clientData = await context.Users.FindAsync(clientId);
+
+            if(clientData == null || clientData.UserType != UserType.Client.ToString())
+                return new Tuple<bool, string, string>(false, "هذا ليس معرف عميل.", "This is not a client Id.");
+        
+            var workerData = await context.Users.FindAsync(workerId);
+
+            if(workerData == null || workerData.UserType != UserType.Worker.ToString())
+                return new Tuple<bool, string, string>(false,  "هذا ليس معرف عامل.", "This is not a worker Id.");
+
+            return new Tuple<bool, string, string>(true, "كل شيء جيد.", "All good.");
+        }
     }
 }

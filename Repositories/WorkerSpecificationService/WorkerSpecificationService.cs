@@ -113,6 +113,13 @@ namespace Hoshi.Repositories.WorkerSpecificationService
                         ErrorEn = "This is a wrong Id"
                     });
 
+                if(putDTO.PhoneNumber is not null)
+                {
+                    var phoneResult = await context.Users
+                        .Where(u => u.Id == specification.UserId)
+                        .ExecuteUpdateAsync(u => u.SetProperty(p => p.PhoneNumber, putDTO.PhoneNumber));
+                }
+
                 // Update Personal Image
                 if (putDTO.PersonalImage is not null)
                 {

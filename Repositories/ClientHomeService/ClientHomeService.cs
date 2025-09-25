@@ -2,8 +2,10 @@
 using Hoshi.Data;
 using Hoshi.DTOs.ClientDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionTakenDTOs;
+using Hoshi.Enums;
 using Hoshi.Models.PromotionModels;
 using Hoshi.Models.ServiceModels;
+using Hoshi.Repositories.PromotionService;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +19,12 @@ namespace Hoshi.Repositories.ClientHomeService
     public class ClientHomeService : IClientHomeService
     {
         private readonly HoshiDbContext _context;
-        public ClientHomeService(HoshiDbContext context)
+        private readonly IPromotionService promotionService;
+
+        public ClientHomeService(HoshiDbContext context, IPromotionService promotionService)
         {
             _context = context;
-      
+            this.promotionService = promotionService;
         }
         /// <summary>
         /// For all clients, compute available promotions (not yet taken) and active services per category.
@@ -43,7 +47,7 @@ namespace Hoshi.Repositories.ClientHomeService
             var allClientPromotionsTaken = await _context.PromotionsTaken
                 .Where(p => allClients.Select(c => c.Id).Contains(p.UserId))
                 .ToListAsync();
-            
+
             var resultList = new List<GetAllHomeServiceDTO>();
             foreach (var client in allClients)
             {
@@ -51,7 +55,7 @@ namespace Hoshi.Repositories.ClientHomeService
                 var takenPromotionIds = allClientPromotionsTaken
                     .Where(p => p.UserId == client.Id)
                     .Select(p => p.PromotionId)
-                    .ToHashSet(); 
+                    .ToHashSet();
 
                 var nonTakenPromotions = clientPromotions
                     .Where(p => !takenPromotionIds.Contains(p.Id))
@@ -88,42 +92,43 @@ namespace Hoshi.Repositories.ClientHomeService
         /// <summary>
         /// For a specific client, compute available promotions (not yet taken) and active services per category.
         /// </summary>
-        public async Task<ResultDTO<ClientHomeDto>> GetClientWithServiceById(int ClientId)
+        public async Task<ResultDTO<object>> ClientHomePage(int clientId)
         {
+            var client = await _context.Users.FindAsync(clientId);
+            if (client == null)
+                return ResultDTO<object>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "لا يوجد مستخدم يحمل هذا المعرف.",
+                    ErrorEn = "There is no user with this Id."
+                });
+            if (client.UserType != UserType.Client.ToString())
+                return ResultDTO<object>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "هذا ليس حساب عميل.",
+                    ErrorEn = "This is not a Client account."
+                });
+
             // 1. Get all relative Services and promotions
-            var takenPromotionIds = await _context.PromotionsTaken
-                .Where(p => p.UserId == ClientId)
-                .Select(p => p.PromotionId)
-                .ToListAsync();
+            var clientPromotions = await promotionService.NoneTakenPromotions(clientId, true);
 
-            var clientPromotions = await _context.Promotions
-                .Where(p => p.PromotionFor == Enums.PromotionFor.Client.ToString())
-                .ToListAsync();
-
-            var nonTakenPromotions = clientPromotions
-                .Where(p => !takenPromotionIds.Contains(p.Id))
-                .ToList();
-
-            var allCategories = await _context.ServiceCategories
-                .Include(c => c.Services)
-                .ToListAsync();
-
-            var targetActiveCategories = allCategories.Select(category => new TargetActiveCategory
-            {
-                Title = category.CategoryName,
-                ActiveService = category.Services
-                    .Where(service => !service.IsDeleted)
-                    .ToList()
-            }).ToList();
+            var services = await _context.ServiceCategories
+                .Include(i => i.Services)
+                .Where(c => !c.IsDeleted)
+                .Select(c => new
+                {
+                    CategoryId = c.Id,
+                    CategoryName = c.CategoryName,
+                    Services = c.Services!.Where(s => !s.IsDeleted).Select(s => new { s.Id, s.ServiveName, s.ImageURL }).ToList()
+                }).ToListAsync();
 
             //3. Build the result DTO
-            var result = new ClientHomeDto
+            var result = new
             {
-                Promotions = nonTakenPromotions,
-                ActiveCategoriesServices = targetActiveCategories
+                Promotions = clientPromotions,
+                Services = services
             };
 
-            return ResultDTO<ClientHomeDto>.Success(result);
+            return ResultDTO<object>.Success(result);
         }
 
     }
