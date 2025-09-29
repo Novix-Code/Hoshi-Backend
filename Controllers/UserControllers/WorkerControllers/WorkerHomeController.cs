@@ -37,7 +37,7 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpGet("search-orders")]
+        [HttpPost("search-orders")]
         public async Task<IActionResult> SearchOrders([FromBody] OrderSearchRequestDto searchRequest)
         {
             var result = await _workerHomeService.SearchOrdersAsync(searchRequest);

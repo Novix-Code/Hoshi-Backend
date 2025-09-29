@@ -64,7 +64,8 @@ using Hoshi.Models.DashboardModels;
 using GenericCRUDLibrary.GenericInterfaces;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.DTOs.UserDTOs.UserRegistiration;
-using Hoshi.Models.ViewModels;
+using Hoshi.Models.ViewModels.ClientsPageViews;
+using Hoshi.Models.ViewModels.WorkersPageViews;
 
 namespace Hoshi.Mappers
 {

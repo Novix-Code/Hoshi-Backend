@@ -1,4 +1,4 @@
-﻿namespace Hoshi.Models.ViewModels
+﻿namespace Hoshi.Models.ViewModels.ClientsPageViews
 {
     public class ClientDetailsModelView
     {

@@ -40,7 +40,7 @@ namespace Hoshi.Repositories.TokenService
 
         }
 
-        public async Task<string> CreateTokenAsync(User applicationUser, bool isRefres = false)
+        public async Task<string> CreateTokenAsync(User applicationUser)
         {
             //1-Set claims
             List<Claim> claimsList = new List<Claim>
@@ -71,11 +71,14 @@ namespace Hoshi.Repositories.TokenService
             //4-Return the token
             string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-            if (isRefres)
+            // update user token if exist
+            var updateUserToken = 
                 await context.UserTokens
                     .Where(t => t.UserId == applicationUser.Id)
                     .ExecuteUpdateAsync(ut => ut.SetProperty(ut => ut.Value, accessToken));
-            else
+
+            // if not exist add new one
+            if (updateUserToken <= 0)
                 await context.UserTokens.AddAsync(new IdentityUserToken<int>
                 {
                     Name = "AccessToken",
@@ -111,7 +114,7 @@ namespace Hoshi.Repositories.TokenService
             var applicationUser = await _userManager.FindByIdAsync(nameIdentifier);
             if (applicationUser == null) return ResultDTO<string>.Unauthorized();
 
-            string newToken = await CreateTokenAsync(applicationUser, true);
+            string newToken = await CreateTokenAsync(applicationUser);
 
             return ResultDTO<string>.Success(null, token: newToken);
         }

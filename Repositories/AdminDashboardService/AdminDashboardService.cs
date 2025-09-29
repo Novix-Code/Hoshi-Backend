@@ -487,6 +487,200 @@ namespace Hoshi.Repositories.AdminDashboardService
         }
 
         // ---------------------
+        // Order Page Endpoints
+        // ---------------------
+
+        public async Task<ResultDTO<object>> OrderPage()
+        {
+            var ordersPageValues = await context.OrdersPageView.FirstOrDefaultAsync();
+
+            var finishedOrders = context.FinishedOrdersView
+                .Take(10);
+
+            var activeOrders = context.ActiveOrdersView
+                .Take(10);
+
+            var result = new
+            {
+                TotalOrders = ordersPageValues?.TotalOrders,
+                TotalActiveOrders = ordersPageValues?.TotalActiveOrders,
+                totalCompletedOrders = ordersPageValues?.TotalCompletedOrders,
+                TotalCancelledOrder = ordersPageValues?.TotalCancelledOrders,
+                ActiveOrders = activeOrders,
+                CompletedAndCancelledOrders = finishedOrders,
+                ActiveTablePagesNum = (int)Math.Ceiling((double)(ordersPageValues?.TotalOrders ?? 0) / 10.0),
+                FinishedTablePagesNum = (int)Math.Ceiling(
+                    (double)((ordersPageValues?.TotalCompletedOrders ?? 0)
+                    + (ordersPageValues?.TotalCancelledOrders ?? 0))
+                    / 10.0
+                )
+            };
+            return ResultDTO<object>.Success(result);
+
+        }
+
+        public async Task<ResultDTO<object>> OrderDetails(int id)
+        {
+            try
+            {
+                Order? targetOrder = await context.Orders
+                    .Include(i => i.Worker)
+                    .Include(i => i.Client)
+                    .Include(i => i.City)
+                    .Include(i => i.Service)
+                    .Include(i => i.OrderImages)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+
+                if (targetOrder == null)
+                {
+                    return ResultDTO<object>.NotFound(
+                        new ErrorDTO
+                        {
+                            ErrorAr = "الطلب غير موجود",
+                            ErrorEn = "Order not found"
+                        }
+                    );
+                }
+
+                Offer? acceptedOffer = new();
+                WorkerSpecification? workerDetails = new();
+                double workerBalance = 0.0;
+                int workerCancelledOffers = 0;
+
+                // If worker id is not null that means that the order has an accepted offer
+                if (targetOrder.WorkerId is not null)
+                {
+                    acceptedOffer = await context.Offers
+                        .FirstOrDefaultAsync(of =>
+                            of.OrderId == targetOrder.Id
+                            && of.WorkerId == targetOrder.WorkerId
+                            && of.OfferStatus == Enums.OfferStatus.Accepted.ToString()
+                        );
+
+                    workerDetails = await context.WorkerSpecifications
+                        .Include(i => i.User)
+                        .Include(i => i.Job)
+                        .Include(i => i.LivingCity)
+                        .FirstOrDefaultAsync(ws => ws.UserId == targetOrder.WorkerId);
+
+                    workerBalance = await context.WorkerWallets
+                        .Where(ww => ww.WorkerId == targetOrder.WorkerId)
+                        .Select(r => r.Balance)
+                        .FirstOrDefaultAsync();
+
+                    workerCancelledOffers = await context.Offers
+                        .Where(of =>
+                            of.WorkerId == targetOrder.WorkerId
+                            && of.OfferStatus == Enums.OfferStatus.Cancelled.ToString()
+                        ).CountAsync();
+                }
+
+                var clientData = new
+                {
+                    ClientId = targetOrder.Client?.Id,
+                    ImageURL = targetOrder.Client?.ImageURL,
+                    FullName = targetOrder.Client?.FullName,
+                    Email = targetOrder.Client?.Email
+                };
+
+                var orderData = new
+                {
+                    OrderId = id,
+                    Description = targetOrder.Description,
+                    OrderStatus = targetOrder.OrderStatus,
+                    Location = targetOrder.Location,
+                    ServicingDatetime = targetOrder.ServicingDateTime,
+                    OrderImages = targetOrder.OrderImages?.Select(i => i.ImageURL).ToList(),
+                    Service = targetOrder.Service?.ServiveName,
+                    City = targetOrder.City?.CityName,
+
+                    // if the order has an accepted offer will return the offerd price else will return the order price
+                    OrderPrice = (targetOrder.WorkerId is not null) ? acceptedOffer?.OfferedPrice : targetOrder.ProposalPrice,
+                };
+
+                dynamic workerData;
+
+                if (targetOrder.WorkerId is null)
+                    workerData = new { IsSuccess = false, Message = "لم يتم تعيين عامل على هذا الطلب حتى الان." };
+                else
+                    workerData = new
+                    {
+                        IsSuccess = true,
+                        WorkerId = workerDetails?.UserId,
+                        ImageURL = workerDetails?.User?.ImageURL,
+                        Email = workerDetails?.User?.Email,
+                        FullName = workerDetails?.User?.FullName,
+                        Job = workerDetails?.Job?.JobTitle,
+                        IsCompany = workerDetails?.IsCompany,
+                        RateRatio = workerDetails?.RateRito,
+                        CompletedOrders = workerDetails?.CompletedOrders,
+                        CancelledOffers = workerCancelledOffers,
+                        Balance = workerBalance
+                    };
+
+                var result = new
+                {
+                    ClientData = clientData,
+                    OrderData = orderData,
+                    WorkerData = workerData
+                };
+                return ResultDTO<object>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "يوجد مشكلة في النظام.",
+                        ErrorEn = "There is a Internal Server Error."
+                    },
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
+        }
+
+        public async Task<ResultDTO<object>> GetServicesPageAsync()
+        {
+            try
+            {
+                var jobs = await context.JobsTableView.ToListAsync();
+
+                var categories = await context.CategoriesTableView.ToListAsync();
+
+                var allServices = await context.ServicesTableView.ToListAsync();
+
+                var services = allServices
+                    .GroupBy(s => s.CategoryName)
+                    .Select(g => new
+                    {
+                        CategoryName = g.Key,
+                        Services = g.ToList()
+                    })
+                    .ToList();
+
+                //Dictionary<string, List<object>> servicesTables = 
+
+                return ResultDTO<object>.Success(new
+                {
+                    JobsTable = jobs,
+                    CategoriesTable = categories,
+                    ServicesTable = services
+                });
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<object>.InternalServerError(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "يوجد مشكلة في النظام.",
+                        ErrorEn = "There is a Internal Server Error."
+                    },
+                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
+                );
+            }
+        }
+
+        // ---------------------
         // Payment Page Endpoints
         // ---------------------
 
@@ -758,114 +952,6 @@ namespace Hoshi.Repositories.AdminDashboardService
         }
 
         /// <summary>
-        /// Build services analytics page: per-job, per-category, and per-service aggregates.
-        /// </summary>
-        public async Task<ResultDTO<object>> GetServicesPageAsync()
-        {
-            var jobData = await context.JobServices
-                .Include(js => js.Job)
-                .Include(js => js.Service)
-                .ThenInclude(s => s.ServiceCategory)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var allOrders = await context.Orders.AsNoTracking().ToListAsync();
-
-            var jobResult = jobData
-                .GroupBy(js => js.Job)
-                .Select(group =>
-                {
-                    var job = group.Key.JobTitle;
-                    var serviceIds = group.Select(g => g.ServiceId).Distinct().ToList();
-                    var services = group.Select(g => g.Service).Distinct().ToList();
-
-                    var categoryCount = services.Select(s => s.ServiceCategoryId).Distinct().Count();
-
-                    var relatedOrders = allOrders.Where(o => serviceIds.Contains(o.ServiceId));
-                    var incomeAvg = relatedOrders.Any() ? (int)relatedOrders.Average(o => o.ProposalPrice) : 0;
-
-                    var totalWorkers = context.WorkerSpecifications.Count(w => w.JobId == group.Key.Id);
-
-                    return new
-                    {
-                        JobTitle = job,
-                        TotalRelatedCategories = categoryCount,
-                        TotalRelatedWorkers = totalWorkers,
-                        IncomeAvg = incomeAvg
-                    };
-                })
-                .ToList();
-
-
-            var categoryResult = jobData
-                .Where(js => js.Service.ServiceCategory != null)
-                .GroupBy(js => js.Service.ServiceCategory)
-            .Select(group =>
-            {
-                var category = group.Key;
-                var serviceIds = group.Select(g => g.ServiceId).Distinct().ToList();
-                var totalRelatedServices = serviceIds.Count;
-                // If you want workers for all jobs in this category:
-                var jobIds = group.Select(g => g.JobId).Distinct().ToList();
-                var totalRelatedWorkers = context.WorkerSpecifications.Count(w => jobIds.Contains(w.JobId));
-                var relatedOrders = allOrders.Where(o => serviceIds.Contains(o.ServiceId));
-                var incomeAvg = relatedOrders.Any() ? (int)relatedOrders.Average(o => o.ProposalPrice) : 0;
-
-                return new
-                {
-                    CategoryTitle = category.CategoryName,
-                    TotalRelatedServices = totalRelatedServices,
-                    TotalRelatedWorkers = totalRelatedWorkers,
-                    IncomeAvg = incomeAvg
-                };
-            })
-                .ToList();
-
-            var categoryServicesResult = jobData
-                .Where(js => js.Service.ServiceCategory != null)
-                .GroupBy(js => js.Service.ServiceCategory)
-                .Select(categoryGroup =>
-                {
-                    var category = categoryGroup.Key;
-
-                    var services = categoryGroup
-                        .Select(g => g.Service)
-                        .Distinct()
-                        .Select(service =>
-                        {
-                            var totalRelatedOrders = allOrders.Count(o => o.ServiceId == service.Id);
-                            var totalRelatedWorkers = context.WorkerServices.Count(ws => ws.ServiceId == service.Id);
-                            var incomeAvg = allOrders.Where(o => o.ServiceId == service.Id).Any()
-                                ? (int)allOrders.Where(o => o.ServiceId == service.Id).Average(o => o.ProposalPrice)
-                                : 0;
-
-                            return new
-                            {
-                                ServiceTitle = service.ServiveName,
-                                ImageUrl = service.ImageURL,
-                                TotalRelatedOrders = totalRelatedOrders,
-                                TotalRelatedWorkers = totalRelatedWorkers,
-                                IncomeAvg = incomeAvg
-                            };
-                        }).ToList();
-
-                    return new
-                    {
-                        CategoryTitle = category.CategoryName,
-                        Services = services
-                    };
-                })
-                .ToList();
-
-            return ResultDTO<object>.Success(new
-            {
-                Jobs = jobResult,
-                Categories = categoryResult,
-                CategoryServices = categoryServicesResult
-            });
-        }
-
-        /// <summary>
         /// Build complaints page summary and list with essential fields.
         /// </summary>
         public async Task<ResultDTO<ComplaintPageResponseDTO>> GetComplaintsPageAsync()
@@ -1018,167 +1104,6 @@ namespace Hoshi.Repositories.AdminDashboardService
             };
 
             return ResultDTO<StatisticPageResponseDTO>.Success(result);
-        }
-
-        public async Task<ResultDTO<object>> OrderDetails(int id)
-        {
-            try
-            {
-                Order? targetOrder = await context.Orders
-                    .Include(i => i.Worker)
-                    .Include(i => i.Client)
-                    .Include(i => i.City)
-                    .Include(i => i.Service)
-                    .Include(i => i.OrderImages)
-                    .FirstOrDefaultAsync(o => o.Id == id);
-
-                if (targetOrder == null)
-                {
-                    return ResultDTO<object>.NotFound(
-                        new ErrorDTO
-                        {
-                            ErrorAr = "الطلب غير موجود",
-                            ErrorEn = "Order not found"
-                        }
-                    );
-                }
-
-                Offer? acceptedOffer = new();
-                WorkerSpecification? workerDetails = new();
-                double workerBalance = 0.0;
-                int workerCancelledOffers = 0;
-
-                // If worker id is not null that means that the order has an accepted offer
-                if (targetOrder.WorkerId is not null)
-                {
-                    acceptedOffer = await context.Offers
-                        .FirstOrDefaultAsync(of =>
-                            of.OrderId == targetOrder.Id
-                            && of.WorkerId == targetOrder.WorkerId
-                            && of.OfferStatus == Enums.OfferStatus.Accepted.ToString()
-                        );
-
-                    workerDetails = await context.WorkerSpecifications
-                        .Include(i => i.User)
-                        .Include(i => i.Job)
-                        .Include(i => i.LivingCity)
-                        .FirstOrDefaultAsync(ws => ws.UserId == targetOrder.WorkerId);
-
-                    workerBalance = await context.WorkerWallets
-                        .Where(ww => ww.WorkerId == targetOrder.WorkerId)
-                        .Select(r => r.Balance)
-                        .FirstOrDefaultAsync();
-
-                    workerCancelledOffers = await context.Offers
-                        .Where(of =>
-                            of.WorkerId == targetOrder.WorkerId
-                            && of.OfferStatus == Enums.OfferStatus.Cancelled.ToString()
-                        ).CountAsync();
-                }
-
-                var clientData = new
-                {
-                    ClientId = targetOrder.Client?.Id,
-                    ImageURL = targetOrder.Client?.ImageURL,
-                    FullName = targetOrder.Client?.FullName,
-                    Email = targetOrder.Client?.Email
-                };
-
-                var orderData = new
-                {
-                    OrderId = id,
-                    Description = targetOrder.Description,
-                    OrderStatus = targetOrder.OrderStatus,
-                    Location = targetOrder.Location,
-                    ServicingDatetime = targetOrder.ServicingDateTime,
-                    OrderImages = targetOrder.OrderImages?.Select(i => i.ImageURL).ToList(),
-                    Service = targetOrder.Service?.ServiveName,
-                    City = targetOrder.City?.CityName,
-
-                    // if the order has an accepted offer will return the offerd price else will return the order price
-                    OrderPrice = (targetOrder.WorkerId is not null) ? acceptedOffer?.OfferedPrice : targetOrder.ProposalPrice,
-                };
-
-                dynamic workerData;
-
-                if (targetOrder.WorkerId is null)
-                    workerData = new { IsSuccess = false, Message = "لم يتم تعيين عامل على هذا الطلب حتى الان." };
-                else
-                    workerData = new
-                    {
-                        IsSuccess = true,
-                        WorkerId = workerDetails?.UserId,
-                        ImageURL = workerDetails?.User?.ImageURL,
-                        Email = workerDetails?.User?.Email,
-                        FullName = workerDetails?.User?.FullName,
-                        Job = workerDetails?.Job?.JobTitle,
-                        IsCompany = workerDetails?.IsCompany,
-                        RateRatio = workerDetails?.RateRito,
-                        CompletedOrders = workerDetails?.CompletedOrders,
-                        CancelledOffers = workerCancelledOffers,
-                        Balance = workerBalance
-                    };
-
-                var result = new
-                {
-                    ClientData = clientData,
-                    OrderData = orderData,
-                    WorkerData = workerData
-                };
-                return ResultDTO<object>.Success(result);
-            }
-            catch (Exception ex)
-            {
-                return ResultDTO<object>.InternalServerError(
-                    new ErrorDTO()
-                    {
-                        ErrorAr = "يوجد مشكلة في النظام.",
-                        ErrorEn = "There is a Internal Server Error."
-                    },
-                    ex.InnerException != null ? ex.InnerException.Message : ex.Message
-                );
-            }
-        }
-
-        public async Task<ResultDTO<object>> OrderPage()
-        {
-            var activeStatusSet = new HashSet<string>
-            {
-                OrderStatus.Published.ToString(),
-                OrderStatus.InProgress.ToString(),
-                OrderStatus.Assigned.ToString()
-            };
-
-            var finishedStatusSet = new HashSet<string>
-            {
-                OrderStatus.Completed.ToString(),
-                OrderStatus.Cancelled.ToString()
-            };
-
-            var totalOrders = await context.OrderDetailsView.CountAsync();
-
-            var totalActiveOrders = await context.OrderDetailsView.Where( p => activeStatusSet.Contains(p.OrderStatus)).CountAsync();
-            
-            var totalCompletedOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Completed.ToString()).CountAsync();
-            
-            var totalCancelledOrders = await context.OrderDetailsView.Where(p => p.OrderStatus == Enums.OrderStatus.Cancelled.ToString()).CountAsync();
-            
-            var ActiveOrders = await context.OrderDetailsView.Where(p => activeStatusSet.Contains(p.OrderStatus)).ToListAsync();
-            
-            var CompletedAndCancelledOrders = await context.OrderDetailsView.Where(p => finishedStatusSet.Contains(p.OrderStatus)).ToListAsync();
-            
-            var result = new
-            {
-                TotalOrders = totalOrders,
-                TotalActiveOrders = totalActiveOrders,
-                totalCompletedOrders = totalCompletedOrders,
-                TotalCancelledOrder = totalCancelledOrders,
-                ActiveOrders = ActiveOrders,
-                CompletedAndCancelledOrders = CompletedAndCancelledOrders
-
-            };
-            return ResultDTO<object>.Success(result);
-
         }
 
         public async Task<ResultDTO<List<AdminWithRolesAndPermissionsDTO>>> GetAllAdminsWithRolesAndPermissionsAsync()

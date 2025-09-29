@@ -1,13 +1,13 @@
 using AutoMapper;
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
-using Hoshi.DTOs.OrderDTOs.OfferDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.Enums;
 using Hoshi.Repositories.PromotionService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Hoshi.Repositories.WorkerHomeService
 {
@@ -84,6 +84,7 @@ namespace Hoshi.Repositories.WorkerHomeService
                 .Include(i => i.Service)
                 .Include(i => i.OrderImages)
                 .Where(o => o.OrderStatus == OrderStatus.Published.ToString() && workerServices.Contains(o.ServiceId))
+                .Where(o => !_hoshiDbContext.Offers.Where(of => of.OrderId == o.Id && of.WorkerId == workerId).Any())
                 .ToListAsync();
 
             var nearbyOrders = publishedOrders
@@ -128,19 +129,29 @@ namespace Hoshi.Repositories.WorkerHomeService
         /// <summary>
         /// Search published orders, filter by service/city names, order by creation date descending.
         /// </summary>
-        public async Task<ResultDTO<List<OrderGetDTO>>> SearchOrdersAsync(OrderSearchRequestDto searchRequest)
+        public async Task<ResultDTO<List<OrderBasicDTO>>> SearchOrdersAsync(OrderSearchRequestDto searchRequest)
         {
+            if (searchRequest.CityName.IsNullOrEmpty() && searchRequest.ServiceName.IsNullOrEmpty())
+                return ResultDTO<List<OrderBasicDTO>>.BadRequest(new ErrorDTO
+                {
+                    ErrorAr = "لا يمكن البحث بقيم فارغة.",
+                    ErrorEn = "Can not search with Null Or Empty values."
+                });
 
             var query = _hoshiDbContext.Orders
                 .Include(o => o.Service)
                     .ThenInclude(s => s.ServiceCategory)
                 .Include(o => o.City)
+                .Include(i => i.Client)
+                .Include(i => i.Service)
+                .Include(i => i.OrderImages)
                 .Where(o => o.OrderStatus == OrderStatus.Published.ToString());
 
             // Filter by service name if provided
             if (!string.IsNullOrEmpty(searchRequest.ServiceName))
             {
-                query = query.Where(o => o.Service.ServiveName.Contains(searchRequest.ServiceName));
+                query = query
+                    .Where(o => o.Service.ServiveName.Contains(searchRequest.ServiceName));
             }
 
             // Filter by city name if provided
@@ -153,8 +164,8 @@ namespace Hoshi.Repositories.WorkerHomeService
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
 
-            var mappedOrders = _mapper.Map<List<OrderGetDTO>>(orders);
-            return ResultDTO<List<OrderGetDTO>>.Success(mappedOrders);
+            var mappedOrders = _mapper.Map<List<OrderBasicDTO>>(orders);
+            return ResultDTO<List<OrderBasicDTO>>.Success(mappedOrders);
 
         }
 

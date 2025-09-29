@@ -8,7 +8,7 @@ namespace Hoshi.Repositories.TokenService
         /// <summary>
         /// Create a signed JWT for the specified user (includes roles and JTI).
         /// </summary>
-        Task<string> CreateTokenAsync(User applicationUser, bool isRefres = false);
+        Task<string> CreateTokenAsync(User applicationUser);
         /// <summary>
         /// Take the current token and recreate a new one
         /// </summary>

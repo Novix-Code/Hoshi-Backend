@@ -146,6 +146,20 @@ namespace Hoshi.Migrations
                     WHERE u.UserType = 'Client';"
             );
 
+            // View: ClientDetailsView — Shows detailed info about clients and their specifications
+            migrationBuilder.Sql(
+                @"CREATE VIEW ClientDetailsView AS
+                    SELECT 
+                        u.ImageURL,
+                        u.Email,
+                        u.PhoneNumber,
+                        u.FullName,
+                        cl.Address,
+                        cl.UserId
+                    FROM AspNetUsers u
+                    JOIN ClientSpecifications cl ON u.Id = cl.UserId;"
+            );
+
 
             // View: WorkerPageView — Shows general worker statistics
             migrationBuilder.Sql(
@@ -280,12 +294,198 @@ namespace Hoshi.Migrations
                     JOIN WorkerSpecifications ws ON ws.UserId = u.Id;"
             );
 
+
+            // View: OrderDetailsView — Shows full order details
+            migrationBuilder.Sql(
+                @"CREATE VIEW OrderDetailsView AS
+                    SELECT 
+                        o.Id,
+                        o.Description,
+                        o.ProposalPrice,
+                        o.ServicingDateTime,
+                        o.OrderStatus,
+                        o.ClientId,
+                        u.FullName,
+                        u.Email,
+                        u.ImageURL, 
+                        c.CityName,
+                        s.ServiveName
+                    FROM Orders o
+                    JOIN Cities c ON o.CityId = c.Id
+                    JOIN Services s ON o.ServiceId = s.Id
+                    JOIN AspNetUsers u ON o.ClientId = u.Id;"
+            );
+
+            // View: ActiveOrdersView - Show details for Published, InProgress and Assigned orders
+            migrationBuilder.Sql(
+                @"CREATE VIEW ActiveOrdersView AS
+                    SELECT *
+                    FROM OrderDetailsView o
+                    WHERE o.OrderStatus = 'Published' OR o.OrderStatus = 'InProgress' OR o.OrderStatus = 'Assigned';"
+            );
+
+            // View: FinishedOrdersView - Show details for Completed and Cancelled orders
+            migrationBuilder.Sql(
+                @"CREATE VIEW FinishedOrdersView AS
+                    SELECT *
+                    FROM OrderDetailsView o
+                    WHERE o.OrderStatus = 'Completed' OR o.OrderStatus = 'Cancelled';"
+            );
+
+            // View: OrdersPageView - Shows orders page statistics
+            migrationBuilder.Sql(
+                @"CREATE VIEW OrdersPageView AS
+                    SELECT 
+                        (
+                            SELECT COUNT(*) 
+                            FROM OrderDetailsView
+                        ) AS TotalOrders,
+
+                        (
+                            SELECT COUNT(*) 
+                            FROM ActiveOrdersView
+                        ) AS TotalActiveOrders,
+
+                        (
+                            SELECT COUNT(*) 
+                            FROM FinishedOrdersView o 
+                            WHERE o.OrderStatus = 'Completed'
+                        ) AS TotalCompletedOrders,
+
+                        (
+                            SELECT COUNT(*) 
+                            FROM FinishedOrdersView o 
+                            WHERE o.OrderStatus = 'Cancelled'
+                        ) AS TotalCancelledOrders;"
+            );
+
+            // View: JobsTableView - Shows all Jobs data
+            migrationBuilder.Sql(
+                @"CREATE VIEW JobsTableView AS
+                    SELECT 
+                        j.JobTitle,
+                        COUNT(DISTINCT s.ServiceCategoryId) AS TotalRelatedCategories,
+                        COALESCE(ws.TotalRelatedWorkers, 0) AS TotalRelatedWorkers,
+                        COALESCE(o.IncomeAvg, 0) AS IncomeAvg
+                    FROM 
+                        JobServices js
+                        INNER JOIN Jobs j ON js.JobId = j.Id
+                        INNER JOIN Services s ON js.ServiceId = s.Id
+                        INNER JOIN ServiceCategories sc ON s.ServiceCategoryId = sc.Id
+                        LEFT JOIN (
+                            -- Subquery to calculate average income per job
+                            SELECT 
+                                js2.JobId,
+                                AVG(i.OrderPrice) AS IncomeAvg
+                            FROM 
+                                JobServices js2
+                                INNER JOIN Orders ord ON js2.ServiceId = ord.ServiceId
+                                INNER JOIN Invoices i ON i.OrderId = ord.Id
+                            GROUP BY 
+                                js2.JobId
+                        ) o ON j.Id = o.JobId
+                        LEFT JOIN (
+                            -- Subquery to count workers per job
+                            SELECT 
+                                JobId,
+                                COUNT(*) AS TotalRelatedWorkers
+                            FROM 
+                                WorkerSpecifications
+                            GROUP BY 
+                                JobId
+                        ) ws ON j.Id = ws.JobId
+                    GROUP BY 
+                        j.Id, 
+                        j.JobTitle, 
+                        ws.TotalRelatedWorkers, 
+                        o.IncomeAvg;
+                "
+            );
+
+            // View: CategoriesTableView - Shows all Categories data
+            migrationBuilder.Sql(
+                @"CREATE VIEW CategoriesTableView AS
+                    SELECT 
+                        sc.CategoryName, 
+                        COUNT(s.Id) AS ServicesNum, 
+                        COALESCE(w.WorkersNum, 0) AS WorkersNum,
+                        COALESCE(o.IncomeAvg, 0) AS IncomeAvg
+                    FROM ServiceCategories sc 
+                        JOIN Services s ON s.ServiceCategoryId = sc.Id
+                        LEFT JOIN (
+                            SELECT 
+                                s.ServiceCategoryId, 
+                                COUNT(ws.Id) AS WorkersNum
+                            FROM WorkerServices ws 
+                            RIGHT JOIN Services s ON ws.ServiceId = s.Id 
+                            GROUP BY s.ServiceCategoryId
+                        ) w ON w.ServiceCategoryId = sc.Id
+                        LEFT JOIN (
+                            SELECT
+                                s.ServiceCategoryId,
+                                AVG(i.OrderPrice) AS IncomeAvg
+                            FROM Services s 
+                            JOIN Orders o ON o.ServiceId = s.Id
+                            JOIN Invoices i ON i.OrderId = o.Id
+                            GROUP BY s.ServiceCategoryId
+                        ) o ON o.ServiceCategoryId = sc.Id
+                    GROUP BY 
+                        sc.Id, 
+                        sc.CategoryName, 
+                        w.WorkersNum,
+                        o.IncomeAvg;
+                "
+            );
+
+            // View: ServicesTableView - Shows all Services data
+            migrationBuilder.Sql(
+                @"CREATE VIEW ServicesTableView AS
+                    SELECT 
+                        s.ServiveName,
+                        c.CategoryName,
+                        s.IsDeleted,
+                        Count(o.Id) as OrdersNum,
+                        COALESCE(w.WorkersNum, 0) AS WorkersNum,
+                        COALESCE(i.IncomeAvg, 0) AS IncomeAvg
+                    FROM Services s
+                        LEFT JOIN Orders o ON o.ServiceId = s.Id
+                        LEFT JOIN (
+                            SELECT 
+                                ws.ServiceId, 
+                                COUNT(ws.Id) AS WorkersNum
+                            FROM WorkerServices ws 
+                            GROUP BY ws.ServiceId
+                        ) w ON w.ServiceId = s.Id
+                        LEFT JOIN (
+                            SELECT
+                                o.ServiceId,
+                                AVG(inv.OrderPrice) AS IncomeAvg
+                            FROM Orders o 
+                            JOIN Invoices inv ON inv.OrderId = o.Id
+                            GROUP BY o.ServiceId
+                        ) i ON i.ServiceId = s.Id
+                        LEFT JOIN (
+                            SELECT 
+                                s.Id AS ServiceId,
+                                c.CategoryName
+                            FROM Services s
+                            JOIN ServiceCategories c ON c.Id = s.ServiceCategoryId
+                        ) c ON c.ServiceId = s.Id
+                    GROUP BY 
+                        s.Id, 
+                        s.ServiveName,
+                        c.CategoryName,
+                        s.IsDeleted,
+                        w.WorkersNum,
+                        i.IncomeAvg;
+                "
+            );
+
             // View: PortfolioView — Shows workers’ portfolio files
             migrationBuilder.Sql(
                 @"CREATE VIEW PortfolioView AS
                     SELECT FileURL, WorkerId FROM WorkerPortfolios;"
             );
-
 
             // View: CitiesgetView — Shows all cities from the Cities table
             migrationBuilder.Sql(
@@ -293,44 +493,10 @@ namespace Hoshi.Migrations
                     SELECT * FROM Cities;"
             );
 
-            // View: ClientDetailsView — Shows detailed info about clients and their specifications
-            migrationBuilder.Sql(
-                @"CREATE VIEW ClientDetailsView AS
-                    SELECT 
-                        u.ImageURL,
-                        u.Email,
-                        u.PhoneNumber,
-                        u.FullName,
-                        cl.Address,
-                        cl.UserId
-                    FROM AspNetUsers u
-                    JOIN ClientSpecifications cl ON u.Id = cl.UserId;"
-            );
-
             // View: JobView — Shows basic job information
             migrationBuilder.Sql(
                 @"CREATE VIEW JobView AS
                     SELECT JobTitle, IsDeleted, Id FROM Jobs;"
-            );
-
-            // View: OrderDetailsView — Shows full order details
-            migrationBuilder.Sql(
-                @"CREATE VIEW OrderDetailsView AS
-                    SELECT 
-                        Id,
-                        CityId, 
-                        Description,
-                        ProposalPrice,
-                        Location,
-                        Latitude,
-                        Longitude,
-                        ServicingDateTime,
-                        TotalClientCost,
-                        TotalWorkerCost,
-                        ClientId,
-                        WorkerId,
-                        OrderStatus 
-                    FROM Orders;"
             );
 
         }

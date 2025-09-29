@@ -161,9 +161,9 @@ namespace Hoshi.Controllers.UserControllers
         /// Verify OTP code received via email.
         /// </summary>
         [HttpPost("CheckOTP")]
-        public async Task<IActionResult> otpResult(string otp, string id)
+        public async Task<IActionResult> otpResult(string otp)
         {
-            var response = await emailService.checkOTPVerfication(otp, id);
+            var response = await emailService.CheckOTPVerfication(otp);
             return StatusCode(response.StatusCode, response);
         }
         /// <summary>

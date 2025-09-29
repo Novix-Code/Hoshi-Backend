@@ -5,7 +5,9 @@ using GenericCRUDLibrary.GenericRepositories.GenericFSPService;
 using Hoshi.Data;
 using Hoshi.DTOs.DashboardDTOs;
 using Hoshi.DTOs.DashboardDTOs.ComplaintDTOs;
-using Hoshi.Models.ViewModels;
+using Hoshi.Models.ViewModels.ClientsPageViews;
+using Hoshi.Models.ViewModels.OrdersPageViews;
+using Hoshi.Models.ViewModels.WorkersPageViews;
 using Hoshi.Repositories.AdminDashboardService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -116,6 +118,29 @@ namespace Hoshi.Controllers.DashboardControllers
             return StatusCode(response.StatusCode, response);
         }
 
+        // ---------------------
+        // Order Page Endpoints
+        // ---------------------
+
+        [HttpGet("OrdersPage")]
+        public async Task<IActionResult> OrdersPage()
+        {
+            var response = await dashboardService.OrderPage();
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet("DashboardOrderDetails")]
+        public async Task<IActionResult> DashboardOrderDetails(int id)
+        {
+            var response = await dashboardService.OrderDetails(id);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPatch("ActiveOrdersTable")]
+        public IActionResult ActiveOrdersTable(TablesFSPDTO dto) => TableFSP<ActiveOrdersViewModel>(dto);
+
+        [HttpPatch("FinishedOrdersTable")]
+        public IActionResult FinishedOrdersTable(TablesFSPDTO dto) => TableFSP<FinishedOrdersViewModel>(dto);
 
         [HttpGet("ServicesPage")]
         public async Task<IActionResult> ServicesPageAsync()
@@ -123,6 +148,7 @@ namespace Hoshi.Controllers.DashboardControllers
             var response = await dashboardService.GetServicesPageAsync();
             return StatusCode((int)response.StatusCode, response);
         }
+
 
         [HttpGet("PaymentsPage")]
         public async Task<IActionResult> PaymentsPageAsync()
@@ -178,20 +204,6 @@ namespace Hoshi.Controllers.DashboardControllers
         {
             var response = await dashboardService.GetStatisticPageAsync();
             return StatusCode((int)response.StatusCode, response);
-        }
-
-        [HttpGet("OrdersPage")]
-        public async Task<IActionResult> OrdersPage()
-        {
-            var response = await dashboardService.OrderPage();
-            return StatusCode(response.StatusCode, response);
-        }
-
-        [HttpGet("DashboardOrderDetails")]
-        public async Task<IActionResult> DashboardOrderDetails(int id)
-        {
-            var response = await dashboardService.OrderDetails(id);
-            return StatusCode(response.StatusCode, response);
         }
 
         /// <summary>

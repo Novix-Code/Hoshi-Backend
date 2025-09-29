@@ -331,7 +331,7 @@ namespace Hoshi.Repositories.AuthService
                 );
             }
 
-            var token = await _tokenService.CreateTokenAsync(applicationUser, true);
+            var token = await _tokenService.CreateTokenAsync(applicationUser);
 
             await _context.SaveChangesAsync();
 
