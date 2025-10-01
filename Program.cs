@@ -43,6 +43,7 @@ using Hoshi.Repositories.NotificationService;
 using Serilog;
 using Serilog.Events;
 using Hoshi.Repositories.RatesService;
+using Hoshi.Repositories.AdminDashboardService;
 
 public class Program
 {
@@ -205,6 +206,8 @@ public class Program
         builder.Services.AddMemoryCache();
 
         builder.Services.AddTransient(typeof(IAuthService), typeof(AuthService));
+
+        builder.Services.AddTransient(typeof(IAdminDashboardService), typeof(AdminDashboardService));
 
         builder.Services.AddTransient(typeof(IArchiveService), typeof(ArchiveService));
 

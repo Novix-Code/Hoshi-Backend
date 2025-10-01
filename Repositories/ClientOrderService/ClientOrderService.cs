@@ -13,10 +13,12 @@ using Hoshi.Enums;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.OrderModels;
 using Hoshi.Models.PromotionModels;
+using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.ClientHomeService;
 using Hoshi.Repositories.Hubs;
 using Hoshi.Repositories.NotificationService;
 using Hoshi.Repositories.OrderImageService;
+using Hoshi.Repositories.PromotionService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -29,29 +31,31 @@ namespace Hoshi.Repositories.ClientOrderService
     /// </summary>
     public class ClientOrderService : IClientOrderService
     {
-        private readonly HoshiDbContext _Context;
+        private readonly HoshiDbContext _context;
         private readonly IMapper _mapper;
         private readonly IClientHomeService _clientHomeService;
         private readonly IOrderImageService orderImageService;
         private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
         private readonly INotificationServiceHandler notificationServiceHandler;
-
+        private readonly IPromotionService promotionService;
 
         public ClientOrderService(
             HoshiDbContext context,
             IMapper mapper,
             IClientHomeService clientHomeService,
-            IOrderImageService orderImageService
-,
+            IOrderImageService orderImageService,
             IHubContext<NotificationHub, INotificationHub> hubContext,
-            INotificationServiceHandler notificationServiceHandler)
+            INotificationServiceHandler notificationServiceHandler,
+            IPromotionService promotionService
+        )
         {
-            _Context = context;
+            _context = context;
             _mapper = mapper;
             _clientHomeService = clientHomeService;
             this.orderImageService = orderImageService;
             _hubContext = hubContext;
             this.notificationServiceHandler = notificationServiceHandler;
+            this.promotionService = promotionService;
         }
         /// <summary>
         /// Create an order, add initial status history, create invoice and attach promotions/images if applicable.
@@ -60,7 +64,7 @@ namespace Hoshi.Repositories.ClientOrderService
         {
 
             // 1. Get Client Specification
-            var clientSpecificationDetails = await _Context.ClientSpecifications
+            var clientSpecificationDetails = await _context.ClientSpecifications
                                             .FirstOrDefaultAsync(p => p.UserId == dto.ClientId);
             if (clientSpecificationDetails is null)
                 return ResultDTO<object>.NotFound(new ErrorDTO
@@ -68,23 +72,22 @@ namespace Hoshi.Repositories.ClientOrderService
                     ErrorAr = "بيانات العميل لم يتم ادخالها",
                     ErrorEn = "Client specification not found"
                 });
-            using var tx = await _Context.Database.BeginTransactionAsync();
+            using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
 
                 // 2. Add Order
                 var orderMapper = _mapper.Map<Order>(dto);
-                await _Context.Orders.AddAsync(orderMapper);
-                await _Context.SaveChangesAsync();
+                await _context.Orders.AddAsync(orderMapper);
+                await _context.SaveChangesAsync();
 
                 // 3. Add Order Status History
-                var histOrder = new OrderStatusHistoryPostDTO
+                await _context.OrderStatusHistory.AddAsync(new OrderStatusHistory
                 {
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     OrderId = orderMapper.Id,
                     OrderStatus = Enum.Parse<OrderStatus>(orderMapper.OrderStatus)
-                };
-                var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
+                });
 
                 // 4. Add Invoice
                 var invoicMapper = new Invoice
@@ -93,32 +96,37 @@ namespace Hoshi.Repositories.ClientOrderService
                 };
                 if (clientSpecificationDetails.Indebtedness > 0)
                     invoicMapper.ClientIndebtednessFee = clientSpecificationDetails.Indebtedness;
+
+                // If user has balance will be add to the order promotion and in this case will not take a normal promotion
                 if (clientSpecificationDetails.Balance > 0)
                     invoicMapper.ClientPromotionFee = clientSpecificationDetails.Balance;
-                _Context.Invoices.Add(invoicMapper);
-                _Context.OrderStatusHistory.Add(histMapper);
-
-                // 5. Determine promotion taken and add it
-                var clientPromotionNonTaken = await _clientHomeService.GetClientWithServiceById(dto.ClientId);
-                var slectedPromotionId = clientPromotionNonTaken.Data.Promotions.Select(p => p.Id).FirstOrDefault();
-                if (slectedPromotionId is not 0)
+                // If not in this case can take a promotion if is there a one for him
+                else
                 {
-                    var promotionOrder = new PromotionTakenPostDTO
+                    // 5. Determine promotion taken and add it
+                    var clientPromotionNonTaken = await promotionService.NoneTakenPromotions(dto.ClientId, true);
+
+                    var slectedPromotionId = clientPromotionNonTaken.Select(p => p.Id).FirstOrDefault();
+
+                    if (slectedPromotionId is not 0)
                     {
-                        UserId = dto.ClientId,
-                        OrderId = orderMapper.Id,
-                        OfferId = null,
-                        PromotionId = slectedPromotionId
-                    };
-                    var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
-                    _Context.PromotionsTaken.Add(promotionMapper);
+                        await _context.PromotionsTaken.AddAsync(new PromotionTaken
+                        {
+                            UserId = dto.ClientId,
+                            OrderId = orderMapper.Id,
+                            OfferId = null,
+                            PromotionId = slectedPromotionId,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
                 }
+               await _context.Invoices.AddAsync(invoicMapper);
 
                 // 6. Add order images
                 if (!dto.OrderImagesFiles.IsNullOrEmpty())
                     await orderImageService.AddImages(orderMapper.Id, dto.OrderImagesFiles!);
 
-                await _Context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 
                 // 7. Send Notification
@@ -146,7 +154,13 @@ namespace Hoshi.Repositories.ClientOrderService
         public async Task<ResultDTO<string>> DeleteOrder(int orderId)
         {
             // 1. Get Order and check if it is Deleted or not
-            var targetOrder = await _Context.Orders.FindAsync(orderId);
+            var targetOrder = await _context.Orders.Include(i => i.Client).FirstOrDefaultAsync(o => o.Id == orderId);
+            if (targetOrder == null) return ResultDTO<string>.BadRequest(new ErrorDTO
+            {
+                ErrorAr = "معرف الطلب غير صحيح.",
+                ErrorEn = "Order Id is not correct"
+            });
+
             if (targetOrder.OrderStatus == Enums.OrderStatus.Cancelled.ToString())
                 return ResultDTO<string>.BadRequest(new ErrorDTO
                 {
@@ -165,23 +179,22 @@ namespace Hoshi.Repositories.ClientOrderService
                 if (DateTime.UtcNow <= befor12H)
                 {
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled.ToString();
-                    _Context.Orders.Update(targetOrder);
-                    await _Context.SaveChangesAsync();
+                    _context.Orders.Update(targetOrder);
+                    await _context.SaveChangesAsync();
                     await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker(11 , (int)targetOrder.WorkerId , "قام العميل بإلغاء الطلب");
+                    await notificationServiceHandler.sendMessagetoWorker(
+                        13 , (int) targetOrder.WorkerId! , 
+                        $"قام العميل {targetOrder.Client?.FullName} بإلغاء الطلب رقم #{targetOrder.Id}."
+                    );
+
                     return ResultDTO<string>.Success("Successfully deleted");
                 }
 
                 // 2.3 After 12H
                 if (DateTime.UtcNow >= after12H)
                 {
-                    // 2.4 Determin Fee for client and get details about him and Walledt information about worker
-                    double clientIndebtFee = await _Context.Fees
-                            .Where(f => f.ServiceId == targetOrder.ServiceId && f.FeeType == FeeType.ClientIndebtednessFee.ToString() && !f.IsSpecial)
-                            .Select(f => f.MainFees)
-                            .FirstOrDefaultAsync();
 
-                    var clientDetails = await _Context.ClientSpecifications
+                    var clientDetails = await _context.ClientSpecifications
                             .FirstOrDefaultAsync(p => p.UserId == targetOrder.ClientId);
 
                     if (clientDetails == null)
@@ -190,7 +203,7 @@ namespace Hoshi.Repositories.ClientOrderService
                             ErrorEn = "client Specification not found",
                             ErrorAr = "بيانات العميل لم يتم ادخالها بعد"
                         });
-                    var workerWallet = await _Context.WorkerWallets
+                    var workerWallet = await _context.WorkerWallets
                             .FirstOrDefaultAsync(w => w.WorkerId == targetOrder.WorkerId);
                     if (workerWallet == null)
                         return ResultDTO<string>.NotFound(new ErrorDTO
@@ -199,23 +212,52 @@ namespace Hoshi.Repositories.ClientOrderService
                             ErrorEn = "Worker wallet not found."
                         });
 
+                    // 2.4 Determin Fee for client and get details about him and Walledt information about worker
+                    Invoice? orderInvoice = await _context.Invoices.FirstOrDefaultAsync(i => i.OrderId == orderId);
+
+                    double commissionPercentage = _context.Fees
+                        .FirstOrDefaultAsync(f => f.FeeType == FeeType.CommissionFee.ToString()).Result!.MainFees;
+
+                    double cancelationvalue = 
+                        orderInvoice!.CancellationFee - (orderInvoice!.CancellationFee * (commissionPercentage / 100));
+
                     // 2.5 Check the balance
-                    if (clientDetails.Balance < clientIndebtFee)
-                        clientDetails.Indebtedness += clientIndebtFee;
+                    if (clientDetails.Balance < cancelationvalue)
+                    {
+                        double remaningValue = cancelationvalue - clientDetails.Balance;
+                        clientDetails.Indebtedness += remaningValue;
+                        clientDetails.Balance = 0;
+                    }
                     else
-                        clientDetails.Balance -= clientIndebtFee;
+                        clientDetails.Balance -= cancelationvalue;
 
                     // 2.6 Add amount to worker wallet
-                    workerWallet.Balance += clientIndebtFee;
-                    _Context.WorkerWallets.Update(workerWallet);
-                    _Context.ClientSpecifications.Update(clientDetails);
+                    workerWallet.Balance += cancelationvalue;
+
+                    // add wallet transaction to history
+                    await _context.WorkerWalletHistories.AddAsync(new WorkerWalletHistory
+                    {
+                        Value = cancelationvalue,
+                        Title = "اضافة تعويض الغاء",
+                        IsIncome = true,
+                        WorkerWalletId = workerWallet.Id,
+                        CreatedAt = DateTime.UtcNow,
+                    });
+
+                    _context.WorkerWallets.Update(workerWallet);
+                    _context.ClientSpecifications.Update(clientDetails);
+
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled.ToString();
-                    _Context.Orders.Update(targetOrder);
-                    await _Context.SaveChangesAsync();
+                    _context.Orders.Update(targetOrder);
+
+                    await _context.SaveChangesAsync();
 
                     //2.7 send notification with indept
-                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker( 11, (int)targetOrder.WorkerId,  $"قام العميل بإلغاء الطلب وقيمه الغرامه هي : {clientIndebtFee}");
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف طلب", orderId);
+                    await notificationServiceHandler.sendMessagetoWorker(
+                        13, (int)targetOrder.WorkerId!,
+                        $"قام العميل {targetOrder.Client?.FullName} بإلغاء الطلب رقم #{targetOrder.Id}، وقيمة التعويض هي {cancelationvalue} تم اضافتها الى محفظتك."
+                    );
                     return ResultDTO<string>.Success("Successfully deleted");
 
                 }
@@ -223,28 +265,31 @@ namespace Hoshi.Repositories.ClientOrderService
                 else
                 {
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled.ToString();
-                    _Context.Orders.Update(targetOrder);
-                    await _Context.SaveChangesAsync();
-                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                    await notificationServiceHandler.sendMessagetoWorker( 11 , (int)targetOrder.WorkerId, "قام العميل بإلغاء الطلب");
+                    _context.Orders.Update(targetOrder);
+                    await _context.SaveChangesAsync();
+                    await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف طلب", orderId);
+                    await notificationServiceHandler.sendMessagetoWorker(
+                        13, (int)targetOrder.WorkerId!,
+                        $"قام العميل {targetOrder.Client?.FullName} بإلغاء الطلب رقم #{targetOrder.Id}."
+                    );
                     return ResultDTO<string>.Success("Successfully deleted");
                 }
-
-
-
-
             }
             // 3. The order is still published -> no fee for client
             else
             {
 
                 targetOrder.OrderStatus = Enums.OrderStatus.Cancelled.ToString();
-                await _Context.SaveChangesAsync();
-                await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف اوردر", orderId);
-                await notificationServiceHandler.sendMessagetoWorker( 11, (int)targetOrder.WorkerId, "قام العميل بإلغاء الطلب");
+
+                await _context.Offers
+                    .Where(o => o.OrderId == targetOrder.Id)
+                    .ExecuteUpdateAsync(
+                        o => o.SetProperty(p => p.OfferStatus, OfferStatus.Rejected.ToString())
+                    );
+                
+                await _context.SaveChangesAsync();
+                await notificationServiceHandler.sendMessagetoAdmin("عمليه حذف طلب", orderId);
                 return ResultDTO<string>.Success("Successfully deleted");
-
-
             }
         }
 
@@ -253,7 +298,7 @@ namespace Hoshi.Repositories.ClientOrderService
         /// </summary>
         public async Task<ResultDTO<List<OrderGetAllDto>>> GetAllClientsAsync()
         {
-            var AllOrders = await _Context.Orders
+            var AllOrders = await _context.Orders
                 .Include(nameof(Order.Service))
                 .Include(nameof(Order.City))
                 .Include(nameof(Order.OrderImages))
@@ -273,19 +318,19 @@ namespace Hoshi.Repositories.ClientOrderService
             var resultDto = new OrderGetDetailsDto();
 
             // 2. Get Order Data
-            var orderData = await _Context.Orders
+            var orderData = await _context.Orders
                 .Include(o => o.OrderVisits)
                 .ProjectTo<OrderGetDTO>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(i => i.Id == orderId);
 
             // 3. Get Offer Data
-            var targetOffers = await _Context.Offers.Where(p => p.OrderId == orderId)
+            var targetOffers = await _context.Offers.Where(p => p.OrderId == orderId)
                 .ProjectTo<OfferGetDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
             if (targetOffers.Count() > 0)
             {
                 var workerId = targetOffers[0].Worker!.Id;
-                var workerData = await _Context.WorkerPortfolios.FindAsync(workerId);
+                var workerData = await _context.WorkerPortfolios.FindAsync(workerId);
                 resultDto.WorkerData = _mapper.Map<WorkerPortfolioGetDTO>(workerData);
             }
 
@@ -296,7 +341,7 @@ namespace Hoshi.Repositories.ClientOrderService
             }
 
             // 5. Get Invoice Data
-            var orderInvoice = await _Context.Invoices
+            var orderInvoice = await _context.Invoices
                 .Where(p => p.OrderId == orderId)
                 .ProjectTo<InvoiceGetDTO>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();

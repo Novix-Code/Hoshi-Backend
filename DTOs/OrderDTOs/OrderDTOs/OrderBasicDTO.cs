@@ -6,7 +6,7 @@ namespace Hoshi.DTOs.OrderDTOs.OrderDTOs
 {
     public class OrderBasicDTO
     {
-
+        public int Id { get; set; }
         public string Description { get; set; }
         public double ProposalPrice { get; set; }
         public string OrderStatus { get; set; }

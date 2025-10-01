@@ -62,20 +62,16 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
         }
         
         [EndpointGroupName("Client")]
-        public override async Task<IActionResult> GetById(int id)
+        public override Task<IActionResult> GetById(int id)
         {
-            var response = await clientHomeService.GetClientWithServiceById(id);
-            return StatusCode((int)response.StatusCode,response);
+            return base.GetById(id);
         }
         
         [EndpointGroupName("Client")]
-        public override async Task<IActionResult> GetAll()
+        public override Task<IActionResult> GetAll()
         {
-            var response  = await clientHomeService.GetAllClientWithServiceAsync();
-            return StatusCode((int)response.StatusCode, response);
+            return base.GetAll();
         }
-
-
 
         [EndpointGroupName("Admin")]
         public override async Task<IActionResult> Add(ServicePostDTO postDTO)
@@ -121,67 +117,5 @@ namespace Hoshi.Controllers.ServiceControllers.ServiceControllers
             return base.PaginationFilteredSearch(paginationFilteredSearchDTO);
         }
         
-        [HttpGet("get-services-page")]
-        public async Task<IActionResult> GetServicesPageAsync()
-        {
-            var response = await serviceService.GetServicesPageAsync();
-            return StatusCode((int)response.StatusCode, response);
-        }
-        
-        [HttpGet("get-payments-page")]
-        public async Task<IActionResult> GetPaymentsPageAsync()
-        {
-            var response = await serviceService.GetPaymentsPageAsync();
-            return StatusCode((int)response.StatusCode, response);
-        }
-        
-        [HttpGet("get-payment-details")]
-        public async Task<IActionResult> GetPaymentDetailsAsync([FromQuery ]int paymentId)
-        {
-            var response = await serviceService.GetPaymentDetailsAsync(paymentId);
-            return StatusCode((int)response.StatusCode, response);
-        }
-        
-        [HttpPatch("add-payment")]
-        public async Task<IActionResult> AddWorkerPayment(int workerId, int requestId, double paymentValue)
-        {
-            var response = await serviceService.AddWorkerPayment(workerId, requestId, paymentValue);
-            return StatusCode((int)response.StatusCode, response);
-        }
-        
-        [HttpGet("get-complaints-page")]
-        public async Task<IActionResult> GetComplaintsPageAsync()
-        {
-            var response = await serviceService.GetComplaintsPageAsync();
-            return StatusCode((int)response.StatusCode, response);
-        }
-        
-        [HttpGet("get-complaint-details")]
-        public async Task<IActionResult> GetComplaintDetailsAsync([FromQuery ]int complaintId)
-        {
-            var response = await serviceService.GetComplaintDetailsAsync(complaintId);
-            return StatusCode((int)response.StatusCode, response);
-        }
-        
-        [HttpPatch("complaint-response")]
-        public async Task<IActionResult> ComplaintResponse(ComplaintResponseDTO complaintCreateDto)
-        {
-            var response = await serviceService.ComplaintResponse(complaintCreateDto);
-            return StatusCode((int)response.StatusCode, response);
-        }
-
-        [HttpPatch("close-complaint")]
-        public async Task<IActionResult> CloseComplaintAsync([FromQuery] int complaintId)
-        {
-            var result = await serviceService.CloseComplaintAsync(complaintId);
-            return StatusCode((int)result.StatusCode, result);
-        }
-        
-        [HttpGet("get-statistic-page")]
-        public async Task<IActionResult> GetStatisticPageAsync()
-        {
-            var response = await serviceService.GetStatisticPageAsync();
-            return StatusCode((int)response.StatusCode, response);
-        }
     }
 }

@@ -62,13 +62,12 @@ namespace Hoshi.Repositories.ClientOfferService
                 _context.Orders.Update(targetOffer.Order);
 
                 // 2. Add order History into OrderStatusHistory table
-                var ordHst = new OrderStatusHistory
+                await _context.OrderStatusHistory.AddAsync(new OrderStatusHistory
                 {
                     CreatedAt = DateTime.UtcNow,
                     OrderId = targetOffer.OrderId,
                     OrderStatus = Enums.OrderStatus.Assigned
-                };
-                await _context.OrderStatusHistory.AddAsync(ordHst);
+                });
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Offer {OfferId} status updated to Accepted", offerId);
@@ -123,7 +122,10 @@ namespace Hoshi.Repositories.ClientOfferService
 
                 // 5. Determin Applied Promotions and add it to PromotionTaken Table
                 //_context.TempInvoices.Remove(temp);
-                if (targetOffer.AppliedPromotionId is not null)
+                // ///////////////////////////////////////////////////////
+                // this part moved to add when the worker create the offer.
+                // ///////////////////////////////////////////////////////
+                /*if (targetOffer.AppliedPromotionId is not null)
                 {
                     // add offer in Promotion Taken 
                     var promTaken = new PromotionTaken
@@ -136,14 +138,18 @@ namespace Hoshi.Repositories.ClientOfferService
                     };
                     await _context.PromotionsTaken.AddAsync(promTaken);
                     _logger.LogInformation("PromotionTaken added for OfferId={OfferId}", offerId);
-                }
+                }*/
                 //targetOrder.OrderStatus = Enums.OrderStatus.InProgress;
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Offer {OfferId} accepted successfully", offerId);
                 await transaction.CommitAsync();
 
                 // 6. Send notification to the worker that his offer is accepted
-                await _notificationServiceHandler.sendMessagetoWorker( 7 ,targetOffer.WorkerId , "تم قبول العرض الخاص بك");
+                await _notificationServiceHandler.sendMessagetoWorker( 
+                    8 ,targetOffer.WorkerId , 
+                    $"تم قبول العرض الخاص بك المقدم على الطلب رقم #{targetOffer.OrderId}."
+                );
+
                 _logger.LogInformation("Notification sent to Worker {WorkerId}", targetOffer.WorkerId);
 
                 // 7. Handle result section -- this DTOs to match business logic that required

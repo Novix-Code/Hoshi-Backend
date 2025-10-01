@@ -8,6 +8,7 @@ using Hoshi.DTOs.ServiceDTOs.JobDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
+using Hoshi.Models.ChatModels;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
@@ -33,7 +34,13 @@ namespace Hoshi.Repositories.OrderService
         private readonly IWorkerWalletService WalletService;
 
 
-        public OrderService(HoshiDbContext hoshiDbContext, IMapper mapper, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationServiceHandler notificationServiceHandler, IWorkerWalletService walletService)
+        public OrderService(
+            HoshiDbContext hoshiDbContext, 
+            IMapper mapper, 
+            IHubContext<NotificationHub, INotificationHub> hubContext, 
+            INotificationServiceHandler notificationServiceHandler, 
+            IWorkerWalletService walletService
+        )
         {
             _hoshiDbContext = hoshiDbContext;
             _mapper = mapper;
@@ -88,28 +95,28 @@ namespace Hoshi.Repositories.OrderService
                     ErrorAr = "الطلب غير موجود.",
                     ErrorEn = "order not found."
                 });
-            
+
             var clientSpec = await _hoshiDbContext.ClientSpecifications
                 .Include(cs => cs.User)
                 .FirstOrDefaultAsync(cs => cs.UserId == order.ClientId);
-            
+
             var clientData = new ClientDataDto
             {
-                ImageUrl = clientSpec!.User!.ImageURL!, 
-                Name = clientSpec!.User!.UserName!,         
-                RateRatio = clientSpec.RateRito, 
+                ImageUrl = clientSpec!.User!.ImageURL!,
+                Name = clientSpec!.User!.UserName!,
+                RateRatio = clientSpec.RateRito,
             };
 
             var clientRates = await _hoshiDbContext.Rates
                 .Where(r => r.ClientId == clientSpec.UserId)
                 .Select(r => new ClientRateDto
                 {
-                    WorkerName = r.Worker!.UserName!, 
+                    WorkerName = r.Worker!.UserName!,
                     Rate = r.RateValue,
                     Comment = r.Description
                 })
                 .ToListAsync();
-            
+
             return ResultDTO<OrderClientDetailsDto>.Success(new OrderClientDetailsDto
             {
                 ClientData = clientData,
@@ -155,14 +162,6 @@ namespace Hoshi.Repositories.OrderService
                     OrderId = order.Id
                 });
 
-                // 3. Send notification to client (order completed)
-                _hoshiDbContext.UserNotifications.Add(new UserNotification
-                {
-                    UserId = order.ClientId,
-                    Description = "تم اكتمال طلبك.",
-                    NotificationTypeId = 1 , // may change this later
-                });
-
                 // 4. Update completed orders count for worker and client
                 var worker = await _hoshiDbContext.WorkerSpecifications.FirstOrDefaultAsync(w => w.UserId == order.WorkerId);
                 if (worker != null)
@@ -187,7 +186,7 @@ namespace Hoshi.Repositories.OrderService
                         ErrorEn = "No invoices found for the order."
                     });
 
-                
+
 
                 double totalClientCost = invoices.Sum(i => i.ClientTotalPrice);
                 double totalWorkerCost = invoices.Sum(i => i.WorkerTotalPrice);
@@ -252,7 +251,7 @@ namespace Hoshi.Repositories.OrderService
                     {
                         UserId = order.WorkerId ?? 0,
                         Description = "رصيد محفظتك أقل من قيمة العمولة المطلوبة!",
-                        NotificationTypeId = 1 , // may change this later
+                        NotificationTypeId = 1, // may change this later
 
                     });
 
@@ -267,7 +266,7 @@ namespace Hoshi.Repositories.OrderService
                         {
                             UserId = admin.Id,
                             Description = $"محفظة العامل رقم {order.WorkerId} أقل من قيمة العمولة المطلوبة!",
-                            NotificationTypeId = 1 , // may change this later
+                            NotificationTypeId = 1, // may change this later
                         });
                     }
                 }
@@ -312,19 +311,20 @@ namespace Hoshi.Repositories.OrderService
                     try
                     {
                         var diff = totalClientCost - totalWorkerCost;
-                        await WalletService.DeductFromWalletAsync( (int)order.WorkerId, diff, "فرق بين العميل والعامل");
+                        await WalletService.DeductFromWalletAsync((int)order.WorkerId, diff, "فرق بين العميل والعامل");
                     }
-                    catch 
+                    catch
                     {
-                        return ResultDTO<object>.NotFound(new ErrorDTO {
+                        return ResultDTO<object>.NotFound(new ErrorDTO
+                        {
                             ErrorAr = "خطأ في اضافه walletHistory",
                             ErrorEn = "error in adding walletHistory"
-                            });
+                        });
                     }
                 }
                 else if (totalWorkerCost > totalClientCost)
                 {
-                   try
+                    try
                     {
                         var diff = totalWorkerCost - totalClientCost;
                         await WalletService.AddToWalletAsync((int)order.WorkerId, diff, "فرق بين العامل والعميل");
@@ -338,12 +338,13 @@ namespace Hoshi.Repositories.OrderService
                         });
                     }
                 }
-                
+
 
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
                 // send notification
-                await notificationServiceHandler.sendMessagetoAdmin("عمليه استكمال اوردر", orderId);
+                await notificationServiceHandler.sendMessagetoAdmin("عمليه استكمال طلب", orderId);
+                await notificationServiceHandler.sendMessagetoClient(5, order.ClientId, $"تم اكتمال طلبك رقم #{order.Id}.");
                 return ResultDTO<object>.Success(new
                 {
                     Success = true,
@@ -395,11 +396,11 @@ namespace Hoshi.Repositories.OrderService
                 RateRatio = clientSpec.RateRito,
             } : null;
 
-            
+
             var orderDto = _mapper.Map<OrderGetDTO>(order);
             var clientDataDto = clientData != null ? _mapper.Map<ClientDataDto>(clientData) : null;
             var orderInvoices = _mapper.Map<List<InvoiceGetDTO>>(invoices);
-            
+
             return ResultDTO<object>.Success(new
             {
                 Order = orderDto,
@@ -426,21 +427,21 @@ namespace Hoshi.Repositories.OrderService
                 });
 
             var orderDto = _mapper.Map<OrderGetDTO>(order);
-            
+
             // Client Data
             var client = orderDto.Client;
-            
+
             var getClientData = await _hoshiDbContext.ClientSpecifications
                 .Include(cs => cs.User)
                 .FirstOrDefaultAsync(cs => cs.UserId == client.Id);
-            
+
             if (getClientData == null)
                 return ResultDTO<DashboardOrderDetailsResponseDTO>.NotFound(new ErrorDTO
                 {
                     ErrorAr = "لا يوجد بيانات عن العميل.",
                     ErrorEn = "No client data found."
                 });
-            
+
             var clientData = _mapper.Map<ClientDataDto>(getClientData);
 
             var getWorkerData = await _hoshiDbContext.WorkerSpecifications
@@ -448,16 +449,16 @@ namespace Hoshi.Repositories.OrderService
                 .Include(ws => ws.Job)
                 .Include(ws => ws.LivingCity)
                 .FirstOrDefaultAsync(ws => ws.UserId == order.WorkerId);
-            
+
             if (getWorkerData == null)
                 return ResultDTO<DashboardOrderDetailsResponseDTO>.NotFound(new ErrorDTO
                 {
                     ErrorAr = "لا يوجد بيانات عن العميل.",
                     ErrorEn = "No client data found."
                 });
-            
+
             var workerDataDto = _mapper.Map<WorkerSpecificationGetDTO>(getWorkerData);
-            
+
             // // Get Worker Job Title
             // string workerJob = string.Empty;
             // if (workerDataDto?.Job != null && !string.IsNullOrEmpty(workerDataDto.Job.JobTitle))
@@ -476,8 +477,8 @@ namespace Hoshi.Repositories.OrderService
 
             // Get Cancelled Offers Count
             int cancelledOffers = await _hoshiDbContext.Offers
-                .CountAsync(o => o.WorkerId == workerDataDto!.Id && o.OfferStatus == OfferStatus.Cancelled.ToString());            
-            
+                .CountAsync(o => o.WorkerId == workerDataDto!.Id && o.OfferStatus == OfferStatus.Cancelled.ToString());
+
             var workerData = new WorkerDataDTO
             {
                 ImageUrl = workerDataDto.User!.ImageURL!,
@@ -490,7 +491,7 @@ namespace Hoshi.Repositories.OrderService
                 CancelledOffers = cancelledOffers,
                 Balance = workerBalance
             };
-            
+
             var response = new DashboardOrderDetailsResponseDTO
             {
                 OrderId = orderDto.Id,
@@ -504,7 +505,7 @@ namespace Hoshi.Repositories.OrderService
                 OrderImages = orderDto.OrderImages!,
                 WorkerData = workerData
             };
-            
+
             return ResultDTO<DashboardOrderDetailsResponseDTO>.Success(response);
         }
     }

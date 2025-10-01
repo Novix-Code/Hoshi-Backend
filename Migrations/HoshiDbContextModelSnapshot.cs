@@ -420,6 +420,9 @@ namespace Hoshi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("ForClient")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -430,6 +433,24 @@ namespace Hoshi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TermsAndCondetions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = "تعدّ هذه الاتفاقية بمنزلة اتفاقية عامة تحكم ضوابط التعامل بين المستخدم والموقع، وتسري على جميع الخدمات التي يقدمها الموقع للمستخدم.\n\r\nقبول الاتفاقية: يلتزم المستخدم بجميع الشروط الواردة في هذه الاتفاقية لضمان استعمال الخدمة، كما أنّ استمرار استعمال الخدمة يعدّ موافقةً ضمنية من جهة المستخدم على بنود اتفاقية الاستخدام.\r\n\r\nحقوق الملكية: إنّ المحتوى والتنظيم والتصميم والتجميع والترجمة وجميع المواد الأخرى المتعلقة بالمركز محمية بموجب قوانين حقوق المؤلف والعلامات التجارية وحقوق الملكية الأخرى السارية المفعول. ولا يحق للمستخدم نسخ أو نشر أو توزيع أيّ مواد منشورة على المركز ومنسوبة للموقع من دون ذكر مصدرها، ولا يجوز تعديل المادة الموجودة في هذا الموقع أو تحويرها أو اقتباسها لخلق عمل جديد أو استخدامها لأيّ غرض بخلاف الاستعمال الشخصي غير التجاري. ويحتفظ المركز بجميع الحقوق القانونية لمقاضاة من يخالف هذا الشرط، طبقًا لقوانين الملكية الفكرية.\r\n\r\nحق الاستخدام والاقتباس العلمي: إنّ استعراض أو طباعة أو تحميل أي محتوى أو رسم أو نموذج من المركز يخوّل ترخيصًا محدودًا وحصريًا للاستعمال الشخصي والمنصف. ويلتزم المستخدم في حال الاقتباس العلمي و/ أو استخدام أيٍّ من المواد البحثية والدراسات المنشورة في الموقع بالإشارة إلى مصدرها وفقًا للأعراف الأكاديمية المعتمدة.\r\n\r\nالتحرير والحذف والتعديل: يحتفظ المركز بجميع الحقوق في تغيير أو تعديل أو إلغاء أو تبديل كل خدمات المركز أو جزء منها. ويحقّ للمركز عدم نشر و/ أو حذف أيّ مادة أو تعليق أو صورة لا تتوافق مع شروط هذه الاتفاقية أو لا تتناسب مع سياسة المركز. كما يحق للمركز إلغاء التسجيل (إن وُجد). يحتفظ المركز بجميع الحقوق في إلغاء أو إيقاف أيّ حق في استعمال الخدمة في حالة انتهاك المستخدم أيّ بند من بنود اتفاقية الاستخدام.\r\n\r\nعدم القابلية للتحويل: حق استعمال خدمات الموقع وأي كلمة مرور للحصول على المعلومات أو الوثائق غير قابل للتحويل.\r\n\r\nالإقرار بالمسؤولية: يلتزم المستخدم بالحفاظ على سرية بيانات حسابه (إن وجد)، بما في ذلك اسم المستخدم وكلمة السر الخاصة به، كما يعدّ مسؤولًا مسؤولية كاملة عن أيّ استعمال للخدمة يجري من خلال اسم المستخدم وكلمة السر الخاصة به، سواء جرى ذلك من طرفه أو من طرف آخرين.\r\n\r\nسرية البيانات: يحتفظ المركز بحقه في جمع واستخدام معلومات عن المستخدم كالتي يجري تعبئتها في استمارة التسجيل، وذلك للأغراض الإحصائية وتحسين الخدمة.\r\n\r\nخدمات المركز: لا يتحمل المركز أو أي شخص يشترك في إعداد، أو إنتاج، أو توزيع أي مادة في المركز، أية مسؤولية عن أيّ ضرر مباشر أو غير مباشر مادي أو معنوي ينشأ من استعمال هذا الموقع، أو من عدم التمكن من استعماله، أو من أي خطأ أو حذف، أو عيب، يوجد فيه، أو من عدم صحة المعلومات التي يقدمها أو من أي تأخير أو انقطاع في بثّه.\r\n\r\nمعاودة النشر: لا يحقّ للباحث الذي قدّم بحثًا في أحد مؤتمرات المركز، أو نُشر له في إحدى دوريات المركز، أن يعيد نشره إلا بموجب إذنٍ خطّي مُسبق من إدارة المركز. وفي حال الموافقة، يشترط عليه أن يشير إلى أنّ هذا البحث قدم إلى مؤتمر المركز أو إلى الدورية المعنية مع تحديد العدد والتاريخ.\r\n\r\nأحكام عامة: تطبق على هذه الشروط قوانين دولة قطر ويكون لمحاكمها سلطة حصرية في نظر النزاعات الناشئة عنها.\r\n\r\n",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = true,
+                            Title = "اتفاقية الاستخدام للعملاء"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Content = "تعدّ هذه الاتفاقية بمنزلة اتفاقية عامة تحكم ضوابط التعامل بين المستخدم والموقع، وتسري على جميع الخدمات التي يقدمها الموقع للمستخدم.\n\r\nقبول الاتفاقية: يلتزم المستخدم بجميع الشروط الواردة في هذه الاتفاقية لضمان استعمال الخدمة، كما أنّ استمرار استعمال الخدمة يعدّ موافقةً ضمنية من جهة المستخدم على بنود اتفاقية الاستخدام.\r\n\r\nحقوق الملكية: إنّ المحتوى والتنظيم والتصميم والتجميع والترجمة وجميع المواد الأخرى المتعلقة بالمركز محمية بموجب قوانين حقوق المؤلف والعلامات التجارية وحقوق الملكية الأخرى السارية المفعول. ولا يحق للمستخدم نسخ أو نشر أو توزيع أيّ مواد منشورة على المركز ومنسوبة للموقع من دون ذكر مصدرها، ولا يجوز تعديل المادة الموجودة في هذا الموقع أو تحويرها أو اقتباسها لخلق عمل جديد أو استخدامها لأيّ غرض بخلاف الاستعمال الشخصي غير التجاري. ويحتفظ المركز بجميع الحقوق القانونية لمقاضاة من يخالف هذا الشرط، طبقًا لقوانين الملكية الفكرية.\r\n\r\nحق الاستخدام والاقتباس العلمي: إنّ استعراض أو طباعة أو تحميل أي محتوى أو رسم أو نموذج من المركز يخوّل ترخيصًا محدودًا وحصريًا للاستعمال الشخصي والمنصف. ويلتزم المستخدم في حال الاقتباس العلمي و/ أو استخدام أيٍّ من المواد البحثية والدراسات المنشورة في الموقع بالإشارة إلى مصدرها وفقًا للأعراف الأكاديمية المعتمدة.\r\n\r\nالتحرير والحذف والتعديل: يحتفظ المركز بجميع الحقوق في تغيير أو تعديل أو إلغاء أو تبديل كل خدمات المركز أو جزء منها. ويحقّ للمركز عدم نشر و/ أو حذف أيّ مادة أو تعليق أو صورة لا تتوافق مع شروط هذه الاتفاقية أو لا تتناسب مع سياسة المركز. كما يحق للمركز إلغاء التسجيل (إن وُجد). يحتفظ المركز بجميع الحقوق في إلغاء أو إيقاف أيّ حق في استعمال الخدمة في حالة انتهاك المستخدم أيّ بند من بنود اتفاقية الاستخدام.\r\n\r\nعدم القابلية للتحويل: حق استعمال خدمات الموقع وأي كلمة مرور للحصول على المعلومات أو الوثائق غير قابل للتحويل.\r\n\r\nالإقرار بالمسؤولية: يلتزم المستخدم بالحفاظ على سرية بيانات حسابه (إن وجد)، بما في ذلك اسم المستخدم وكلمة السر الخاصة به، كما يعدّ مسؤولًا مسؤولية كاملة عن أيّ استعمال للخدمة يجري من خلال اسم المستخدم وكلمة السر الخاصة به، سواء جرى ذلك من طرفه أو من طرف آخرين.\r\n\r\nسرية البيانات: يحتفظ المركز بحقه في جمع واستخدام معلومات عن المستخدم كالتي يجري تعبئتها في استمارة التسجيل، وذلك للأغراض الإحصائية وتحسين الخدمة.\r\n\r\nخدمات المركز: لا يتحمل المركز أو أي شخص يشترك في إعداد، أو إنتاج، أو توزيع أي مادة في المركز، أية مسؤولية عن أيّ ضرر مباشر أو غير مباشر مادي أو معنوي ينشأ من استعمال هذا الموقع، أو من عدم التمكن من استعماله، أو من أي خطأ أو حذف، أو عيب، يوجد فيه، أو من عدم صحة المعلومات التي يقدمها أو من أي تأخير أو انقطاع في بثّه.\r\n\r\nمعاودة النشر: لا يحقّ للباحث الذي قدّم بحثًا في أحد مؤتمرات المركز، أو نُشر له في إحدى دوريات المركز، أن يعيد نشره إلا بموجب إذنٍ خطّي مُسبق من إدارة المركز. وفي حال الموافقة، يشترط عليه أن يشير إلى أنّ هذا البحث قدم إلى مؤتمر المركز أو إلى الدورية المعنية مع تحديد العدد والتاريخ.\r\n\r\nأحكام عامة: تطبق على هذه الشروط قوانين دولة قطر ويكون لمحاكمها سلطة حصرية في نظر النزاعات الناشئة عنها.\r\n\r\n",
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "اتفاقية الاستخدام للعمال"
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.GlobalModels.City", b =>
@@ -1463,96 +1484,104 @@ namespace Hoshi.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = true,
-                            Title = "تم قبول طلبك. اضغط هنا للذهاب إلى تفاصيل الطلب.",
-                            Type = "الطلب مقبول"
+                            Title = "اشعار جديد",
+                            Type = "Other"
                         },
                         new
                         {
                             Id = 2,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = true,
-                            Title = "تم تأكيد طلبك. اضغط هنا لاختيار احد العروض المقدمة من العمال.",
-                            Type = "تم تأكيد الطلب"
+                            Title = "الطلب مقبول",
+                            Type = "Acceptance"
                         },
                         new
                         {
                             Id = 3,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = true,
-                            Title = "تم قبول العرض المقدم من العامل. اضغط هنا لاستكمال الدفع.",
-                            Type = "تم تعيين العامل"
+                            Title = "تم تأكيد الطلب",
+                            Type = "Confirmation"
                         },
                         new
                         {
                             Id = 4,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = true,
-                            Title = "تم انتهاء طلبك. اضغط هنا لتقييم مدى رضاك عن آداء العامل.",
-                            Type = "انتهاء الطلب"
+                            Title = "تم تعيين العامل",
+                            Type = "Assignment"
                         },
                         new
                         {
                             Id = 5,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = true,
-                            Title = "تم إلغاء طلبك. اذا كنت مازلت تحتاج الخدمة برجاء انشاء طلب جديد.",
-                            Type = "الطلب ملغي"
+                            Title = "انتهاء الطلب",
+                            Type = "Completion"
                         },
                         new
                         {
                             Id = 6,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = true,
-                            Title = " تفاصيل الاشعار.",
-                            Type = "اشعار جديد"
+                            Title = "الطلب ملغي",
+                            Type = "Cancellation"
                         },
                         new
                         {
                             Id = 7,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
-                            ForClient = false,
-                            Title = "تم قبول عرضك على الطلب رقم <id># اضغط هنا للذهاب إلى تفاصيل الطلب.",
-                            Type = "العرض مقبول"
+                            ForClient = true,
+                            Title = "عامل ألغى الموعد",
+                            Type = "Cancellation"
                         },
                         new
                         {
                             Id = 8,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = false,
-                            Title = "تم إضافة مبلغ <price> دينار إلى محفظتك لدفع رسوم الطلب رقم <id>#. الذهاب الى المحفظة",
-                            Type = "تم تعديل الرصيد"
+                            Title = "العرض مقبول",
+                            Type = "Acceptance"
                         },
                         new
                         {
                             Id = 9,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = false,
-                            Title = "يتوافق الطلب رقم <id># مع خدماتك. اضغط هنا للاطلاع على التفاصيل ",
-                            Type = "طلب خدمة جديد"
+                            Title = "تم تعديل الرصيد",
+                            Type = "Confirmation"
                         },
                         new
                         {
                             Id = 10,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = false,
-                            Title = "تم انتهاء الطلب رقم <id># اضغط هنا لتقييم تجربتك مع العميل.",
-                            Type = "انتهاء الطلب"
+                            Title = "طلب خدمة جديد",
+                            Type = "Assignment"
                         },
                         new
                         {
                             Id = 11,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = false,
-                            Title = "تم إلغاء الطلب رقم <id># وإلغاء الموعد المسجل لتقديم الخدمة.",
-                            Type = "الطلب ملغي"
+                            Title = "انتهاء الطلب",
+                            Type = "Completion"
                         },
                         new
                         {
                             Id = 12,
                             CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
                             ForClient = false,
-                            Title = "تفاصيل الاشعار.",
-                            Type = "اشعار جديد"
+                            Title = "العرض مرفوض",
+                            Type = "Cancellation"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            ForClient = false,
+                            Title = "الطلب ملغي",
+                            Type = "Cancellation"
                         });
                 });
 
@@ -3375,6 +3404,32 @@ namespace Hoshi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SuspendReasons", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Reason = "مديونية"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Reason = "انتهاك اتفاقية الاستخدام"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Reason = "إلغاء متكرر"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 7, 20, 23, 16, 34, 134, DateTimeKind.Utc),
+                            Reason = "سوء معاملة"
+                        });
                 });
 
             modelBuilder.Entity("Hoshi.Models.UserModels.SuspendedUser", b =>
@@ -3822,19 +3877,38 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.AllClientModelForView", b =>
                 {
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
+
+                    b.Property<int>("CancellationNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
+                    b.Property<string>("ImageURL")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
 
                     b.ToTable((string)null);
 
@@ -3843,19 +3917,44 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.AllWorkersModelForView", b =>
                 {
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
+
+                    b.Property<int>("CancellationNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CityName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
+                    b.Property<string>("ImageURL")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsCompany")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
 
                     b.ToTable((string)null);
 
@@ -3913,8 +4012,8 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.ClientPageViewModel", b =>
                 {
-                    b.Property<double>("AverageOrdering")
-                        .HasColumnType("float");
+                    b.Property<int>("AverageOrdering")
+                        .HasColumnType("int");
 
                     b.Property<int>("TotalActiveClients")
                         .HasColumnType("int");
@@ -3922,7 +4021,7 @@ namespace Hoshi.Migrations
                     b.Property<int>("TotalClients")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalNewClients")
+                    b.Property<int>("TotalNewClientsThisMonth")
                         .HasColumnType("int");
 
                     b.ToTable((string)null);
@@ -3949,22 +4048,25 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.NewClientViewModel", b =>
                 {
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<string>("ImageURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable((string)null);
@@ -3974,18 +4076,34 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.NewWorkerModelForView", b =>
                 {
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CityName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsCompany")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable((string)null);
@@ -4002,7 +4120,6 @@ namespace Hoshi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
@@ -4012,14 +4129,14 @@ namespace Hoshi.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("Location")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("OrderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("ProposalPrice")
                         .HasColumnType("float");
@@ -4085,17 +4202,40 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.SuspendedUserModelForView", b =>
                 {
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
+
+                    b.Property<int>("CancellationNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompletedOrders")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -4106,17 +4246,40 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.SuspendedWorkerModelForView", b =>
                 {
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
+
+                    b.Property<int>("CancellationNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("ImageURL")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsCompany")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("RateRito")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -4128,30 +4291,27 @@ namespace Hoshi.Migrations
             modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerDetailsViewModel", b =>
                 {
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("CompletedOrders")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
                     b.Property<string>("IdentityImageURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsCompany")
@@ -4164,14 +4324,10 @@ namespace Hoshi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("RateRito")
                         .HasColumnType("float");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
 
                     b.ToTable((string)null);
 
@@ -4180,8 +4336,8 @@ namespace Hoshi.Migrations
 
             modelBuilder.Entity("Hoshi.Models.ViewModels.WorkerPageViewModel", b =>
                 {
-                    b.Property<double>("AverageWorkersPerService")
-                        .HasColumnType("float");
+                    b.Property<int>("AverageWorkersPerService")
+                        .HasColumnType("int");
 
                     b.Property<int>("TotalActiveWorkers")
                         .HasColumnType("int");

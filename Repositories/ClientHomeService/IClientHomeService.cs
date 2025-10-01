@@ -12,7 +12,7 @@ namespace Hoshi.Repositories.ClientHomeService
         /// <summary>
         /// Get a client's available promotions and active categories/services.
         /// </summary>
-        Task<ResultDTO<ClientHomeDto>> GetClientWithServiceById(int ClientId);
+        Task<ResultDTO<object>> ClientHomePage(int clientId);
         /// <summary>
         /// Build home data for all clients (non-taken promos and active services per client).
         /// </summary>

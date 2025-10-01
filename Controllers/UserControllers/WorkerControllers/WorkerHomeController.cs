@@ -24,7 +24,7 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers
 
         }
 
-        [Authorize]
+        [Authorize(Roles = "Worker")]
         [HttpGet("get-worker-home")]
         public async Task<IActionResult> GetWorkerHome()
         {
@@ -37,8 +37,7 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize]
-        [HttpGet("search-orders")]
+        [HttpPost("search-orders")]
         public async Task<IActionResult> SearchOrders([FromBody] OrderSearchRequestDto searchRequest)
         {
             var result = await _workerHomeService.SearchOrdersAsync(searchRequest);

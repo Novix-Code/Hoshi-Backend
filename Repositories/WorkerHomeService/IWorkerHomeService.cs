@@ -1,9 +1,6 @@
 using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
-using Hoshi.DTOs.OrderDTOs.OfferDTOs;
 using Hoshi.DTOs.OrderDTOs.OrderDTOs;
-using Hoshi.DTOs.OrderDTOs.OrderVisitDTOs;
 using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerHomeDTOs;
-using Hoshi.Models.OrderModels;
 
 namespace Hoshi.Repositories.WorkerHomeService
 {
@@ -15,10 +12,10 @@ namespace Hoshi.Repositories.WorkerHomeService
         /// <summary>
         /// Get worker home details including offers, upcoming and nearby orders.
         /// </summary>
-        Task<ResultDTO<WorkerOrderDetailsDto>> GetWorkerHomeAsync(int workerId);
+        Task<ResultDTO<object>> GetWorkerHomeAsync(int workerId);
         /// <summary>
         /// Search published orders by service and city names.
         /// </summary>
-        Task<ResultDTO<List<OrderGetDTO>>> SearchOrdersAsync(OrderSearchRequestDto searchRequest);
+        Task<ResultDTO<List<OrderBasicDTO>>> SearchOrdersAsync(OrderSearchRequestDto searchRequest);
     }
 }

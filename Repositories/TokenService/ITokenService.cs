@@ -1,4 +1,5 @@
-﻿using Hoshi.Models.UserModels;
+﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using Hoshi.Models.UserModels;
 
 namespace Hoshi.Repositories.TokenService
 {
@@ -8,6 +9,11 @@ namespace Hoshi.Repositories.TokenService
         /// Create a signed JWT for the specified user (includes roles and JTI).
         /// </summary>
         Task<string> CreateTokenAsync(User applicationUser);
+        /// <summary>
+        /// Take the current token and recreate a new one
+        /// </summary>
+        /// <returns></returns>
+        Task<ResultDTO<string>> RefrshToken(string token);
         /// <summary>
         /// Invalidate a token by blacklisting its JTI until its expiration.
         /// </summary>

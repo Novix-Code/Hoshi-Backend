@@ -225,7 +225,11 @@ namespace Hoshi.Repositories.EmailServiceFold
 
         // UPDATED: New method that generates OTP with unique secret key internally
         // This replaces the old GenerateOtp method that used class-level secret key
-        public (Totp totp, byte[] secretKey) GenerateOtp(int otpExpirationTime = otpDefaultSteps, int otpSize = 8, int secretKeySize = 20)
+        public (Totp totp, byte[] secretKey) GenerateOtp(
+            int otpExpirationTime = otpDefaultSteps, 
+            int otpSize = 8, 
+            int secretKeySize = 20
+        )
         {
             byte[] secretKey = KeyGeneration.GenerateRandomKey(secretKeySize);
             var totp = new Totp(secretKey, step: otpExpirationTime, totpSize: otpSize);
@@ -513,9 +517,9 @@ namespace Hoshi.Repositories.EmailServiceFold
             }
         }
 
-        public async Task<ResultDTO<object>> checkOTPVerfication(string otp, string userId)
+        public async Task<ResultDTO<object>> CheckOTPVerfication(string otp)
         {
-            var targetuserOtp = await _context.UserOTPs.Where(p => p.UserId == int.Parse(userId)).FirstOrDefaultAsync();
+            var targetuserOtp = await _context.UserOTPs.Where(p => p.Code == otp).FirstOrDefaultAsync();
 
             if (targetuserOtp == null || targetuserOtp.IsRevoked)
             {
@@ -523,22 +527,14 @@ namespace Hoshi.Repositories.EmailServiceFold
                     new ErrorDTO
                     {
                         ErrorAr = "هذا ال OTP غير صحيح.",
-                        ErrorEn = "This OTP is not valid" // Fixed typo
+                        ErrorEn = "This OTP is not valid"
                     }
                 );
             }
 
-            // COMMENTED: Old double validation logic that was incorrect
-            // The string comparison (targetuserOtp.Code != otp) will always fail with TOTP 
-            // because TOTP codes change over time, but stored Code is static
-            // if (targetuserOtp == null || targetuserOtp.Code != otp || targetuserOtp.IsRevoked)
-
-            // UPDATED: Only use TOTP validation with the stored secret key
+            // Use TOTP validation with the stored secret key
             var totp = GenerateOtpFromKey(targetuserOtp.SecreteKey);
             bool isValid = totp.VerifyTotp(otp, out long timeStepMatched, new VerificationWindow(previous: 1, future: 0));
-
-            // COMMENTED: Old approach using direct Totp constructor
-            // var totp = new Totp(targetuserOtp.SecreteKey, step: otpDefaultSteps, totpSize: 8);
 
             if (!isValid)
             {
@@ -551,7 +547,7 @@ namespace Hoshi.Repositories.EmailServiceFold
                 );
             }
 
-            var targetUser = await _userManager.FindByIdAsync(userId);
+            var targetUser = await _userManager.FindByIdAsync(targetuserOtp.UserId.ToString());
             if (targetUser == null)
             {
                 return ResultDTO<object>.Failure(

@@ -1,4 +1,5 @@
 ﻿using Hoshi.Data.LookupSeeders;
+using Hoshi.Data.TermsAndCondetionsSeeders;
 using Hoshi.Models.ChatModels;
 using Hoshi.Models.DashboardModels;
 using Hoshi.Models.DashboardModels.StatisticsModels;
@@ -11,6 +12,11 @@ using Hoshi.Models.UserModels.AdminModels;
 using Hoshi.Models.UserModels.Resets;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Models.ViewModels;
+using Hoshi.Models.ViewModels.ClientsPageViews;
+using Hoshi.Models.ViewModels.OrdersPageViews;
+using Hoshi.Models.ViewModels.PaymentsPageViews;
+using Hoshi.Models.ViewModels.ServicesPageViews;
+using Hoshi.Models.ViewModels.WorkersPageViews;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -46,43 +52,66 @@ namespace Hoshi.Data
             ServiceModelsSeeder.SeedAllHomeServicesData(modelBuilder);
             FeesSeeder.SeedFees(modelBuilder);
             ModelTypesSeeder.Seeder(modelBuilder);
+            TermsAndCondetionsSeeder.Seeder(modelBuilder);
 
             // Add Views
             modelBuilder.Entity<OverViewPage>().HasNoKey().ToView("OverviewView");
+
             modelBuilder.Entity<ClientPageViewModel>().HasNoKey().ToView("ClientPageView");
             modelBuilder.Entity<NewClientViewModel>().HasNoKey().ToView("NewClientView");
             modelBuilder.Entity<AllClientModelForView>().HasNoKey().ToView("AllClientView");
             modelBuilder.Entity<SuspendedUserModelForView>().HasNoKey().ToView("SuspendedUser");
             modelBuilder.Entity<ClientDetailsModelView>().HasNoKey().ToView("ClientDetailsView");
+
             modelBuilder.Entity<WorkerDetailsViewModel>().HasNoKey().ToView("WorkerDetailsView");
-            modelBuilder.Entity<CitiesViewModel>().HasNoKey().ToView("CitiesgetView");
-            modelBuilder.Entity<OrderDetailsViewModel>().HasNoKey().ToView("OrderDetailsView");
             modelBuilder.Entity<WorkerPageViewModel>().HasNoKey().ToView("WorkerPageView");
             modelBuilder.Entity<NewWorkerModelForView>().HasNoKey().ToView("NewWorkerView");
             modelBuilder.Entity<AllWorkersModelForView>().HasNoKey().ToView("AllWorkersView");
             modelBuilder.Entity<SuspendedWorkerModelForView>().HasNoKey().ToView("SuspendedWorker");
-            modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
-            modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
+
+            modelBuilder.Entity<OrdersPageViewModel>().HasNoKey().ToView("OrdersPageView");
+            modelBuilder.Entity<OrderDetailsViewModel>().HasNoKey().ToView("OrderDetailsView");
+            modelBuilder.Entity<ActiveOrdersViewModel>().HasNoKey().ToView("ActiveOrdersView");
+            modelBuilder.Entity<FinishedOrdersViewModel>().HasNoKey().ToView("FinishedOrdersView");
+
+            modelBuilder.Entity<PaymentsPageView>().HasNoKey().ToView("PaymentsPageView");
+            modelBuilder.Entity<PaymentRequestsView>().HasNoKey().ToView("PaymentRequestsView");
+            modelBuilder.Entity<WorkerUncollectedFeesView>().HasNoKey().ToView("WorkerUncollectedFeesView");
+            modelBuilder.Entity<ClientUncollectedFeesView>().HasNoKey().ToView("ClientUncollectedFeesView");
+
+            modelBuilder.Entity<JobsTableView>().HasNoKey().ToView("JobsTableView");
+            modelBuilder.Entity<CategoriesTableView>().HasNoKey().ToView("CategoriesTableView");
+            modelBuilder.Entity<ServicesTableView>().HasNoKey().ToView("ServicesTableView");
         }
 
         // Database views (read-only projections).
         public DbSet<OverViewPage> OverviewView { get; set; }
+
         public DbSet<ClientPageViewModel> ClientPageView { get; set; }
         public DbSet<NewClientViewModel> NewClientView { get; set; }
         public DbSet<AllClientModelForView> AllClientView { get; set; }
         public DbSet<SuspendedUserModelForView> SuspendedUserView { get; set; }
         public DbSet<ClientDetailsModelView> ClientDetailsView { get; set; }
-        public DbSet<WorkerDetailsViewModel> WorkerDetailsView { get; set; }
-        public DbSet<CitiesViewModel> CitiesgetView { get; set; }
-        public DbSet<OrderDetailsViewModel> OrderDetailsView { get; set; }
+
         public DbSet<WorkerPageViewModel> WorkerPageView { get; set; }
         public DbSet<NewWorkerModelForView> NewWorkerView { get; set; }
         public DbSet<AllWorkersModelForView> AllWorkersView { get; set; }
         public DbSet<SuspendedWorkerModelForView> SuspendedWorker { get; set; }
-        public DbSet<JobViewModel> JobView { get; set; }
-        public DbSet<PortfolioViewModel> PortfolioView { get; set; }
+        public DbSet<WorkerDetailsViewModel> WorkerDetailsView { get; set; }
 
+        public DbSet<OrdersPageViewModel> OrdersPageView { get; set; }
+        public DbSet<OrderDetailsViewModel> OrderDetailsView { get; set; }
+        public DbSet<ActiveOrdersViewModel> ActiveOrdersView { get; set; }
+        public DbSet<FinishedOrdersViewModel> FinishedOrdersView { get; set; }
 
+        public DbSet<PaymentsPageView> PaymentsPageView { get; set; }
+        public DbSet<PaymentRequestsView> PaymentRequestsView { get; set; }
+        public DbSet<WorkerUncollectedFeesView> WorkerUncollectedFeesView { get; set; }
+        public DbSet<ClientUncollectedFeesView> ClientUncollectedFeesView { get; set; }
+
+        public DbSet<JobsTableView> JobsTableView { get; set; }
+        public DbSet<CategoriesTableView> CategoriesTableView { get; set; }
+        public DbSet<ServicesTableView> ServicesTableView { get; set; }
 
 
         //---------------------------------------------------------------

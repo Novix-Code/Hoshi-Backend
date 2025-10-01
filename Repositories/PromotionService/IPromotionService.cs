@@ -1,5 +1,6 @@
 ﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionDTOs;
+using Hoshi.Models.PromotionModels;
 
 namespace Hoshi.Repositories.PromotionService
 {
@@ -16,6 +17,8 @@ namespace Hoshi.Repositories.PromotionService
         /// Update a promotion and optionally replace its image (deletes the old image first).
         /// </summary>
         Task<ResultDTO<PromotionGetDTO>> UpdatePromotion(PromotionPutDTO putDTO);
+
+        Task<List<Promotion>> NoneTakenPromotions(int userId, bool forClient);
 
     }
 }

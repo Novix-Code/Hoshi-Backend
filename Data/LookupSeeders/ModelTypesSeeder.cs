@@ -1,4 +1,5 @@
-﻿using Hoshi.Models.GlobalModels;
+﻿using Hoshi.Enums;
+using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ namespace Hoshi.Data.LookupSeeders
         {
             ComplaintTypeSeeder(modelBuilder);
             NotificationsTypeSeeder(modelBuilder);
+            SuspendReasonSeeder(modelBuilder);
         }
 
         private static void ComplaintTypeSeeder(ModelBuilder modelBuilder)
@@ -114,103 +116,112 @@ namespace Hoshi.Data.LookupSeeders
         {
             var types = new List<NotificationType>
             {
-                // Client Types
                 new()
                 {
                     Id = 1,
                     ForClient = true,
-                    Type = "الطلب مقبول",
-                    Title = "تم قبول طلبك. اضغط هنا للذهاب إلى تفاصيل الطلب.",
+                    Type = NotifType.Other.ToString(),
+                    Title = "اشعار جديد",
                     CreatedAt = createdAt,
                 },
+
+                // Client Types
                 new()
                 {
                     Id = 2,
                     ForClient = true,
-                    Type = "تم تأكيد الطلب",
-                    Title = "تم تأكيد طلبك. اضغط هنا لاختيار احد العروض المقدمة من العمال.",
+                    Type = NotifType.Acceptance.ToString(),
+                    Title = "الطلب مقبول",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 3,
                     ForClient = true,
-                    Type = "تم تعيين العامل",
-                    Title = "تم قبول العرض المقدم من العامل. اضغط هنا لاستكمال الدفع.",
+                    Type = NotifType.Confirmation.ToString(),
+                    Title = "تم تأكيد الطلب",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 4,
                     ForClient = true,
-                    Type = "انتهاء الطلب",
-                    Title = "تم انتهاء طلبك. اضغط هنا لتقييم مدى رضاك عن آداء العامل.",
+                    Type = NotifType.Assignment.ToString(),
+                    Title = "تم تعيين العامل",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 5,
                     ForClient = true,
-                    Type = "الطلب ملغي",
-                    Title = "تم إلغاء طلبك. اذا كنت مازلت تحتاج الخدمة برجاء انشاء طلب جديد.",
+                    Type = NotifType.Completion.ToString(),
+                    Title = "انتهاء الطلب",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 6,
                     ForClient = true,
-                    Type = "اشعار جديد",
-                    Title = " تفاصيل الاشعار.",
+                    Type = NotifType.Cancellation.ToString(),
+                    Title = "الطلب ملغي",
+                    CreatedAt = createdAt,
+                },
+                new()
+                {
+                    Id = 7,
+                    ForClient = true,
+                    Type = NotifType.Cancellation.ToString(),
+                    Title = "عامل ألغى الموعد",
                     CreatedAt = createdAt,
                 },
 
                 // Worker Types
                 new()
                 {
-                    Id = 7,
-                    ForClient = false,
-                    Type = "العرض مقبول",
-                    Title = "تم قبول عرضك على الطلب رقم <id># اضغط هنا للذهاب إلى تفاصيل الطلب.",
-                    CreatedAt = createdAt,
-                },
-                new()
-                {
                     Id = 8,
                     ForClient = false,
-                    Type = "تم تعديل الرصيد",
-                    Title = "تم إضافة مبلغ <price> دينار إلى محفظتك لدفع رسوم الطلب رقم <id>#. الذهاب الى المحفظة", 
+                    Type = NotifType.Acceptance.ToString(),
+                    Title = "العرض مقبول",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 9,
                     ForClient = false,
-                    Type = "طلب خدمة جديد",
-                    Title = "يتوافق الطلب رقم <id># مع خدماتك. اضغط هنا للاطلاع على التفاصيل ",
+                    Type = NotifType.Confirmation.ToString(),
+                    Title = "تم تعديل الرصيد",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 10,
                     ForClient = false,
-                    Type = "انتهاء الطلب",
-                    Title = "تم انتهاء الطلب رقم <id># اضغط هنا لتقييم تجربتك مع العميل.", 
+                    Type = NotifType.Assignment.ToString(),
+                    Title = "طلب خدمة جديد",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 11,
                     ForClient = false,
-                    Type = "الطلب ملغي",
-                    Title = "تم إلغاء الطلب رقم <id># وإلغاء الموعد المسجل لتقديم الخدمة.", 
+                    Type = NotifType.Completion.ToString(),
+                    Title = "انتهاء الطلب",
                     CreatedAt = createdAt,
                 },
                 new()
                 {
                     Id = 12,
                     ForClient = false,
-                    Type = "اشعار جديد",
-                    Title = "تفاصيل الاشعار.", 
+                    Type = NotifType.Cancellation.ToString(),
+                    Title = "العرض مرفوض",
+                    CreatedAt = createdAt,
+                },
+                new()
+                {
+                    Id = 13,
+                    ForClient = false,
+                    Type = NotifType.Cancellation.ToString(),
+                    Title = "الطلب ملغي",
                     CreatedAt = createdAt,
                 },
             };
