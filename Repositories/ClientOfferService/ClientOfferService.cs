@@ -62,13 +62,12 @@ namespace Hoshi.Repositories.ClientOfferService
                 _context.Orders.Update(targetOffer.Order);
 
                 // 2. Add order History into OrderStatusHistory table
-                var ordHst = new OrderStatusHistory
+                await _context.OrderStatusHistory.AddAsync(new OrderStatusHistory
                 {
                     CreatedAt = DateTime.UtcNow,
                     OrderId = targetOffer.OrderId,
                     OrderStatus = Enums.OrderStatus.Assigned
-                };
-                await _context.OrderStatusHistory.AddAsync(ordHst);
+                });
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Offer {OfferId} status updated to Accepted", offerId);

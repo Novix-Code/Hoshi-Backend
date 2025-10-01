@@ -11,21 +11,6 @@ namespace Hoshi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
 
-            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerPageView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerDetailsView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedWorker;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedUser;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS PortfolioView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS OverviewView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS OrderDetailsView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS NewWorkerView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS NewClientView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS JobView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientPageView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientDetailsView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS CitiesgetView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkersView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView;");
 
             // View: OverviewView — Shows global statistics (users, orders, revenue)
             migrationBuilder.Sql(
@@ -481,22 +466,98 @@ namespace Hoshi.Migrations
                 "
             );
 
-            // View: PortfolioView — Shows workers’ portfolio files
+
+            // View: PaymentsPageView - Shows all payment numerical cards
             migrationBuilder.Sql(
-                @"CREATE VIEW PortfolioView AS
-                    SELECT FileURL, WorkerId FROM WorkerPortfolios;"
+                @"CREATE VIEW PaymentsPageView AS
+                    SELECT 
+                        SUM(WorkerTotalPrice) AS TotalOrdersIncome,
+                        SUM(OrderPrice) AS TotalOrdersPrices,
+                        SUM(CommissionFee + VisitingFee + CancellationFee) AS TotalOrdersFees,
+                        (SELECT SUM(ww.Balance) * -1 FROM WorkerWallets ww WHERE ww.Balance < 0) AS TotalUncollectedFees
+                    FROM Invoices i
+                    LEFT JOIN Orders o ON i.OrderId = o.Id;
+                "
             );
 
-            // View: CitiesgetView — Shows all cities from the Cities table
+            // View: PaymentRequestsView - Shows all payment numerical cards
             migrationBuilder.Sql(
-                @"CREATE VIEW CitiesgetView AS
-                    SELECT * FROM Cities;"
+                @"CREATE VIEW PaymentRequestsView AS
+                    SELECT 
+                        u.Id,
+                        u.FullName,
+                        u.Email,
+                        u.ImageURL,
+                        j.JobTitle,
+                        c.CityName,
+                        ww.Balance,
+                        wph.Id AS RequestId,
+                        wph.CreatedAt
+                    FROM WorkerPaymentHistroys wph
+                        INNER JOIN AspNetUsers u ON wph.WorkerId = u.Id
+                        LEFT JOIN WorkerSpecifications ws ON ws.UserId = u.Id
+                        LEFT JOIN Jobs j ON ws.JobId = j.Id
+                        LEFT JOIN Cities c ON ws.LivingCityId = c.Id
+                        LEFT JOIN WorkerWallets ww ON ww.WorkerId = ws.UserId
+                    WHERE wph.IsApproved = 0;
+                "
             );
 
-            // View: JobView — Shows basic job information
+            // View: WorkerUncollectedFeesView - Shows all payment numerical cards
             migrationBuilder.Sql(
-                @"CREATE VIEW JobView AS
-                    SELECT JobTitle, IsDeleted, Id FROM Jobs;"
+                @"CREATE VIEW WorkerUncollectedFeesView AS
+                    SELECT 
+                        u.Id,
+                        u.FullName,
+                        u.Email,
+                        u.ImageURL,
+                        u.PhoneNumber,
+                        ws.Address,
+                        ws.RateRito,
+                        ws.CompletedOrders,
+                        ww.Balance,
+                        (SELECT COUNT(*) 
+                         FROM Orders o 
+                         WHERE o.WorkerId = ws.UserId 
+                           AND o.OrderStatus = 'Cancelled') AS TotalCancelledOrders,
+                        (Cast(
+                            (SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END 
+                             FROM UserCollectionAlerts uca 
+                             WHERE uca.UserId = ws.UserId) as bit)
+                         ) AS HasCollectionAlert
+                    FROM WorkerWallets ww
+                    INNER JOIN AspNetUsers u ON ww.WorkerId = u.Id
+                    LEFT JOIN WorkerSpecifications ws ON ws.UserId = u.Id
+                    WHERE ww.Balance < 0;
+                "
+            );
+
+            // View: ClientUncollectedFeesView - Shows all payment numerical cards
+            migrationBuilder.Sql(
+                @"CREATE VIEW ClientUncollectedFeesView AS
+                    SELECT 
+                        u.Id,
+                        u.FullName,
+                        u.Email,
+                        u.ImageURL,
+                        u.PhoneNumber,
+                        cs.Address,
+                        cs.RateRito,
+                        cs.CompletedOrders,
+                        cs.Indebtedness * -1 AS Balance,
+                        (SELECT COUNT(*) 
+                         FROM Orders o 
+                         WHERE o.ClientId = cs.UserId 
+                           AND o.OrderStatus = 'Cancelled') AS TotalCancelledOrders,
+                        (Cast(
+                            (SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END 
+                             FROM UserCollectionAlerts uca 
+                             WHERE uca.UserId = cs.UserId) as bit)
+                         ) AS HasCollectionAlert
+                    FROM ClientSpecifications cs
+                    INNER JOIN AspNetUsers u ON cs.UserId = u.Id
+                    WHERE cs.Indebtedness > 0;
+                "
             );
 
         }
@@ -504,21 +565,29 @@ namespace Hoshi.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerPageView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerDetailsView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedWorker;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedUser;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS PortfolioView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS OverviewView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS OrderDetailsView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS NewWorkerView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS NewClientView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS JobView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientPageView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientDetailsView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS CitiesgetView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkersView;");
-            migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView;");
+            // Drop Views
+            migrationBuilder.Sql("DROP VIEW IF EXISTS OverviewView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientPageView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS NewClientView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS AllClientView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedUser");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientDetailsView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerPageView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS NewWorkerView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS AllWorkersView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS SuspendedWorker");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerDetailsView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS OrderDetailsView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ActiveOrdersView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS FinishedOrdersView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS OrdersPageView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS JobsTableView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS CategoriesTableView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ServicesTableView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS PaymentsPageView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS PaymentRequestsView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS WorkerUncollectedFeesView");
+            migrationBuilder.Sql("DROP VIEW IF EXISTS ClientUncollectedFeesView");
         }
     }
 }

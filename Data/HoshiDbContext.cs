@@ -14,6 +14,7 @@ using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Models.ViewModels;
 using Hoshi.Models.ViewModels.ClientsPageViews;
 using Hoshi.Models.ViewModels.OrdersPageViews;
+using Hoshi.Models.ViewModels.PaymentsPageViews;
 using Hoshi.Models.ViewModels.ServicesPageViews;
 using Hoshi.Models.ViewModels.WorkersPageViews;
 using Microsoft.AspNetCore.Identity;
@@ -73,13 +74,14 @@ namespace Hoshi.Data
             modelBuilder.Entity<ActiveOrdersViewModel>().HasNoKey().ToView("ActiveOrdersView");
             modelBuilder.Entity<FinishedOrdersViewModel>().HasNoKey().ToView("FinishedOrdersView");
 
+            modelBuilder.Entity<PaymentsPageView>().HasNoKey().ToView("PaymentsPageView");
+            modelBuilder.Entity<PaymentRequestsView>().HasNoKey().ToView("PaymentRequestsView");
+            modelBuilder.Entity<WorkerUncollectedFeesView>().HasNoKey().ToView("WorkerUncollectedFeesView");
+            modelBuilder.Entity<ClientUncollectedFeesView>().HasNoKey().ToView("ClientUncollectedFeesView");
+
             modelBuilder.Entity<JobsTableView>().HasNoKey().ToView("JobsTableView");
             modelBuilder.Entity<CategoriesTableView>().HasNoKey().ToView("CategoriesTableView");
             modelBuilder.Entity<ServicesTableView>().HasNoKey().ToView("ServicesTableView");
-
-            modelBuilder.Entity<CitiesViewModel>().HasNoKey().ToView("CitiesgetView");
-            modelBuilder.Entity<JobViewModel>().HasNoKey().ToView("JobView");
-            modelBuilder.Entity<PortfolioViewModel>().HasNoKey().ToView("PortfolioView");
         }
 
         // Database views (read-only projections).
@@ -102,15 +104,14 @@ namespace Hoshi.Data
         public DbSet<ActiveOrdersViewModel> ActiveOrdersView { get; set; }
         public DbSet<FinishedOrdersViewModel> FinishedOrdersView { get; set; }
 
+        public DbSet<PaymentsPageView> PaymentsPageView { get; set; }
+        public DbSet<PaymentRequestsView> PaymentRequestsView { get; set; }
+        public DbSet<WorkerUncollectedFeesView> WorkerUncollectedFeesView { get; set; }
+        public DbSet<ClientUncollectedFeesView> ClientUncollectedFeesView { get; set; }
+
         public DbSet<JobsTableView> JobsTableView { get; set; }
         public DbSet<CategoriesTableView> CategoriesTableView { get; set; }
         public DbSet<ServicesTableView> ServicesTableView { get; set; }
-
-        public DbSet<CitiesViewModel> CitiesgetView { get; set; }
-        public DbSet<JobViewModel> JobView { get; set; }
-        public DbSet<PortfolioViewModel> PortfolioView { get; set; }
-
-
 
 
         //---------------------------------------------------------------

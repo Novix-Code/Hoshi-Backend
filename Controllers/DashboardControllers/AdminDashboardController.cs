@@ -7,6 +7,7 @@ using Hoshi.DTOs.DashboardDTOs;
 using Hoshi.DTOs.DashboardDTOs.ComplaintDTOs;
 using Hoshi.Models.ViewModels.ClientsPageViews;
 using Hoshi.Models.ViewModels.OrdersPageViews;
+using Hoshi.Models.ViewModels.PaymentsPageViews;
 using Hoshi.Models.ViewModels.WorkersPageViews;
 using Hoshi.Repositories.AdminDashboardService;
 using Microsoft.AspNetCore.Authorization;
@@ -149,6 +150,9 @@ namespace Hoshi.Controllers.DashboardControllers
             return StatusCode((int)response.StatusCode, response);
         }
 
+        // ---------------------
+        // Payment Page Endpoints
+        // ---------------------
 
         [HttpGet("PaymentsPage")]
         public async Task<IActionResult> PaymentsPageAsync()
@@ -156,6 +160,15 @@ namespace Hoshi.Controllers.DashboardControllers
             var response = await dashboardService.GetPaymentsPageAsync();
             return StatusCode((int)response.StatusCode, response);
         }
+
+        [HttpPatch("PaymentRequestsTable")]
+        public IActionResult PaymentRequestsTable(TablesFSPDTO dto) => TableFSP<PaymentRequestsView>(dto);
+
+        [HttpPatch("WorkerUncollectedFeesTable")]
+        public IActionResult WorkerUncollectedFeesTable(TablesFSPDTO dto) => TableFSP<WorkerUncollectedFeesView>(dto);
+
+        [HttpPatch("ClientUncollectedFeesTable")]
+        public IActionResult ClientUncollectedFeesTable(TablesFSPDTO dto) => TableFSP<ClientUncollectedFeesView>(dto);
 
         [HttpGet("PaymentDetails")]
         public async Task<IActionResult> PaymentDetailsAsync([FromQuery] int paymentId)
@@ -170,6 +183,10 @@ namespace Hoshi.Controllers.DashboardControllers
             var response = await dashboardService.AddWorkerPayment(workerId, requestId, paymentValue);
             return StatusCode((int)response.StatusCode, response);
         }
+
+        // ---------------------
+        // Complaints Page Endpoints
+        // ---------------------
 
         [HttpGet("ComplaintsPage")]
         public async Task<IActionResult> ComplaintsPageAsync()
@@ -192,13 +209,9 @@ namespace Hoshi.Controllers.DashboardControllers
             return StatusCode((int)response.StatusCode, response);
         }
 
-        [HttpPatch("CloseComplaint")]
-        public async Task<IActionResult> CloseComplaintAsync([FromQuery] int complaintId)
-        {
-            var result = await dashboardService.CloseComplaintAsync(complaintId);
-            return StatusCode((int)result.StatusCode, result);
-        }
 
+
+        [NonAction]
         [HttpGet("StatisticPage")]
         public async Task<IActionResult> StatisticPageAsync()
         {
@@ -206,9 +219,7 @@ namespace Hoshi.Controllers.DashboardControllers
             return StatusCode((int)response.StatusCode, response);
         }
 
-        /// <summary>
-        /// Get admins along with their roles and permissions.
-        /// </summary>
+        [NonAction]
         [HttpGet("AllAdmins")]
         public async Task<IActionResult> AllAdmins()
         {
@@ -230,7 +241,6 @@ namespace Hoshi.Controllers.DashboardControllers
         /// An <see cref="IActionResult"/> containing the paginated data if successful, 
         /// or a bad request result if the operation fails.
         /// </returns>
-
         private IActionResult TableFSP<T>(TablesFSPDTO dto)
             where T : class, IBaseModel
         {

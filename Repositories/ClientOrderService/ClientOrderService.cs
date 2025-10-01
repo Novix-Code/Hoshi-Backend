@@ -82,14 +82,12 @@ namespace Hoshi.Repositories.ClientOrderService
                 await _context.SaveChangesAsync();
 
                 // 3. Add Order Status History
-                var histOrder = new OrderStatusHistoryPostDTO
+                await _context.OrderStatusHistory.AddAsync(new OrderStatusHistory
                 {
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     OrderId = orderMapper.Id,
                     OrderStatus = Enum.Parse<OrderStatus>(orderMapper.OrderStatus)
-                };
-                var histMapper = _mapper.Map<OrderStatusHistory>(histOrder);
-                _context.OrderStatusHistory.Add(histMapper);
+                });
 
                 // 4. Add Invoice
                 var invoicMapper = new Invoice
@@ -112,18 +110,17 @@ namespace Hoshi.Repositories.ClientOrderService
 
                     if (slectedPromotionId is not 0)
                     {
-                        var promotionOrder = new PromotionTakenPostDTO
+                        await _context.PromotionsTaken.AddAsync(new PromotionTaken
                         {
                             UserId = dto.ClientId,
                             OrderId = orderMapper.Id,
                             OfferId = null,
-                            PromotionId = slectedPromotionId
-                        };
-                        var promotionMapper = _mapper.Map<PromotionTaken>(promotionOrder);
-                        _context.PromotionsTaken.Add(promotionMapper);
+                            PromotionId = slectedPromotionId,
+                            CreatedAt = DateTime.UtcNow
+                        });
                     }
                 }
-                _context.Invoices.Add(invoicMapper);
+               await _context.Invoices.AddAsync(invoicMapper);
 
                 // 6. Add order images
                 if (!dto.OrderImagesFiles.IsNullOrEmpty())

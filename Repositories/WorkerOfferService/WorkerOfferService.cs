@@ -163,7 +163,7 @@ namespace Hoshi.Repositories.WorkerOfferService
 
                 string promotionTitle = string.Empty;
                 double workerPromotionFee = 0.0;
-                double clientPromotionFee = order.AppliedPromotion?.Value ?? 0.0;
+                //double clientPromotionFee = order.AppliedPromotion?.Value ?? 0.0;
 
                 if (promotion != null)
                 {
@@ -181,9 +181,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                 var invoice = await _hoshiDbContext.Invoices.FirstOrDefaultAsync(i => i.OrderId == order.Id);
 
                 double clientTotalPrice =
-                    (double)(dto.OfferedPrice
-                    + (invoice?.ClientIndebtednessFee ?? 0)
-                    - (invoice?.ClientPromotionFee is not null or 0 ? invoice?.ClientPromotionFee : clientPromotionFee))!;
+                    (double)(dto.OfferedPrice + invoice?.ClientIndebtednessFee - invoice?.ClientPromotionFee)!;
 
                 // 7. Upsert TempInvoice for this offer
                 var existingTemp = await _hoshiDbContext.TempInvoices
@@ -197,7 +195,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                         VisitingFee = visitFeeValue,
                         CancellationFee = cancellationFeeValue,
                         WorkerPromotionFee = workerPromotionFee,
-                        ClientPromotionFee = clientPromotionFee,
+                        ClientPromotionFee = invoice?.ClientPromotionFee ?? 0.0,
                         ClientIndebtednessFee = invoice?.ClientIndebtednessFee ?? 0.0,
                         ClientTotalPrice = clientTotalPrice,
                         WorkerTotalPrice = workerTotalPrice,
@@ -211,7 +209,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     existingTemp.VisitingFee = visitFeeValue;
                     existingTemp.CancellationFee = cancellationFeeValue;
                     existingTemp.WorkerPromotionFee = workerPromotionFee;
-                    existingTemp.ClientPromotionFee = clientPromotionFee;
+                    existingTemp.ClientPromotionFee = invoice?.ClientPromotionFee ?? 0.0;
                     existingTemp.ClientIndebtednessFee = invoice?.ClientIndebtednessFee ?? 0.0;
                     existingTemp.ClientTotalPrice = clientTotalPrice;
                     existingTemp.WorkerTotalPrice = workerTotalPrice;

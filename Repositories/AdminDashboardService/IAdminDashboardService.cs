@@ -57,13 +57,27 @@ namespace Hoshi.Repositories.AdminDashboardService
         Task<ResultDTO<object>> DashbordWorkerDetails(int id);
 
         // ---------------------
-        // Payment Page Endpoints
+        // Order Page Endpoints
         // ---------------------
+
+        /// <summary>
+        /// Orders page metrics.
+        /// </summary>
+        Task<ResultDTO<Object>> OrderPage();
+
+        /// <summary>
+        /// Specific order details for admin view.
+        /// </summary>
+        Task<ResultDTO<Object>> OrderDetails(int id);
 
         /// <summary>
         /// Build services analytics page aggregates.
         /// </summary>
         Task<ResultDTO<object>> GetServicesPageAsync();
+
+        // ---------------------
+        // Payment Page Endpoints
+        // ---------------------
 
         /// <summary>
         /// Payments dashboard aggregates and lists.
@@ -80,6 +94,10 @@ namespace Hoshi.Repositories.AdminDashboardService
         /// </summary>
         Task<ResultDTO<string>> AddWorkerPayment(int workerId, int requestId, double paymentValue);
 
+        // ---------------------
+        // Complaints Page Endpoints
+        // ---------------------
+
         /// <summary>
         /// Complaints page summary and listing.
         /// </summary>
@@ -95,25 +113,12 @@ namespace Hoshi.Repositories.AdminDashboardService
         /// </summary>
         Task<ResultDTO<MessageDTO>> ComplaintResponse(ComplaintResponseDTO complaintCreateDto);
 
-        /// <summary>
-        /// Close a complaint (set status to solved).
-        /// </summary>
-        Task<ResultDTO<bool>> CloseComplaintAsync(int complaintId);
+
 
         /// <summary>
         /// Statistics aggregates for dashboard.
         /// </summary>
         Task<ResultDTO<StatisticPageResponseDTO>> GetStatisticPageAsync();
-
-        /// <summary>
-        /// Orders page metrics.
-        /// </summary>
-        Task<ResultDTO<Object>> OrderPage();
-
-        /// <summary>
-        /// Specific order details for admin view.
-        /// </summary>
-        Task<ResultDTO<Object>> OrderDetails(int id);
 
         /// <summary>
         /// List admins with their roles and permissions.

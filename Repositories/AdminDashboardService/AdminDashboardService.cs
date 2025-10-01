@@ -654,6 +654,8 @@ namespace Hoshi.Repositories.AdminDashboardService
                     .Select(g => new
                     {
                         CategoryName = g.Key,
+                        TotalServsNum = g.Count(),
+                        ActiveServsNum = g.Count(s => !s.IsDeleted),
                         Services = g.ToList()
                     })
                     .ToList();
@@ -689,117 +691,30 @@ namespace Hoshi.Repositories.AdminDashboardService
         /// </summary>
         public async Task<ResultDTO<object>> GetPaymentsPageAsync()
         {
-            // Aggregate invoice sums
-            var invoiceSums = await context.Invoices
-                .AsNoTracking()
-                .GroupBy(i => 1)
-                .Select(g => new
-                {
-                    TotalOrdersIncome = g.Sum(i => i.WorkerTotalPrice),
-                    TotalOrdersPrices = g.Sum(i => i.OrderPrice),
-                    TotalOrdersFees = g.Sum(i => i.CommissionFee + i.VisitingFee + i.CancellationFee),
-                    TotalUncollectedFees = g.Where(i => i.Order != null && i.Order.OrderStatus != OrderStatus.Completed.ToString())
-                        .Sum(i => i.CommissionFee + i.VisitingFee + i.CancellationFee)
-                })
-                .FirstOrDefaultAsync();
+            var pageStatistics = await context.PaymentsPageView.FirstOrDefaultAsync();
 
-            // Preload worker balances
-            var workerBalances = await context.WorkerWallets
-                .AsNoTracking()
-                .Select(w => new { w.WorkerId, w.Balance })
-                .ToListAsync();
-            var workerBalanceDict = workerBalances.ToDictionary(w => w.WorkerId, w => w.Balance);
+            var workerPaymentRequests = context.PaymentRequestsView.Take(10);
 
-            // Preload notification user IDs
-            var notifiedUserIds = await context.UserNotifications
-                .AsNoTracking()
-                .Select(n => n.UserId)
-                .Distinct()
-                .ToListAsync();
-            var notifiedUserSet = new HashSet<int>(notifiedUserIds);
+            var workersUncollectedFees = context.WorkerUncollectedFeesView.Take(10);
 
-            // Workers payment requests
-            var workerPaymentRequests = await context.WorkerPaymentHistroys
-                .AsNoTracking()
-                .Include(u => u.Worker)
-                .Where(p => p.IsApproved == false)
-                .Select(r => new
-                {
-                    WorkerData = context.WorkerSpecifications
-                        .AsNoTracking()
-                        .Include(ws => ws.Job)
-                        .Include(ws => ws.LivingCity)
-                        .Where(p => p.UserId == r.Worker!.Id)
-                        .Select(ws => new
-                        {
-                            WorkerId = ws.UserId,
-                            Name = r.Worker!.FullName,
-                            Email = ws.User!.Email,
-                            Image = ws.User!.ImageURL,
-                            Job = ws.Job!.JobTitle,
-                            City = ws.LivingCity!.CityName,
-                            Balance = workerBalanceDict.ContainsKey(ws.UserId) ? workerBalanceDict[ws.UserId] : 0.0,
-                        }).FirstOrDefault(),
-                    RequestData = new
-                    {
-                        RequestId = r.Id,
-                        CreatedAt = r.CreatedAt,
-                    }
-                })
-                .ToListAsync();
+            var clientsUncollectedFees = context.ClientUncollectedFeesView.Take(10);
 
-
-            // Worker uncollected fees (optimized)
-            var workersUncollectedFees = await context.WorkerWallets
-                .AsNoTracking()
-                .Include(ws => ws.Worker)
-                .Where(ww => ww.Balance < 0)
-                .Select(r => new
-                {
-                    WorkerData = context.WorkerSpecifications
-                        .AsNoTracking()
-                        .Include(ws => ws.Job)
-                        .Include(ws => ws.LivingCity)
-                        .Where(p => p.UserId == r.Worker!.Id)
-                        .Select(ws => new
-                        {
-                            WorkerId = ws.UserId,
-                            Name = r.Worker!.FullName,
-                            Email = ws.User!.Email,
-                            Image = ws.User!.ImageURL,
-                            Job = ws.Job!.JobTitle,
-                            City = ws.LivingCity!.CityName,
-                        }).FirstOrDefault(),
-
-                    Balance = r.Balance,
-                })
-                .ToListAsync();
-
-            // Clients uncollected fees (optimized)
-            var clientsUncollectedFees = await context.ClientSpecifications
-            .AsNoTracking()
-            .Include(cs => cs.User)
-                .Where(cs => cs.Indebtedness > 0)
-                .Select(cs => new
-                {
-                    Client = mapper.Map<ClientSpecificationGetDTO>(cs),
-                    RateRatio = cs.RateRito,
-                    TotalCompletedOrders = cs.CompletedOrders,
-                    TotalCancelledOrders = context.Orders.Count(o => o.ClientId == cs.UserId && o.OrderStatus == OrderStatus.Cancelled.ToString()),
-                    Indebtedness = cs.Indebtedness,
-                    HasCollectionAlert = notifiedUserSet.Contains(cs.UserId)
-                })
-                .ToListAsync();
+            int wprPagesNum = (int)Math.Ceiling(await context.PaymentRequestsView.CountAsync() / 10.0);
+            int wufPagesNum = (int)Math.Ceiling(await context.WorkerUncollectedFeesView.CountAsync() / 10.0);
+            int cufPagesNum = (int)Math.Ceiling(await context.ClientUncollectedFeesView.CountAsync() / 10.0);
 
             return ResultDTO<object>.Success(new
             {
-                TotalOrdersIncome = invoiceSums?.TotalOrdersIncome ?? 0.0,
-                TotalOrdersPrices = invoiceSums?.TotalOrdersPrices ?? 0.0,
-                TotalOrdersFees = invoiceSums?.TotalOrdersFees ?? 0.0,
-                TotalUncollectedFees = invoiceSums?.TotalUncollectedFees ?? 0.0,
+                TotalOrdersIncome = pageStatistics?.TotalOrdersIncome,
+                TotalOrdersPrices = pageStatistics?.TotalOrdersPrices,
+                TotalOrdersFees = pageStatistics?.TotalOrdersFees,
+                TotalUncollectedFees = pageStatistics?.TotalUncollectedFees,
                 WorkerPaymentRequests = workerPaymentRequests,
                 WorkersUncollectedFees = workersUncollectedFees,
-                ClientsUncollectedFees = clientsUncollectedFees
+                ClientsUncollectedFees = clientsUncollectedFees,
+                RequestsPagesNum = wprPagesNum,
+                WorkerUFPagesNum = wufPagesNum,
+                ClientUFPagesNum = cufPagesNum
             });
         }
 
@@ -951,6 +866,10 @@ namespace Hoshi.Repositories.AdminDashboardService
             }
         }
 
+        // ---------------------
+        // Complaints Page Endpoints
+        // ---------------------
+
         /// <summary>
         /// Build complaints page summary and list with essential fields.
         /// </summary>
@@ -962,16 +881,19 @@ namespace Hoshi.Repositories.AdminDashboardService
                 .Include(c => c.ComplaintType);
 
             var total = await query.CountAsync();
-            var opened = await query.CountAsync(c => c.ComplaintStatus != ComplaintStatus.Solved.ToString());
-            var closed = await query.CountAsync(c => c.ComplaintStatus == ComplaintStatus.Solved.ToString());
+            var opened = await query.CountAsync(c => c.ComplaintStatus != ComplaintStatus.Solved.ToString()); // all except solved
+            var closed = await query.CountAsync(c => c.ComplaintStatus == ComplaintStatus.Solved.ToString()); // just solved
 
             var complaints = await query
                 .OrderByDescending(c => c.CreatedAt)
                 .Select(c => new ComplaintItemDTO
                 {
                     ComplaintId = c.Id,
-                    FullName = c.User.FullName,
-                    ComplaintType = c.ComplaintType.Type,
+                    Description = c.Description,
+                    FullName = c.User!.FullName,
+                    UserImageUrl = c.User.ImageURL,
+                    ComplaintType = c.ComplaintType!.Type,
+                    ComplaintStatus = c.ComplaintStatus,
                     CreatedAt = c.CreatedAt
                 })
                 .ToListAsync();
@@ -998,8 +920,6 @@ namespace Hoshi.Repositories.AdminDashboardService
                 .Include(c => c.ComplaintType)
                 .Include(c => c.Order)
                     .ThenInclude(o => o.OrderImages)
-                .Include(c => c.Order)
-                    .ThenInclude(o => o.OrderStatus)
                 .FirstOrDefaultAsync(c => c.Id == complaintId);
 
             if (complaint == null)
@@ -1017,14 +937,6 @@ namespace Hoshi.Repositories.AdminDashboardService
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                // Basic validation
-                if (string.IsNullOrWhiteSpace(complaintCreateDto.Response))
-                    return ResultDTO<MessageDTO>.BadRequest(new ErrorDTO
-                    {
-                        ErrorAr = "نص الرد مطلوب.",
-                        ErrorEn = "Response text is required."
-                    });
-
                 // Use async for better performance
                 var getComplaint = await context.Complaints.FirstOrDefaultAsync(c => c.Id == complaintCreateDto.ComplaintId);
                 if (getComplaint == null)
@@ -1034,8 +946,20 @@ namespace Hoshi.Repositories.AdminDashboardService
                         ErrorEn = "Complaint not found."
                     });
 
+                if (getComplaint.ComplaintStatus == ComplaintStatus.Solved.ToString())
+                    return ResultDTO<MessageDTO>.BadRequest(new ErrorDTO
+                    {
+                        ErrorAr = "تم الرد على الشكوى بالفعل.",
+                        ErrorEn = "The complaint has already been answered."
+                    });
+
                 // Update complaint
+                if (string.IsNullOrWhiteSpace(complaintCreateDto.Response))
+                    complaintCreateDto.Response = "تم حل المشكلة الخاصة بك من قبل احد المشرفين.";
+                
                 getComplaint.Response = complaintCreateDto.Response.Trim();
+
+                getComplaint.ComplaintStatus = ComplaintStatus.Solved.ToString();
                 getComplaint.ModifiedAt = DateTime.UtcNow;
 
                 await context.SaveChangesAsync();
@@ -1043,8 +967,8 @@ namespace Hoshi.Repositories.AdminDashboardService
 
                 return ResultDTO<MessageDTO>.Success(new MessageDTO
                 {
-                    MessageAr = "تم الرد على الشكوى بنجاح.",
-                    MessageEn = "Complaint response sent successfully."
+                    MessageAr = "تم الرد على الشكوى وغلقها بنجاح.",
+                    MessageEn = "The complaint has been successfully responded to and closed."
                 });
             }
             catch (Exception ex)
@@ -1061,21 +985,7 @@ namespace Hoshi.Repositories.AdminDashboardService
             }
         }
 
-        /// <summary>
-        /// Mark a complaint as solved and set modification timestamp.
-        /// </summary>
-        public async Task<ResultDTO<bool>> CloseComplaintAsync(int complaintId)
-        {
-            var complaint = await context.Complaints.FirstOrDefaultAsync(c => c.Id == complaintId);
-            if (complaint == null)
-                return ResultDTO<bool>.NotFound(new ErrorDTO { ErrorAr = "الشكوى غير موجودة.", ErrorEn = "Complaint not found." });
 
-            complaint.ComplaintStatus = ComplaintStatus.Solved.ToString();
-            complaint.ModifiedAt = DateTime.UtcNow;
-
-            await context.SaveChangesAsync();
-            return ResultDTO<bool>.Success();
-        }
 
         /// <summary>
         /// Compute basic system statistics and averages for dashboard.
