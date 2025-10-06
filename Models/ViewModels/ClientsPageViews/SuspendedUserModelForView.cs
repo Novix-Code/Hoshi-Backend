@@ -16,5 +16,7 @@ namespace Hoshi.Models.ViewModels.ClientsPageViews
         public double Balance { get; set; }
         public string Reason { get; set; }
         public DateTime? CreatedAt { get; set; }
+
+        public int SuspentionId { get; set; }
     }
 }

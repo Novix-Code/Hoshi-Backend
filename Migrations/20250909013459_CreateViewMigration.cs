@@ -123,7 +123,8 @@ namespace Hoshi.Migrations
                         (SELECT COUNT(*) FROM Orders o WHERE o.ClientId = u.Id and o.OrderStatus = 'Cancelled') AS CancellationNumber,
                         cs.Balance,
                         sr.Reason,
-                        su.CreatedAt
+                        su.CreatedAt,
+                        su.Id AS SuspentionId
                     FROM AspNetUsers u
                     JOIN ClientSpecifications cs ON u.Id = cs.UserId
                     JOIN SuspendedUsers su ON u.Id = su.UserId
@@ -247,7 +248,8 @@ namespace Hoshi.Migrations
                         ws.IsCompany,
                         ww.Balance,
                         sr.Reason,
-                        su.CreatedAt
+                        su.CreatedAt,
+                        su.Id AS SuspentionId
                     FROM AspNetUsers u
                     JOIN WorkerSpecifications ws ON u.Id = ws.UserId
                     JOIN Cities c ON ws.LivingCityId = c.Id

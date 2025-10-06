@@ -141,7 +141,11 @@ namespace Hoshi.Repositories.AuthService
 
             // Validate the token and its expiry
             if (passwordResetRequest is null || passwordResetRequest.ExpiresAt < DateTime.UtcNow)
-                return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+                return ResultDTO<string>.BadRequest(new ErrorDTO()
+                {
+                    ErrorAr = "لقد انتهت مدة الطلب الخاصة بك، بالرجاء ارسال طلب تغير كلمة مرور جديد.",
+                    ErrorEn = "Your request has expired, please submit a new Reset Password request."
+                });
 
             var resutl = await _userManager.ResetPasswordAsync(user, resetPasswordRequestDto.Token,
                 resetPasswordRequestDto.NewPassword);
@@ -149,7 +153,14 @@ namespace Hoshi.Repositories.AuthService
             if (!resutl.Succeeded)
             {
                 var errors = resutl.Errors.Select(e => e.Description).ToList();
-                return ResultDTO<string>.Failure(new ErrorDTO(), ResponseStatusCodes.BadRequest);
+                return ResultDTO<string>.BadRequest(
+                    new ErrorDTO()
+                    {
+                        ErrorAr = "حدثة مشكلة اثناء التغيير.",
+                        ErrorEn = "There is a problem while processing."
+                    },
+                    innerError: errors.FirstOrDefault()
+                );
             }
 
             // Remove the used token as it is one time use
