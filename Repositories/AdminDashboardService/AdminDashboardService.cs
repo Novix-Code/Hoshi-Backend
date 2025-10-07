@@ -311,41 +311,23 @@ namespace Hoshi.Repositories.AdminDashboardService
             tergetWorkerSpecif.IsApproved = true;
 
             // handle add notifications 
-            var checkexcist = await context.NotificationTypes.Where(p => p.Type == "Success Message").Select(p => p.Id).FirstOrDefaultAsync();
-            if (checkexcist == 0)
+            await context.UserNotifications.AddAsync(new UserNotification
             {
-                var notiType = new NotificationType
-                {
-                    Title = "Successfully Approved",
-                    ForClient = false,
-                    Type = "Success Message"
-                };
-                await context.NotificationTypes.AddAsync(notiType);
-                await context.SaveChangesAsync();
-                context.UserNotifications.Add(new UserNotification
-                {
-                    NotificationTypeId = notiType.Id,
-                    Description = "success Message",
-                    UserId = Id
-                });
-                context.WorkerSpecifications.Update(tergetWorkerSpecif);
-                await context.SaveChangesAsync();
-                return ResultDTO<object>.Success("Worker is now approved");
+                NotificationTypeId = 2, // Acceptance
+                Description = "تم قبول طلبك لتصبح عامل، يمكنك الان التمتع بمزايا التطبيق.",
+                UserId = Id
+            });
 
-            }
-            else
-            {
-                context.UserNotifications.Add(new UserNotification
-                {
-                    NotificationTypeId = checkexcist,
-                    Description = "success Message",
-                    UserId = Id
-                });
-                context.WorkerSpecifications.Update(tergetWorkerSpecif);
-                await context.SaveChangesAsync();
-                return ResultDTO<object>.Success("Worker is now approved");
-            }
+            await context.SaveChangesAsync();
 
+            return ResultDTO<object>.BadRequest
+            (
+                new ErrorDTO
+                {
+                    ErrorAr = "تم قبول العامل.",
+                    ErrorEn = "Worker be approved."
+                }
+            );
         }
 
         public async Task<ResultDTO<object>> BeWorkerRejection(int Id, string rejectResoun)
