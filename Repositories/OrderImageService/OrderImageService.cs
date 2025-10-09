@@ -55,7 +55,7 @@ namespace Hoshi.Repositories.OrderImageService
 
                 foreach (IFormFile image in images)
                 {
-                    var result = await fileService.SaveFileAsync(image, "images\\orders");
+                    var result = await fileService.SaveFileAsync(image, Path.Combine("images","orders"));
 
                     if (result.Item1 is false)
                     {

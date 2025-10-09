@@ -74,7 +74,7 @@ namespace Hoshi.Repositories.FileServiceFold
                 await file.CopyToAsync(fileStream);
             }
 
-            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName).Replace("\\" ,"/"));
+            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName));
         }
 
         public bool ValidateFileExtension(IFormFile file)

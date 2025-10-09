@@ -1,8 +1,14 @@
 ﻿using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Tls;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
+using System;
 
 namespace Hoshi.Data.IdentitySeeders
 {
@@ -99,7 +105,7 @@ namespace Hoshi.Data.IdentitySeeders
         //            // notifications
         //            new NotificationType { Title = "اشعار بإنشاء طلب", Type = "For_Worker", ForClient = false },
         //            new NotificationType { Title = "اشعار للاختبار", Type = "For_Client", ForClient = true },
-   
+
         //    };
 
         //    foreach (var notif in notificationTypes)

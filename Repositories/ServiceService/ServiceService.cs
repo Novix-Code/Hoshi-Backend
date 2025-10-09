@@ -61,7 +61,7 @@ namespace Hoshi.Repositories.ServiceService
             {
                 Service service = _mapper.Map<Service>(postDTO);
 
-                var imageResult = await fileService.SaveFileAsync(postDTO.Image, "images\\services");
+                var imageResult = await fileService.SaveFileAsync(postDTO.Image, Path.Combine("images", "services"));
 
                 if (imageResult.Item1 is false)
                     return ResultDTO<ServiceGetDTO>.BadRequest(new ErrorDTO()
@@ -114,7 +114,7 @@ namespace Hoshi.Repositories.ServiceService
                 {
                     fileService.DeleteFile(service.ImageURL);
 
-                    var imageResult = await fileService.SaveFileAsync(putDTO.Image, "images\\services");
+                    var imageResult = await fileService.SaveFileAsync(putDTO.Image, Path.Combine("images","services"));
 
                     if (imageResult.Item1 is false)
                         return ResultDTO<ServiceGetDTO>.BadRequest(new ErrorDTO()
