@@ -8,7 +8,7 @@ namespace Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.ServiceRequestRateDTOs
     {
         public int Id { get; set; }
         public double ServicePercentage { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ServiceGetDTO? Service { get; set; }
     }

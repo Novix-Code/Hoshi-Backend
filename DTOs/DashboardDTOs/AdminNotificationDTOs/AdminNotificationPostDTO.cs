@@ -8,7 +8,7 @@ namespace Hoshi.DTOs.DashboardDTOs.AdminNotificationDTOs
         public required string Title { get; set; }
         public required string Content { get; set; }
         public required bool IsRead { get; set; } = false;
-        public required DateTime CreatedAt { get; set; } = DateTime.Now;
+        public required DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public required int AdminId { get; set; }
     }

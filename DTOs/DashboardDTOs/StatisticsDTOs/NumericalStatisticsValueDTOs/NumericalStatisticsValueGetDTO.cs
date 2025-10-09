@@ -10,7 +10,7 @@ namespace Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.NumericalStatisticsValueDTOs
         public double CurrentValue { get; set; }
         public double? PercentageValue { get; set; }
         public bool IsIncreased { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int? LastValueId { get; set; }
         public NumericalStatisticsValueGetDTO? LastValue { get; set; }

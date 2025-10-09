@@ -8,7 +8,7 @@ namespace Hoshi.DTOs.UserDTOs.AdminDTOs.RoleDTOs
     {
         public required bool IsDeleted { get; set; }
 
-        public required DateTime CreatedAt { get; set; } = DateTime.Now;
+        public required DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ModifiedAt { get; set; }
     }
 }

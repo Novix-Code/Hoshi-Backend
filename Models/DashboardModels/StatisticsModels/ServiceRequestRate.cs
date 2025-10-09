@@ -12,7 +12,7 @@ namespace Hoshi.Models.DashboardModels.StatisticsModels
     {
         public int Id { get; set; }
         public double ServicePercentage { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int ServiceId { get; set; }
         public Service? Service { get; set; }

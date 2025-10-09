@@ -14,7 +14,7 @@ namespace Hoshi.Models.DashboardModels.StatisticsModels
         public int CancelledValue { get; set; }
         public int AssignedValue { get; set; }
         public int CompletedValue { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int ServiceCategoryId { get; set; }
         public ServiceCategory? ServiceCategory { get; set; }

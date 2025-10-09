@@ -42,7 +42,7 @@ public class ChatHub :Hub
             {
                 UserId = userId.Value,
                 ConnectionId = Context.ConnectionId,
-                ConnectedAt = DateTime.Now
+                ConnectedAt = DateTime.UtcNow
             };
 
             // Remove any existing connections for this user
@@ -63,7 +63,7 @@ public class ChatHub :Hub
                 SenderId = 0,
                 ReceiverId = userId ?? 0,
                 Content = $"Welcome to the chat!",
-                Timestamp = DateTime.Now,
+                Timestamp = DateTime.UtcNow,
                 IsRead = true
             });
 
@@ -147,7 +147,7 @@ public class ChatHub :Hub
                 SenderId = senderId ?? 0,
                 ReceiverId = receiverId ?? 0,
                 Content = message,
-                Timestamp = DateTime.Now,
+                Timestamp = DateTime.UtcNow,
                 IsRead = false
             };
 

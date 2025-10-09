@@ -7,6 +7,6 @@ namespace Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.CustomerGrowthRateDTOs
     {
         public required int ClientsValue { get; set; }
         public required int WorkersValue { get; set; }
-        public required DateTime CreatedAt { get; set; } = DateTime.Now;
+        public required DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
