@@ -108,7 +108,7 @@ namespace Hoshi.Repositories.WorkerWalletService
                 }
 
                 // Save the image file
-                var saveResult = await _fileService.SaveFileAsync(request.BillImage, "uploads/bills");
+                var saveResult = await _fileService.SaveFileAsync(request.BillImage, Path.Combine("uploads","bills"));
                 if (!saveResult.Item1)
                     return ResultDTO<string>.BadRequest(new ErrorDTO
                     {

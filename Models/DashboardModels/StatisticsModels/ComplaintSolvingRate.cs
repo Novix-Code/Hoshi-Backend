@@ -16,7 +16,7 @@ namespace Hoshi.Models.DashboardModels.StatisticsModels
         public int SolvedNumber { get; set; }
         public int NotSolvedNumber { get; set; }
         public bool ForClient { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int ComplaintTypeId { get; set; }
         public ComplaintType? ComplaintType { get; set; }

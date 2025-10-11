@@ -10,7 +10,7 @@ namespace Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.ComplaintSolvingRateDTOs
         public required int SolvedNumber { get; set; }
         public required int NotSolvedNumber { get; set; }
         public required bool ForClient { get; set; }
-        public required DateTime CreatedAt { get; set; } = DateTime.Now;
+        public required DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public required int ComplaintTypeId { get; set; }
     }

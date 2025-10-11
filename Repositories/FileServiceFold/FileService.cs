@@ -51,6 +51,9 @@ namespace Hoshi.Repositories.FileServiceFold
             if (!ValidateFileExtension(file))
                 return new Tuple<bool, string>(false, FileServiceResults.UnsupportedFileExtension);
 
+            if (!Directory.Exists(_environment.WebRootPath))
+                Directory.CreateDirectory("wwwroot");
+
             //Get Folder Full Path
             string folderFullPath = Path.Combine(_environment.WebRootPath, folderShortPath);
 
@@ -71,7 +74,7 @@ namespace Hoshi.Repositories.FileServiceFold
                 await file.CopyToAsync(fileStream);
             }
 
-            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName).Replace("\\" ,"/"));
+            return new Tuple<bool, string>(true, Path.Combine(folderShortPath, fileUniqueName));
         }
 
         public bool ValidateFileExtension(IFormFile file)

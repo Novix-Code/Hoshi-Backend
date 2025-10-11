@@ -739,7 +739,7 @@ namespace Hoshi.Repositories.AuthService
                     foreach (var file in request.PortfolioFiles)
                     {
                         Tuple<bool, string> fileResult =
-                            await _fileService.SaveFileAsync(file, "files/portfolios");
+                            await _fileService.SaveFileAsync(file, Path.Combine("files","portfolios"));
 
                         // Check if it done successfully or not
                         if (fileResult.Item1 is false)
@@ -854,7 +854,7 @@ namespace Hoshi.Repositories.AuthService
                 }
 
                 Tuple<bool, string> identityImageResult =
-                    await _fileService.SaveFileAsync(image, "images\\identityimages");
+                    await _fileService.SaveFileAsync(image, Path.Combine("images","identityimages"));
 
                 // Chekc if it done successfuly or not
                 if (identityImageResult.Item1 is false)

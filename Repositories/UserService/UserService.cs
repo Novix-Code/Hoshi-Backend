@@ -73,7 +73,7 @@ namespace Hoshi.Repositories.UserService
                 }
 
                 // Use FileService to save the image to images/personalimages in wwwroot
-                var imageResult = await _fileService.SaveFileAsync(image, "images\\personalimages");
+                var imageResult = await _fileService.SaveFileAsync(image, Path.Combine("images","personalimages"));
 
                 // Check if the image saved successfuly
                 if (imageResult.Item1)

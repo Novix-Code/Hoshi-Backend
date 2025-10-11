@@ -10,7 +10,7 @@ namespace Hoshi.DTOs.OrderDTOs.OrderStatusHistoryDTOs
     {
         public int Id { get; set; }
         public OrderStatus OrderStatus { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public OrderGetDTO? Order { get; set; }
     }

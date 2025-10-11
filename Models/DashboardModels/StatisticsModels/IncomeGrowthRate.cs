@@ -11,6 +11,6 @@ namespace Hoshi.Models.DashboardModels.StatisticsModels
     {
         public int Id { get; set; }
         public double GrowthValue { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

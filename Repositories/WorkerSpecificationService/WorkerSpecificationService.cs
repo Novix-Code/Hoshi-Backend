@@ -241,7 +241,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
                 }
 
                 // User FileService method to save the image to the images\identityimages folder in wwwroot
-                var imageResult = await fileService.SaveFileAsync(image, "images\\identityimages");
+                var imageResult = await fileService.SaveFileAsync(image, Path.Combine("images","identityimages"));
 
                 // Check if the image saved successfuly
                 if (imageResult.Item1)
@@ -299,7 +299,7 @@ namespace Hoshi.Repositories.WorkerSpecificationService
 
                 foreach (var file in files)
                 {
-                    var fileResult = await fileService.SaveFileAsync(file, "files\\portfolios");
+                    var fileResult = await fileService.SaveFileAsync(file, Path.Combine("images", "portfolios"));
 
                     if (fileResult.Item1)
                     {

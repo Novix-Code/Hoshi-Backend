@@ -10,7 +10,7 @@ namespace Hoshi.Models.UserModels.AdminModels
     {
         public bool IsDeleted { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ModifiedAt { get; set; }
     }
 }

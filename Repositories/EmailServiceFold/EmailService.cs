@@ -403,16 +403,6 @@ namespace Hoshi.Repositories.EmailServiceFold
                     UserId = _user.Id
                 };
 
-                // COMMENTED: Old approach that stored the computed OTP code and used shared secret key
-                // var userOTPDTO = new UserOTP
-                // {
-                //     Code = OTP.ComputeTotp(),  // This was wrong - shouldn't store the code
-                //     CreatedAt = DateTime.Now,   // Should use UTC
-                //     IsRevoked = false,
-                //     SecreteKey = this._secretKey,  // This was wrong - shared secret key
-                //     UserId = _user.Id
-                // };
-
                 await _context.UserOTPs.AddAsync(userOTPDTO);
                 await _context.SaveChangesAsync();
 

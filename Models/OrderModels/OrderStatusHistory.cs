@@ -12,7 +12,7 @@ namespace Hoshi.Models.OrderModels
     {
         public int Id { get; set; }
         public OrderStatus OrderStatus { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int OrderId { get; set; }
         public Order? Order { get; set; }

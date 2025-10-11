@@ -1,8 +1,14 @@
 ﻿using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.UserModels;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Tls;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
+using System;
 
 namespace Hoshi.Data.IdentitySeeders
 {
@@ -28,11 +34,6 @@ namespace Hoshi.Data.IdentitySeeders
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-            var dictionaryAdminUsers = new Dictionary<string, List<string>>
-            {
-                { "adminEmail" ,new List<string>{"novix@novix.com" , "hoshi@hoshi.com" }} ,
-                { "adminPassword" , new List<string>{"Novix@12345" , "Hoshi@12345"}}
-            };
             // Create Admin role if it doesn't exist
             if (!await roleManager.RoleExistsAsync("SuperAdmin"))
                 await roleManager.CreateAsync(new IdentityRole<int>("SuperAdmin"));
@@ -40,30 +41,49 @@ namespace Hoshi.Data.IdentitySeeders
             if (!await roleManager.RoleExistsAsync(UserType.Admin.ToString()))
                 await roleManager.CreateAsync(new IdentityRole<int>(UserType.Admin.ToString()));
 
-            // Check if admin is exist , if not we will go to create it
-            await CheckThenAddAdminUser(userManager, dictionaryAdminUsers["adminEmail"][0], dictionaryAdminUsers["adminPassword"][0]);
-            await CheckThenAddAdminUser(userManager, dictionaryAdminUsers["adminEmail"][1], dictionaryAdminUsers["adminPassword"][1]);   
+            List<Tuple<User, string>> users = new () 
+            {
+                new(
+                    new()
+                    {
+                        FullName = "نوفكس مشرف",
+                        Email = "info@novixcode.com",
+                        EmailConfirmed = true,
+                        UserCode = "AD-1",
+                        UserName = "NovixCode",
+                        CreatedAt = DateTime.UtcNow,
+                        UserType = UserType.Admin.ToString()
+                    },
+                    "Novix@12345"
+                ),
+                new(
+                    new()
+                    {
+                        FullName = "حوشي مشرف",
+                        Email = "support@hoshi.ly",
+                        EmailConfirmed = true,
+                        UserCode = "AD-2",
+                        UserName = "Hoshi",
+                        CreatedAt = DateTime.UtcNow,
+                        UserType = UserType.Admin.ToString()
+                    },
+                    "Hoshi@12345"
+                )
+            };
+
+            foreach (var user in users)
+                await CheckThenAddAdminUser(userManager, user);
         }
-        public static async Task CheckThenAddAdminUser(UserManager<User> userManager,
-                                                       string adminEmail , string adminPassword)
+        public static async Task CheckThenAddAdminUser(UserManager<User> userManager, Tuple<User, string> user)
         {
             // Check if the admin user exists
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            var adminUser = await userManager.FindByEmailAsync(user.Item1.Email!);
             if (adminUser == null)
             {
-                var newAdmin = new User
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UserType = UserType.Admin.ToString(),
-                };
-                var result = await userManager.CreateAsync(newAdmin, adminPassword);
+                var result = await userManager.CreateAsync(user.Item1, user.Item2);
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(newAdmin, "SuperAdmin");
-                    await userManager.AddToRoleAsync(newAdmin, UserType.Admin.ToString());
+                    await userManager.AddToRolesAsync(user.Item1, ["SuperAdmin", UserType.Admin.ToString()]);
                 }
                 else
                 {
@@ -85,7 +105,7 @@ namespace Hoshi.Data.IdentitySeeders
         //            // notifications
         //            new NotificationType { Title = "اشعار بإنشاء طلب", Type = "For_Worker", ForClient = false },
         //            new NotificationType { Title = "اشعار للاختبار", Type = "For_Client", ForClient = true },
-   
+
         //    };
 
         //    foreach (var notif in notificationTypes)

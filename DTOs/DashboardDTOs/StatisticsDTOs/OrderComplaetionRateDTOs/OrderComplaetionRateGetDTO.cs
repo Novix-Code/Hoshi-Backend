@@ -10,7 +10,7 @@ namespace Hoshi.DTOs.DashboardDTOs.StatisticsDTOs.OrderComplaetionRateDTOs
         public int CancelledValue { get; set; }
         public int AssignedValue { get; set; }
         public int CompletedValue { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ServiceCategoryGetDTO? ServiceCategory { get; set; }
     }

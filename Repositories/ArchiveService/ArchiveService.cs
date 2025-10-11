@@ -37,7 +37,7 @@ namespace Hoshi.Repositories.ArchiveService
             {
                 Archive archive = mapper.Map<Archive>(postDTO);
 
-                var imageResult = await fileService.SaveFileAsync(postDTO.File, "files\\archives");
+                var imageResult = await fileService.SaveFileAsync(postDTO.File, Path.Combine("files", "archives"));
 
                 if (imageResult.Item1 is false)
                     return ResultDTO<ArchiveGetDTO>.BadRequest(new ErrorDTO()
@@ -85,7 +85,7 @@ namespace Hoshi.Repositories.ArchiveService
                 {
                     fileService.DeleteFile(archive.FileURL);
 
-                    var imageResult = await fileService.SaveFileAsync(putDTO.File, "files\\archives");
+                    var imageResult = await fileService.SaveFileAsync(putDTO.File, Path.Combine("files","archives"));
 
                     if (imageResult.Item1 is false)
                         return ResultDTO<ArchiveGetDTO>.BadRequest(new ErrorDTO()

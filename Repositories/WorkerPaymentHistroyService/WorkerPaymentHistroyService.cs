@@ -37,7 +37,7 @@ namespace Hoshi.Repositories.WorkerPaymentHistroyService
             {
                 WorkerPaymentHistroy payment = mapper.Map<WorkerPaymentHistroy>(postDTO);
 
-                var imageResult = await fileService.SaveFileAsync(postDTO.BillImage, "images\\paymentbills");
+                var imageResult = await fileService.SaveFileAsync(postDTO.BillImage, Path.Combine("images", "paymentbills"));
 
                 if (imageResult.Item1 is false)
                     return ResultDTO<WorkerPaymentHistroyGetDTO>.BadRequest(new ErrorDTO()
@@ -97,7 +97,7 @@ namespace Hoshi.Repositories.WorkerPaymentHistroyService
                 {
                     fileService.DeleteFile(payment.BillImageURL);
 
-                    var imageResult = await fileService.SaveFileAsync(putDTO.BillImage, "images\\paymentbills");
+                    var imageResult = await fileService.SaveFileAsync(putDTO.BillImage, Path.Combine("images", "paymentbills"));
 
                     if (imageResult.Item1 is false)
                         return ResultDTO<WorkerPaymentHistroyGetDTO>.BadRequest(new ErrorDTO()
