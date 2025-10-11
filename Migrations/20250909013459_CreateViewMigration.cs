@@ -436,6 +436,7 @@ namespace Hoshi.Migrations
                     SELECT 
                         s.Id,
                         s.ServiveName,
+                        s.ServiceCategoryId,
                         c.CategoryName,
                         s.IsDeleted,
                         Count(o.Id) as OrdersNum,
@@ -468,6 +469,7 @@ namespace Hoshi.Migrations
                     GROUP BY 
                         s.Id, 
                         s.ServiveName,
+                        s.ServiceCategoryId,
                         c.CategoryName,
                         s.IsDeleted,
                         w.WorkersNum,
