@@ -350,7 +350,9 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql(
                 @"CREATE VIEW JobsTableView AS
                     SELECT 
+                        j.Id,
                         j.JobTitle,
+                        j.IsDeleted,
                         COUNT(DISTINCT s.ServiceCategoryId) AS TotalRelatedCategories,
                         COALESCE(ws.TotalRelatedWorkers, 0) AS TotalRelatedWorkers,
                         COALESCE(o.IncomeAvg, 0) AS IncomeAvg
@@ -384,6 +386,7 @@ namespace Hoshi.Migrations
                     GROUP BY 
                         j.Id, 
                         j.JobTitle, 
+                        j.IsDeleted, 
                         ws.TotalRelatedWorkers, 
                         o.IncomeAvg;
                 "
@@ -393,7 +396,9 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql(
                 @"CREATE VIEW CategoriesTableView AS
                     SELECT 
+                        sc.Id, 
                         sc.CategoryName, 
+                        sc.IsDeleted, 
                         COUNT(s.Id) AS ServicesNum, 
                         COALESCE(w.WorkersNum, 0) AS WorkersNum,
                         COALESCE(o.IncomeAvg, 0) AS IncomeAvg
@@ -419,6 +424,7 @@ namespace Hoshi.Migrations
                     GROUP BY 
                         sc.Id, 
                         sc.CategoryName, 
+                        sc.IsDeleted, 
                         w.WorkersNum,
                         o.IncomeAvg;
                 "
@@ -428,6 +434,7 @@ namespace Hoshi.Migrations
             migrationBuilder.Sql(
                 @"CREATE VIEW ServicesTableView AS
                     SELECT 
+                        s.Id,
                         s.ServiveName,
                         c.CategoryName,
                         s.IsDeleted,

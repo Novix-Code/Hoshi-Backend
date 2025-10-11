@@ -1,7 +1,10 @@
-﻿namespace Hoshi.Models.ViewModels.ServicesPageViews
+﻿using GenericCRUDLibrary.GenericInterfaces;
+
+namespace Hoshi.Models.ViewModels.ServicesPageViews
 {
-    public class JobsTableView
+    public class JobsTableView : IBaseModel
     {
+        public int Id { get; set; }
         public string JobTitle { get; set; }
         public bool IsDeleted { get; set; }
         public int TotalRelatedCategories { get; set; }
