@@ -15,6 +15,7 @@ using Hoshi.DTOs.UserDTOs.WorkerDTOs.WorkerSpecificationDTOs;
 using Hoshi.Enums;
 using Hoshi.Models.GlobalModels;
 using Hoshi.Models.OrderModels;
+using Hoshi.Models.ServiceModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.WorkerModels;
 using Hoshi.Repositories.FileServiceFold;
@@ -422,7 +423,11 @@ namespace Hoshi.Repositories.AdminDashboardService
                     workerDetails.Portfolios = mapper.Map<List<WorkerPortfolioBasicDTO>>(workerPortfolio);
 
                 // 3- Get all worker orders and check if it not null add it to workerDetails.Orders
-                var workerOrders = await context.Orders.Where(o => o.WorkerId == Id).ToListAsync();
+                var workerOrders = await context.Orders
+                    .Include(i => i.Client)
+                    .Include(i => i.OrderImages)
+                    .Include(i => i.Service)
+                    .Where(o => o.WorkerId == Id).ToListAsync();
                 if (workerOrders != null)
                 {
                     workerDetails.Orders = mapper.Map<List<OrderBasicDTO>>(workerOrders);
@@ -632,10 +637,11 @@ namespace Hoshi.Repositories.AdminDashboardService
                 var allServices = await context.ServicesTableView.ToListAsync();
 
                 var services = allServices
-                    .GroupBy(s => s.CategoryName)
+                    .GroupBy(s => new { s.CategoryName, s.ServiceCategoryId })
                     .Select(g => new
                     {
-                        CategoryName = g.Key,
+                        CategoryName = g.Key.CategoryName,
+                        ServiceCategoryId = g.Key.ServiceCategoryId,
                         TotalServsNum = g.Count(),
                         ActiveServsNum = g.Count(s => !s.IsDeleted),
                         Services = g.ToList()
@@ -691,9 +697,9 @@ namespace Hoshi.Repositories.AdminDashboardService
                 TotalOrdersPrices = pageStatistics?.TotalOrdersPrices,
                 TotalOrdersFees = pageStatistics?.TotalOrdersFees,
                 TotalUncollectedFees = pageStatistics?.TotalUncollectedFees,
-                WorkerPaymentRequests = workerPaymentRequests,
-                WorkersUncollectedFees = workersUncollectedFees,
-                ClientsUncollectedFees = clientsUncollectedFees,
+                WorkerPaymentRequests = workerPaymentRequests ?? default,
+                WorkersUncollectedFees = workersUncollectedFees ?? default,
+                ClientsUncollectedFees = clientsUncollectedFees ?? default,
                 RequestsPagesNum = wprPagesNum,
                 WorkerUFPagesNum = wufPagesNum,
                 ClientUFPagesNum = cufPagesNum
@@ -741,6 +747,7 @@ namespace Hoshi.Repositories.AdminDashboardService
                 ImageUrl = workerSpec.IdentityImageURL,
                 FullName = workerSpec.User.FullName,
                 Email = workerSpec.User.Email,
+                PhoneNumber = workerSpec.User.PhoneNumber,
                 Job = mapper.Map<JobGetDTO>(workerSpec.Job),
                 IsCompany = workerSpec.IsCompany,
                 RateRatio = workerSpec.RateRito,

@@ -27,6 +27,7 @@ namespace Hoshi.DTOs.DashboardDTOs
         public string ImageUrl { get; set; }
         public string Email { get; set; }
         public string FullName { get; set; }
+        public string PhoneNumber { get; set; }
         public JobGetDTO Job { get; set; }
         public bool IsCompany { get; set; }
         public double RateRatio { get; set; }

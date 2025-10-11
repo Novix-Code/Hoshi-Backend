@@ -87,7 +87,7 @@ namespace Hoshi.Controllers.UserControllers.WorkerControllers.WorkerWalletContro
         /// <summary>
         /// Add Payment - Submit bill image for payment request
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Worker")]
         [HttpPost("add-payment")]
         public async Task<IActionResult> AddPayment([FromForm] AddPaymentRequestDTO request)
         {
