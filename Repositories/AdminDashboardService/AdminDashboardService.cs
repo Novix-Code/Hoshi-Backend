@@ -637,11 +637,12 @@ namespace Hoshi.Repositories.AdminDashboardService
                 var allServices = await context.ServicesTableView.ToListAsync();
 
                 var services = allServices
-                    .GroupBy(s => new { s.CategoryName, s.ServiceCategoryId })
+                    .GroupBy(s => new { s.CategoryName, s.ServiceCategoryId , s.ImageURL})
                     .Select(g => new
                     {
                         CategoryName = g.Key.CategoryName,
                         ServiceCategoryId = g.Key.ServiceCategoryId,
+                        imageURL = g.Key.ImageURL,
                         TotalServsNum = g.Count(),
                         ActiveServsNum = g.Count(s => !s.IsDeleted),
                         Services = g.ToList()

@@ -6,6 +6,7 @@ namespace Hoshi.Models.ViewModels.ServicesPageViews
     {
         public int Id { get; set; }
         public string ServiveName { get; set; }
+        public string ImageURL { get; set; }
         public int ServiceCategoryId { get; set; }
         public string CategoryName { get; set; }
         public bool IsDeleted { get; set; }
