@@ -339,9 +339,6 @@ namespace Hoshi.Repositories.OrderService
                     }
                 }
                 
-                client.Balance = 0;
-                client.Indebtedness = 0;
-
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
                 // send notification

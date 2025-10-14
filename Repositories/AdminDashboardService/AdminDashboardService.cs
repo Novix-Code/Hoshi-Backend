@@ -18,6 +18,7 @@ using Hoshi.Models.OrderModels;
 using Hoshi.Models.ServiceModels;
 using Hoshi.Models.UserModels;
 using Hoshi.Models.UserModels.WorkerModels;
+using Hoshi.Models.ViewModels.PaymentsPageViews;
 using Hoshi.Repositories.FileServiceFold;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -709,44 +710,60 @@ namespace Hoshi.Repositories.AdminDashboardService
         
         public async Task<ResultDTO<object>> GetPaymentsPageAsync()
         {
-            var pageStatistics = await context.PaymentsPageView
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            var workerPaymentRequests = await context.PaymentRequestsView
-                .AsNoTracking()
-                .Take(10)
-                .ToListAsync();
-
-            var workersUncollectedFees = await context.WorkerUncollectedFeesView
-                .AsNoTracking()
-                .Take(10)
-                .ToListAsync();
-
-            var clientsUncollectedFees = await context.ClientUncollectedFeesView
-                .AsNoTracking()
-                .Take(10)
-                .ToListAsync();
-
-            var wprPagesNum = (int)Math.Ceiling(await context.PaymentRequestsView.CountAsync() / 10.0);
-            var wufPagesNum = (int)Math.Ceiling(await context.WorkerUncollectedFeesView.CountAsync() / 10.0);
-            var cufPagesNum = (int)Math.Ceiling(await context.ClientUncollectedFeesView.CountAsync() / 10.0);
-
-            return ResultDTO<object>.Success(new
+            try
             {
-                TotalOrdersIncome = pageStatistics?.TotalOrdersIncome ?? 0,
-                TotalOrdersPrices = pageStatistics?.TotalOrdersPrices ?? 0,
-                TotalOrdersFees = pageStatistics?.TotalOrdersFees ?? 0,
-                TotalUncollectedFees = pageStatistics?.TotalUncollectedFees ?? 0,
-                WorkerPaymentRequests = workerPaymentRequests,
-                WorkersUncollectedFees = workersUncollectedFees,
-                ClientsUncollectedFees = clientsUncollectedFees,
-                RequestsPagesNum = wprPagesNum,
-                WorkerUFPagesNum = wufPagesNum,
-                ClientUFPagesNum = cufPagesNum
-            });
-        }
+                var pageStatistics = await context.PaymentsPageView
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync() ?? new PaymentsPageView
+                    {
+                        TotalOrdersIncome = 0,
+                        TotalOrdersPrices = 0,
+                        TotalOrdersFees = 0,
+                        TotalUncollectedFees = 0
+                    };
 
+                var workerPaymentRequests = await context.PaymentRequestsView
+                    .AsNoTracking()
+                    .Take(10)
+                    .ToListAsync() ?? [];
+
+                var workersUncollectedFees = await context.WorkerUncollectedFeesView
+                    .AsNoTracking()
+                    .Take(10)
+                    .ToListAsync();
+
+                var clientsUncollectedFees = await context.ClientUncollectedFeesView
+                    .AsNoTracking()
+                    .Take(10)
+                    .ToListAsync();
+
+                var wprPagesNum = (int)Math.Ceiling(await context.PaymentRequestsView.CountAsync() / 10.0);
+                var wufPagesNum = (int)Math.Ceiling(await context.WorkerUncollectedFeesView.CountAsync() / 10.0);
+                var cufPagesNum = (int)Math.Ceiling(await context.ClientUncollectedFeesView.CountAsync() / 10.0);
+
+                return ResultDTO<object>.Success(new
+                {
+                    TotalOrdersIncome = pageStatistics.TotalOrdersIncome,
+                    TotalOrdersPrices = pageStatistics.TotalOrdersPrices,
+                    TotalOrdersFees = pageStatistics.TotalOrdersFees,
+                    TotalUncollectedFees = pageStatistics.TotalUncollectedFees,
+                    WorkerPaymentRequests = workerPaymentRequests,
+                    WorkersUncollectedFees = workersUncollectedFees,
+                    ClientsUncollectedFees = clientsUncollectedFees,
+                    RequestsPagesNum = wprPagesNum,
+                    WorkerUFPagesNum = wufPagesNum,
+                    ClientUFPagesNum = cufPagesNum
+                });
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<object>.InternalServerError(new ErrorDTO
+                {
+                    ErrorAr = "حدث خطأ أثناء جلب بيانات الدفعات",
+                    ErrorEn = $"{ex.InnerException!.Message ?? ex.Message}"
+                }, ex.InnerException!.Message ?? ex.Message);
+            }
+        }
 
         /// <summary>
         /// Retrieve payment details and worker snapshot for a given payment id.
