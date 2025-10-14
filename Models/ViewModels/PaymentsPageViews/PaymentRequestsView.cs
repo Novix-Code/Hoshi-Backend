@@ -10,8 +10,8 @@ namespace Hoshi.Models.ViewModels.PaymentsPageViews
         public string? ImageURL { get; set; }
         public string? JobTitle { get; set; }
         public string? CityName { get; set; }
-        public int RequestId { get; set; }
-        public double Balance { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public int? RequestId { get; set; }
+        public double? Balance { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

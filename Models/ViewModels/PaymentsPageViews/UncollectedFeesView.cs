@@ -13,10 +13,10 @@ namespace Hoshi.Models.ViewModels.PaymentsPageViews
         public string? ImageURL { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
-        public double RateRito { get; set; }
-        public int CompletedOrders { get; set; }
-        public double Balance { get; set; }
-        public int TotalCancelledOrders { get; set; }
-        public bool HasCollectionAlert { get; set; }
+        public double? RateRito { get; set; }
+        public int? CompletedOrders { get; set; }
+        public double? Balance { get; set; }
+        public int? TotalCancelledOrders { get; set; }
+        public bool? HasCollectionAlert { get; set; }
     }
 }

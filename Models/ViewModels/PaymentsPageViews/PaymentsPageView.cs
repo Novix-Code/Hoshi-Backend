@@ -2,9 +2,9 @@
 {
     public class PaymentsPageView
     {
-        public double TotalOrdersIncome { get; set; }
-        public double TotalOrdersPrices { get; set; }
-        public double TotalOrdersFees { get; set; }
-        public double TotalUncollectedFees { get; set; }
+        public double? TotalOrdersIncome { get; set; }
+        public double? TotalOrdersPrices { get; set; }
+        public double? TotalOrdersFees { get; set; }
+        public double? TotalUncollectedFees { get; set; }
     }
 }

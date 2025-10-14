@@ -678,7 +678,7 @@ namespace Hoshi.Repositories.AdminDashboardService
         /// <summary>
         /// Aggregate payments page data: invoice sums, payment requests, and uncollected fees.
         /// </summary>
-        public async Task<ResultDTO<object>> GetPaymentsPageAsync()
+        public async Task<ResultDTO<object>> GetPaymentsPageAsync2()
         {
             var pageStatistics = await context.PaymentsPageView.FirstOrDefaultAsync();
 
@@ -706,6 +706,47 @@ namespace Hoshi.Repositories.AdminDashboardService
                 ClientUFPagesNum = cufPagesNum
             });
         }
+        
+        public async Task<ResultDTO<object>> GetPaymentsPageAsync()
+        {
+            var pageStatistics = await context.PaymentsPageView
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            var workerPaymentRequests = await context.PaymentRequestsView
+                .AsNoTracking()
+                .Take(10)
+                .ToListAsync();
+
+            var workersUncollectedFees = await context.WorkerUncollectedFeesView
+                .AsNoTracking()
+                .Take(10)
+                .ToListAsync();
+
+            var clientsUncollectedFees = await context.ClientUncollectedFeesView
+                .AsNoTracking()
+                .Take(10)
+                .ToListAsync();
+
+            var wprPagesNum = (int)Math.Ceiling(await context.PaymentRequestsView.CountAsync() / 10.0);
+            var wufPagesNum = (int)Math.Ceiling(await context.WorkerUncollectedFeesView.CountAsync() / 10.0);
+            var cufPagesNum = (int)Math.Ceiling(await context.ClientUncollectedFeesView.CountAsync() / 10.0);
+
+            return ResultDTO<object>.Success(new
+            {
+                TotalOrdersIncome = pageStatistics?.TotalOrdersIncome ?? 0,
+                TotalOrdersPrices = pageStatistics?.TotalOrdersPrices ?? 0,
+                TotalOrdersFees = pageStatistics?.TotalOrdersFees ?? 0,
+                TotalUncollectedFees = pageStatistics?.TotalUncollectedFees ?? 0,
+                WorkerPaymentRequests = workerPaymentRequests,
+                WorkersUncollectedFees = workersUncollectedFees,
+                ClientsUncollectedFees = clientsUncollectedFees,
+                RequestsPagesNum = wprPagesNum,
+                WorkerUFPagesNum = wufPagesNum,
+                ClientUFPagesNum = cufPagesNum
+            });
+        }
+
 
         /// <summary>
         /// Retrieve payment details and worker snapshot for a given payment id.
