@@ -302,7 +302,13 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+            }
+        });
         
         app.MapControllers();
         
