@@ -304,13 +304,12 @@ public class Program
             .SetIsOriginAllowed(origin => true));
 
         app.UseAuthentication();
-
         app.UseAuthorization();
 
-        app.MapControllers();
-
         app.UseStaticFiles();
-
+        
+        app.MapControllers();
+        
         // Map SignalR Hubs
         app.MapHub<NotificationHub>("/notification-hub");
         app.MapHub<ChatHub>("/chathub");

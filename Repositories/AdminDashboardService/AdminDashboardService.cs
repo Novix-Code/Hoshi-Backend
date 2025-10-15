@@ -322,7 +322,7 @@ namespace Hoshi.Repositories.AdminDashboardService
 
             await context.SaveChangesAsync();
 
-            return ResultDTO<object>.BadRequest
+            return ResultDTO<object>.Success
             (
                 new ErrorDTO
                 {

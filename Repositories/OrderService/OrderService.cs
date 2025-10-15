@@ -338,6 +338,9 @@ namespace Hoshi.Repositories.OrderService
                         });
                     }
                 }
+                // Reset client's balance to zero
+                client.Balance = 0;
+                client.Indebtedness = 0;
                 
                 await _hoshiDbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
