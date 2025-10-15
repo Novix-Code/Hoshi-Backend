@@ -229,51 +229,73 @@ namespace Hoshi.Repositories.OrderService
                         ErrorEn = "Worker wallet not found."
                     });
                 }
-                if (totalWorkerCost > 0)
-                {
-                    // Add to wallet and log as income
-                    workerWallet.Balance += totalWorkerCost;
-                    _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
-                    {
-                        Title = $"إيداع أرباح الطلب رقم {order.Id}",
-                        Value = totalWorkerCost,
-                        IsIncome = true,
-                        WorkerWalletId = workerWallet.Id
-                    });
-                }
+                // if (totalWorkerCost > 0)
+                // {
+                //     // Add to wallet and log as income
+                //     workerWallet.Balance += totalWorkerCost;
+                //     _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
+                //     {
+                //         Title = $"إيداع أرباح الطلب رقم {order.Id}",
+                //         Value = totalWorkerCost,
+                //         IsIncome = true,
+                //         WorkerWalletId = workerWallet.Id
+                //     });
+                // }
 
                 // --- 8. Deduct company commission from worker's wallet ---
-                if (workerWallet.Balance < totalCommission)
+                // if (workerWallet.Balance < totalCommission)
+                // {
+                //     // If worker's wallet is insufficient for commission, set HitLimit and send notifications
+                //     workerWallet.HitLimit = true;
+                //     _hoshiDbContext.UserNotifications.Add(new UserNotification
+                //     {
+                //         UserId = order.WorkerId ?? 0,
+                //         Description = "رصيد محفظتك أقل من قيمة العمولة المطلوبة!",
+                //         NotificationTypeId = 1, // may change this later
+                //
+                //     });
+                //
+                //     // Send notification to all admin users
+                //     var adminUsers = await _hoshiDbContext.Users
+                //         .Where(u => u.UserType == UserType.Admin.ToString())
+                //         .ToListAsync();
+                //
+                //     foreach (var admin in adminUsers)
+                //     {
+                //         _hoshiDbContext.UserNotifications.Add(new UserNotification
+                //         {
+                //             UserId = admin.Id,
+                //             Description = $"محفظة العامل رقم {order.WorkerId} أقل من قيمة العمولة المطلوبة!",
+                //             NotificationTypeId = 1, // may change this later
+                //         });
+                //     }
+                // }
+                // else if (workerWallet.Balance >= totalCommission)
+                // {
+                //     // Deduct commission and log as expense
+                //     workerWallet.Balance -= totalCommission;
+                //     _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
+                //     {
+                //         Title = $"خصم عمولة الطلب رقم {order.Id}",
+                //         Value = totalCommission,
+                //         IsIncome = false,
+                //         WorkerWalletId = workerWallet.Id
+                //     });
+                //     // Add to company revenue
+                //     _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
+                //     {
+                //         Value = totalCommission,
+                //         CreatedAt = DateTime.UtcNow,
+                //         OrderId = order.Id
+                //     });
+                // }
+                // --- 8. Deduct company commission from worker's wallet (MODIFIED) ---
+                if (totalCommission > 0)
                 {
-                    // If worker's wallet is insufficient for commission, set HitLimit and send notifications
-                    workerWallet.HitLimit = true;
-                    _hoshiDbContext.UserNotifications.Add(new UserNotification
-                    {
-                        UserId = order.WorkerId ?? 0,
-                        Description = "رصيد محفظتك أقل من قيمة العمولة المطلوبة!",
-                        NotificationTypeId = 1, // may change this later
-
-                    });
-
-                    // Send notification to all admin users
-                    var adminUsers = await _hoshiDbContext.Users
-                        .Where(u => u.UserType == UserType.Admin.ToString())
-                        .ToListAsync();
-
-                    foreach (var admin in adminUsers)
-                    {
-                        _hoshiDbContext.UserNotifications.Add(new UserNotification
-                        {
-                            UserId = admin.Id,
-                            Description = $"محفظة العامل رقم {order.WorkerId} أقل من قيمة العمولة المطلوبة!",
-                            NotificationTypeId = 1, // may change this later
-                        });
-                    }
-                }
-                else if (workerWallet.Balance >= totalCommission)
-                {
-                    // Deduct commission and log as expense
+                    // Always deduct commission, even if it results in a negative balance
                     workerWallet.Balance -= totalCommission;
+
+                    // Log the deduction as an expense
                     _hoshiDbContext.WorkerWalletHistories.Add(new WorkerWalletHistory
                     {
                         Title = $"خصم عمولة الطلب رقم {order.Id}",
@@ -281,15 +303,45 @@ namespace Hoshi.Repositories.OrderService
                         IsIncome = false,
                         WorkerWalletId = workerWallet.Id
                     });
-                    // Add to company revenue
+
+                    // Add the commission to company revenue
                     _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
                     {
                         Value = totalCommission,
                         CreatedAt = DateTime.UtcNow,
                         OrderId = order.Id
                     });
+                    
+                    // Check if the worker's balance is now negative to set HitLimit and send notifications
+                    if (workerWallet.Balance < 0) // You can change 0 to another threshold if needed
+                    {
+                        workerWallet.HitLimit = true;
+                        _hoshiDbContext.UserNotifications.Add(new UserNotification
+                        {
+                            UserId = order.WorkerId ?? 0,
+                            Description = "رصيد محفظتك أصبح بالسالب! برجاء شحن المحفظة لتتمكن من استقبال طلبات جديدة.",
+                            NotificationTypeId = 1, 
+                        });
+
+                        // Send notification to all admin users
+                        var adminUsers = await _hoshiDbContext.Users
+                            .Where(u => u.UserType == UserType.Admin.ToString())
+                            .ToListAsync();
+
+                        foreach (var admin in adminUsers)
+                        {
+                            _hoshiDbContext.UserNotifications.Add(new UserNotification
+                            {
+                                UserId = admin.Id,
+                                Description = $"محفظة العامل رقم {order.WorkerId} أصبحت بالسالب!",
+                                NotificationTypeId = 1,
+                            });
+                        }
+                    }
                 }
 
+                
+                
                 // --- 9. Handle any additional client indebtedness fees ---
                 if (totalIndebtednessFee > 0)
                 {
@@ -363,6 +415,7 @@ namespace Hoshi.Repositories.OrderService
                 });
             }
         }
+
 
         public async Task<ResultDTO<object>> GetAssignedOrderAsync(int orderId)
         {

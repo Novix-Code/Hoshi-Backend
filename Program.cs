@@ -297,12 +297,8 @@ public class Program
 
         app.UseMiddleware<GenericExceptionMiddleware>();
 
-        app.UseCors(x => x
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
-            .SetIsOriginAllowed(origin => true));
-
+        app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        
         app.UseAuthentication();
         app.UseAuthorization();
 
