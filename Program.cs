@@ -44,6 +44,7 @@ using Serilog;
 using Serilog.Events;
 using Hoshi.Repositories.RatesService;
 using Hoshi.Repositories.AdminDashboardService;
+using Microsoft.Extensions.FileProviders;
 
 public class Program
 {
@@ -304,11 +305,17 @@ public class Program
 
         app.UseStaticFiles(new StaticFileOptions
         {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")
+            ),
             OnPrepareResponse = ctx =>
             {
-                ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+                ctx.Context.Response.Headers.TryAdd("Access-Control-Allow-Origin", "*");
+                ctx.Context.Response.Headers.TryAdd("Access-Control-Allow-Methods", "GET, OPTIONS");
+                ctx.Context.Response.Headers.TryAdd("Access-Control-Allow-Headers", "Content-Type");
             }
         });
+
         
         app.MapControllers();
         
