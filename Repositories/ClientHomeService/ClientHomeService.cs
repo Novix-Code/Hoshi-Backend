@@ -1,4 +1,4 @@
-﻿using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
+using GenericCRUDLibrary.GenericDTOs.ResponsDTOs;
 using Hoshi.Data;
 using Hoshi.DTOs.ClientDTOs;
 using Hoshi.DTOs.PromotionDTOs.PromotionTakenDTOs;
@@ -26,6 +26,7 @@ namespace Hoshi.Repositories.ClientHomeService
             _context = context;
             this.promotionService = promotionService;
         }
+
         /// <summary>
         /// For all clients, compute available promotions (not yet taken) and active services per category.
         /// </summary>
@@ -118,7 +119,8 @@ namespace Hoshi.Repositories.ClientHomeService
                 {
                     CategoryId = c.Id,
                     CategoryName = c.CategoryName,
-                    Services = c.Services!.Where(s => !s.IsDeleted).Select(s => new { s.Id, s.ServiveName, s.ImageURL }).ToList()
+                    Services = c.Services!.Where(s => !s.IsDeleted).Select(s => new { s.Id, s.ServiveName, s.ImageURL })
+                        .ToList()
                 }).ToListAsync();
 
             //3. Build the result DTO
@@ -131,5 +133,108 @@ namespace Hoshi.Repositories.ClientHomeService
             return ResultDTO<object>.Success(result);
         }
 
+        public async Task<ResultDTO<object>> ClientHomePageForGuest()
+        {
+
+            var services = await _context.ServiceCategories
+                .Include(i => i.Services)
+                .Where(c => !c.IsDeleted)
+                .Select(c => new
+                {
+                    CategoryId = c.Id,
+                    CategoryName = c.CategoryName,
+                    Services = c.Services!.Where(s => !s.IsDeleted).Select(s => new { s.Id, s.ServiveName, s.ImageURL })
+                        .ToList()
+                }).ToListAsync();
+
+            //3. Build the result DTO
+            var result = new
+            {
+                Services = services
+            };
+
+            return ResultDTO<object>.Success(result);
+        }
+
+        public async Task<ResultDTO<object>> DeleteService(int serviceId)
+        {
+            try
+            {
+                var service = await _context.Services.FindAsync(serviceId);
+                if (service == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false
+                    };
+                }
+
+                _context.Services.Remove(service);
+                await _context.SaveChangesAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false
+                };
+            }
+        }
+
+        public async Task<ResultDTO<object>> DeleteCategory(int categoryId)
+        {
+            try
+            {
+                var category = await _context.ServiceCategories
+                    .Include(c => c.Services)
+                    .FirstOrDefaultAsync(c => c.Id == categoryId);
+
+                if (category == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false
+                    };
+                }
+
+                // Check if category has any services
+                if (category.Services != null && category.Services.Any())
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Data = false
+                    };
+                }
+
+                _context.ServiceCategories.Remove(category);
+                await _context.SaveChangesAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false
+                };
+            }
+        }
     }
 }
