@@ -357,39 +357,39 @@ namespace Hoshi.Repositories.OrderService
                     }
                 }
 
-                //  Wallet difference adjustment
-                if (totalClientCost > totalWorkerCost)
-                {
-                    try
-                    {
-                        var diff = totalClientCost - totalWorkerCost;
-                        await WalletService.DeductFromWalletAsync((int)order.WorkerId, diff, "فرق بين العميل والعامل");
-                    }
-                    catch
-                    {
-                        return ResultDTO<object>.NotFound(new ErrorDTO
-                        {
-                            ErrorAr = "خطأ في اضافه walletHistory",
-                            ErrorEn = "error in adding walletHistory"
-                        });
-                    }
-                }
-                else if (totalWorkerCost > totalClientCost)
-                {
-                    try
-                    {
-                        var diff = totalWorkerCost - totalClientCost;
-                        await WalletService.AddToWalletAsync((int)order.WorkerId, diff, "فرق بين العامل والعميل");
-                    }
-                    catch
-                    {
-                        return ResultDTO<object>.NotFound(new ErrorDTO
-                        {
-                            ErrorAr = "خطأ في اضافه walletHistory",
-                            ErrorEn = "error in adding walletHistory"
-                        });
-                    }
-                }
+                // //  Wallet difference adjustment
+                // if (totalClientCost > totalWorkerCost)
+                // {
+                //     try
+                //     {
+                //         var diff = totalClientCost - totalWorkerCost;
+                //         await WalletService.DeductFromWalletAsync((int)order.WorkerId, diff, "فرق بين العميل والعامل");
+                //     }
+                //     catch
+                //     {
+                //         return ResultDTO<object>.NotFound(new ErrorDTO
+                //         {
+                //             ErrorAr = "خطأ في اضافه walletHistory",
+                //             ErrorEn = "error in adding walletHistory"
+                //         });
+                //     }
+                // }
+                // else if (totalWorkerCost > totalClientCost)
+                // {
+                //     try
+                //     {
+                //         var diff = totalWorkerCost - totalClientCost;
+                //         await WalletService.AddToWalletAsync((int)order.WorkerId, diff, "فرق بين العامل والعميل");
+                //     }
+                //     catch
+                //     {
+                //         return ResultDTO<object>.NotFound(new ErrorDTO
+                //         {
+                //             ErrorAr = "خطأ في اضافه walletHistory",
+                //             ErrorEn = "error in adding walletHistory"
+                //         });
+                //     }
+                // }
                 // Reset client's balance to zero
                 client.Balance = 0;
                 client.Indebtedness = 0;

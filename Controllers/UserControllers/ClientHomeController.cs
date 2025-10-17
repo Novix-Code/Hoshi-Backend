@@ -67,5 +67,29 @@ namespace Hoshi.Controllers.UserControllers
             var response = await clientHomeService.DeleteCategory(categoryId);
             return StatusCode((int)response.StatusCode, response);
         }
+        
+        
+        // [HttpDelete("{jobId}")]
+        // public async Task<IActionResult> DeleteJob(int jobId)
+        // {
+        //     var response = await clientHomeService.DeleteJob(jobId);
+        //     return StatusCode((int)response.StatusCode, response);
+        //
+        // }
+        //
+        // /// <summary>
+        // /// Deletes an offer by its ID
+        // /// </summary>
+        // /// <param name="offerId">The ID of the offer to delete</param>
+        // /// <returns>Result indicating success or failure</returns>
+        // [HttpDelete("{offerId}")]
+        // public async Task<IActionResult> DeleteOffer(int offerId)
+        // {
+        //     var response = await clientHomeService.DeleteOffer(offerId);
+        //     return StatusCode((int)response.StatusCode, response);
+        //
+        // }
+        
+        
     }
 }

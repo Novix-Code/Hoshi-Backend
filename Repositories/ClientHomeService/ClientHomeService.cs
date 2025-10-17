@@ -236,5 +236,86 @@ namespace Hoshi.Repositories.ClientHomeService
                 };
             }
         }
+        public async Task<ResultDTO<object>> DeleteJob(int jobId)
+        {
+            try
+            {
+                var job = await _context.Jobs
+                    .FirstOrDefaultAsync(j => j.Id == jobId);
+
+                if (job == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false
+                    };
+                }
+
+                var JobServices = await _context.JobServices
+                    .Where(js => js.JobId == jobId)
+                    .ToListAsync();
+                // Check if job has any associated services
+                if (JobServices.Any())
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Data = false
+                    };
+                }
+
+                _context.Jobs.Remove(job);
+                await _context.SaveChangesAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false
+                };
+            }
+        }
+
+        public async Task<ResultDTO<object>> DeleteOffer(int offerId)
+        {
+            try
+            {
+                var offer = await _context.Offers.FindAsync(offerId);
+
+                if (offer == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false
+                    };
+                }
+
+                _context.Offers.Remove(offer);
+                await _context.SaveChangesAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false
+                };
+            }
+        }
     }
 }

@@ -34,5 +34,8 @@ namespace Hoshi.Repositories.ClientHomeService
         /// <param name="categoryId">The ID of the category to delete</param>
         /// <returns>Result indicating success or failure</returns>
         Task<ResultDTO<object>> DeleteCategory(int categoryId);
+        Task<ResultDTO<object>> DeleteJob(int jobId);
+        Task<ResultDTO<object>> DeleteOffer(int offerId);
+
     }
 }
