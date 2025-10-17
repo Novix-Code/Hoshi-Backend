@@ -36,6 +36,7 @@ namespace Hoshi.Repositories.ClientHomeService
         Task<ResultDTO<object>> DeleteCategory(int categoryId);
         Task<ResultDTO<object>> DeleteJob(int jobId);
         Task<ResultDTO<object>> DeleteOffer(int offerId);
+        Task<ResultDTO<object>> DeleteJobService(int jobId, int serviceId);
 
     }
 }

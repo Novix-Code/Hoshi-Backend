@@ -317,5 +317,41 @@ namespace Hoshi.Repositories.ClientHomeService
                 };
             }
         }
+        
+        public async Task<ResultDTO<object>> DeleteJobService(int jobId,int serviceId)
+        {
+            try
+            {
+                var jobServices = await _context.JobServices
+                    .Where(js => js.JobId == jobId && js.ServiceId == serviceId)
+                    .FirstOrDefaultAsync();
+                
+                if (jobServices == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false
+                    };
+                }
+                
+                _context.JobServices.Remove(jobServices);
+                await _context.SaveChangesAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false
+                };
+            }
+        }
     }
 }
