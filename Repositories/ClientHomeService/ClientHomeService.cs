@@ -288,6 +288,25 @@ namespace Hoshi.Repositories.ClientHomeService
         {
             try
             {
+                
+                var tempInvoices = await _context.TempInvoices
+                    .Where(i => i.OfferId == offerId)
+                    .ToListAsync();
+                
+                if (tempInvoices.Any())
+                {
+                    _context.RemoveRange(tempInvoices);
+                }
+                
+                var promotionsTaken = await _context.PromotionsTaken
+                    .Where(i => i.OfferId == offerId)
+                    .ToListAsync();
+                
+                if (promotionsTaken.Any())
+                {
+                    _context.RemoveRange(promotionsTaken);
+                }
+                
                 var offer = await _context.Offers.FindAsync(offerId);
 
                 if (offer == null)
@@ -310,6 +329,7 @@ namespace Hoshi.Repositories.ClientHomeService
             }
             catch (Exception ex)
             {
+                var error = ex.InnerException?.Message ?? ex.Message;
                 return new ResultDTO<object>
                 {
                     StatusCode = StatusCodes.Status500InternalServerError,

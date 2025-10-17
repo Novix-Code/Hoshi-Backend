@@ -46,10 +46,10 @@ namespace Hoshi.Controllers.UserControllers
         /// </summary>
         /// <param name="serviceId">The ID of the service to delete</param>
         /// <returns>Result indicating success or failure</returns>
-        [HttpDelete("DeleteService/{serviceId}")]
+        [HttpDelete("DeleteServiceTest/{serviceId}")]
         [AllowAnonymous]
 
-        public async Task<IActionResult> DeleteService(int serviceId)
+        public async Task<IActionResult> DeleteServiceTest(int serviceId)
         {
             var response = await clientHomeService.DeleteService(serviceId);
             return StatusCode((int)response.StatusCode, response);
@@ -60,25 +60,27 @@ namespace Hoshi.Controllers.UserControllers
         /// </summary>
         /// <param name="categoryId">The ID of the category to delete</param>
         /// <returns>Result indicating success or failure</returns>
-        [HttpDelete("DeleteCategory/{categoryId}")]
+        [HttpDelete("DeleteCategoryTest/{categoryId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> DeleteCategory(int categoryId)
+        public async Task<IActionResult> DeleteCategoryTest(int categoryId)
         {
             var response = await clientHomeService.DeleteCategory(categoryId);
             return StatusCode((int)response.StatusCode, response);
         }
         
         
-        [HttpDelete("{jobId}")]
-        public async Task<IActionResult> DeleteJob(int jobId)
+        [HttpDelete("DeleteJobTest/{jobId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DeleteJobTest(int jobId)
         {
             var response = await clientHomeService.DeleteJob(jobId);
             return StatusCode((int)response.StatusCode, response);
 
         }
         
-        [HttpDelete("{jobId}/{serviceId}")]
-        public async Task<IActionResult> DeleteJobService(int jobId,int serviceId)
+        [HttpDelete("DeleteJobServiceTest/{jobId}/{serviceId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DeleteJobServiceTest(int jobId,int serviceId)
         {
             var response = await clientHomeService.DeleteJobService(jobId,serviceId);
             return StatusCode((int)response.StatusCode, response);
@@ -89,8 +91,9 @@ namespace Hoshi.Controllers.UserControllers
         /// </summary>
         /// <param name="offerId">The ID of the offer to delete</param>
         /// <returns>Result indicating success or failure</returns>
-        [HttpDelete("{offerId}")]
-        public async Task<IActionResult> DeleteOffer(int offerId)
+        [HttpDelete("DeleteOfferTest/{offerId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DeleteOfferTest(int offerId)
         {
             var response = await clientHomeService.DeleteOffer(offerId);
             return StatusCode((int)response.StatusCode, response);
