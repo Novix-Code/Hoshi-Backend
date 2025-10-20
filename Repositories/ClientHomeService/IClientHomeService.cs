@@ -37,6 +37,13 @@ namespace Hoshi.Repositories.ClientHomeService
         Task<ResultDTO<object>> DeleteJob(int jobId);
         Task<ResultDTO<object>> DeleteOffer(int offerId);
         Task<ResultDTO<object>> DeleteJobService(int jobId, int serviceId);
+        
+        /// <summary>
+        /// Deletes a promotion by its ID and handles related entities
+        /// </summary>
+        /// <param name="promotionId">The ID of the promotion to delete</param>
+        /// <returns>Result indicating success or failure</returns>
+        Task<ResultDTO<object>> DeletePromotion(int promotionId);
 
     }
 }

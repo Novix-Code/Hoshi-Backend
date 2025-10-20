@@ -865,7 +865,7 @@ namespace Hoshi.Repositories.AdminDashboardService
                         ErrorEn = "Can not add value less than or equal 0."
                     });
 
-                workerWallet.Balance = paymentValue;
+                workerWallet.Balance += paymentValue;
                 workerWallet.HitLimit = false;
 
                 // 4- Close Payment Request

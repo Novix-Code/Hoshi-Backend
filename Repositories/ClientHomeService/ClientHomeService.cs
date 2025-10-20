@@ -337,6 +337,62 @@ namespace Hoshi.Repositories.ClientHomeService
                 };
             }
         }
+
+        public async Task<ResultDTO<object>> DeletePromotion(int promotionId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Step 1: Find and remove all related PromotionTaken records
+                var promotionsTaken = await _context.PromotionsTaken
+                    .Where(pt => pt.PromotionId == promotionId)
+                    .ToListAsync();
+                
+                if (promotionsTaken.Any())
+                {
+                    _context.PromotionsTaken.RemoveRange(promotionsTaken);
+                    await _context.SaveChangesAsync();
+                }
+                
+                // Step 2: Find the promotion
+                var promotion = await _context.Promotions
+                    .FirstOrDefaultAsync(p => p.Id == promotionId && !p.IsDeleted);
+
+                if (promotion == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false,
+                    };
+                }
+
+                // Step 3: Perform soft delete by setting IsDeleted to true
+                promotion.IsDeleted = true;
+                _context.Promotions.Update(promotion);
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                var error = ex.InnerException?.Message ?? ex.Message;
+                // Log the error for debugging
+                
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false,
+                };
+            }
+        }
         
         public async Task<ResultDTO<object>> DeleteJobService(int jobId,int serviceId)
         {
