@@ -158,7 +158,7 @@ namespace Hoshi.Repositories.OrderService
                 order.OrderStatusHistory!.Add(new OrderStatusHistory
                 {
                     OrderStatus = OrderStatus.Completed,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     OrderId = order.Id
                 });
 
@@ -301,15 +301,18 @@ namespace Hoshi.Repositories.OrderService
                         Title = $"خصم عمولة الطلب رقم {order.Id}",
                         Value = totalCommission,
                         IsIncome = false,
-                        WorkerWalletId = workerWallet.Id
+                        WorkerWalletId = workerWallet.Id,
+                        CreatedAt = DateTime.Now
+                        
                     });
 
                     // Add the commission to company revenue
                     _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
                     {
                         Value = totalCommission,
-                        CreatedAt = DateTime.UtcNow,
-                        OrderId = order.Id
+                        CreatedAt = DateTime.Now,
+                        OrderId = order.Id,
+
                     });
                     
                     // Check if the worker's balance is now negative to set HitLimit and send notifications
@@ -335,6 +338,8 @@ namespace Hoshi.Repositories.OrderService
                                 UserId = admin.Id,
                                 Description = $"محفظة العامل رقم {order.WorkerId} أصبحت بالسالب!",
                                 NotificationTypeId = 1,
+                                CreatedAt = DateTime.Now
+
                             });
                         }
                     }
