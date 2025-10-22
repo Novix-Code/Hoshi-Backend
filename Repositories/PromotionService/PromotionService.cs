@@ -129,13 +129,19 @@ namespace Hoshi.Repositories.PromotionService
             // Check if it for client than will except Workers from condition and the opeasite
             string exceptedUser = forClient ? PromotionFor.Worker.ToString() : PromotionFor.Client.ToString();
 
-            var currentDate = DateTime.UtcNow;
+            // var currentDate = DateTime.UtcNow;
 
+            // return await context.Promotions
+            //     .Where(p => p.PromotionFor != exceptedUser && !p.IsDeleted) // get data for all or only provided user and not deleted
+            //     .Where(p => p.UntilBeUsed ||
+            //                (p.StartDate != null && p.EndDate != null &&
+            //                 p.StartDate <= currentDate && p.EndDate >= currentDate)) // check if it untilBeUsed or not and if not will check if the current date in the range of start and end of the promotion
+            //     .Where(p => !context.PromotionsTaken
+            //         .Any(pt => pt.UserId == userId && pt.PromotionId == p.Id))
+            //     .ToListAsync();
             return await context.Promotions
-                .Where(p => p.PromotionFor != exceptedUser && !p.IsDeleted) // get data for all or only provided user and not deleted
-                .Where(p => p.UntilBeUsed ||
-                           (p.StartDate != null && p.EndDate != null &&
-                            p.StartDate <= currentDate && p.EndDate >= currentDate)) // check if it untilBeUsed or not and if not will check if the current date in the range of start and end of the promotion
+                .Where(p => p.PromotionFor != exceptedUser && !p.IsDeleted) 
+                .Where(p => p.UntilBeUsed) 
                 .Where(p => !context.PromotionsTaken
                     .Any(pt => pt.UserId == userId && pt.PromotionId == p.Id))
                 .ToListAsync();
