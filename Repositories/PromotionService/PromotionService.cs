@@ -127,8 +127,12 @@ namespace Hoshi.Repositories.PromotionService
         public async Task<List<Promotion>> NoneTakenPromotions(int userId, bool forClient)
         {
             // Check if it for client than will except Workers from condition and the opeasite
-            string exceptedUser = forClient ? PromotionFor.Worker.ToString() : PromotionFor.Client.ToString();
+            // string exceptedUser = forClient ? PromotionFor.Worker.ToString() : PromotionFor.Client.ToString();
 
+            var clientType = PromotionFor.Client.ToString();
+            var workerType = PromotionFor.Worker.ToString();
+            var allType = PromotionFor.All.ToString();
+            
             // var currentDate = DateTime.UtcNow;
 
             // return await context.Promotions
@@ -139,12 +143,26 @@ namespace Hoshi.Repositories.PromotionService
             //     .Where(p => !context.PromotionsTaken
             //         .Any(pt => pt.UserId == userId && pt.PromotionId == p.Id))
             //     .ToListAsync();
+            
+            // return await context.Promotions
+            //     .Where(p => p.PromotionFor != exceptedUser && !p.IsDeleted) 
+            //     .Where(p => p.UntilBeUsed) 
+            //     .Where(p => !context.PromotionsTaken
+            //         .Any(pt => pt.UserId == userId && pt.PromotionId == p.Id))
+            //     .ToListAsync();
+            
             return await context.Promotions
-                .Where(p => p.PromotionFor != exceptedUser && !p.IsDeleted) 
+                .Where(p => !p.IsDeleted && 
+                            (p.PromotionFor == allType ||              
+                             (forClient && p.PromotionFor == clientType) ||  
+                             (!forClient && p.PromotionFor == workerType)))
+        
                 .Where(p => p.UntilBeUsed) 
+        
                 .Where(p => !context.PromotionsTaken
                     .Any(pt => pt.UserId == userId && pt.PromotionId == p.Id))
                 .ToListAsync();
+            
         }
     }
 }
