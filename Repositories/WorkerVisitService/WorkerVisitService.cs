@@ -209,7 +209,8 @@ namespace Hoshi.Repositories.WorkerVisitService
                     Title = "Visit Completion Income",
                     Value = workerEarnings,
                     IsIncome = true,
-                    WorkerWalletId = workerWallet.Id
+                    WorkerWalletId = workerWallet.Id,
+                    CreatedAt = DateTime.Now,
                 });
 
                 // Company commission deduction from worker wallet
@@ -221,7 +222,9 @@ namespace Hoshi.Repositories.WorkerVisitService
                         Title = "Commission Fee",
                         Value = commissionFee,
                         IsIncome = false,
-                        WorkerWalletId = workerWallet.Id
+                        WorkerWalletId = workerWallet.Id,
+                        CreatedAt = DateTime.Now,
+
                     });
 
                     // Add company revenue
@@ -229,6 +232,8 @@ namespace Hoshi.Repositories.WorkerVisitService
                     {
                         OrderId = visit.OrderId,
                         Value = commissionFee ,
+                        CreatedAt = DateTime.Now,
+
                     });
                 }
                 else
@@ -239,6 +244,7 @@ namespace Hoshi.Repositories.WorkerVisitService
                         UserId = visit.Order.WorkerId ?? 0,
                         Description = "رصيد المحفظة غير كافي لخصم العمولة.",
                         NotificationTypeId = 1 , // may change this later
+                        CreatedAt = DateTime.Now,
 
                     });
                 }
@@ -251,7 +257,9 @@ namespace Hoshi.Repositories.WorkerVisitService
                     ClientTotalPrice = visitPrice,
                     WorkerTotalPrice = workerEarnings,
                     OrderId = visit.OrderId,
-                    OrderVisitId = visit.Id
+                    OrderVisitId = visit.Id,
+                    CreatedAt = DateTime.Now,
+
                 });
 
                 _hoshiDbContext.OrderVisits.Update(visit);
@@ -336,14 +344,18 @@ namespace Hoshi.Repositories.WorkerVisitService
                             Title = "Visit Cancellation Fee",
                             Value = visitCancellationFee,
                             IsIncome = false,
-                            WorkerWalletId = workerWallet.Id
+                            WorkerWalletId = workerWallet.Id,
+                            CreatedAt = DateTime.Now,
+
                         });
 
                         // Add company revenue from cancellation fee
                         _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
                         {
                             OrderId = visit.OrderId,
-                            Value = visitCancellationFee
+                            Value = visitCancellationFee,
+                            CreatedAt = DateTime.Now,
+
                         });
                     }
                 }

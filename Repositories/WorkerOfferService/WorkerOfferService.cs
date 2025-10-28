@@ -155,7 +155,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                         OrderId = offer.OrderId,
                         UserId = offer.WorkerId,
                         PromotionId = promotion.Id,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                     });
 
                     await _hoshiDbContext.SaveChangesAsync();
@@ -339,7 +339,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                     && order.WorkerId == offer.WorkerId
                 )
                 {
-                    if (DateTime.UtcNow > threshold)
+                    if (DateTime.Now > threshold)
                     {
                         // update the status of the order
                         order.OrderStatus = OrderStatus.Cancelled.ToString();
@@ -373,7 +373,7 @@ namespace Hoshi.Repositories.WorkerOfferService
                             Value = workerCancellationFee,
                             IsIncome = false,
                             WorkerWalletId = workerWallet.Id,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.Now
                         });
 
                         // Get client specifictaion 

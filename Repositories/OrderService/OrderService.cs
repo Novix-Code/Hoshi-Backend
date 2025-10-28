@@ -285,7 +285,7 @@ namespace Hoshi.Repositories.OrderService
                 //     _hoshiDbContext.CompanyRevenues.Add(new CompanyRevenue
                 //     {
                 //         Value = totalCommission,
-                //         CreatedAt = DateTime.UtcNow,
+                //         CreatedAt = DateTime.Now,
                 //         OrderId = order.Id
                 //     });
                 // }

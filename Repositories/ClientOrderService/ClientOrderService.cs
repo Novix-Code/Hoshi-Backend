@@ -84,7 +84,7 @@ namespace Hoshi.Repositories.ClientOrderService
                 // 3. Add Order Status History
                 await _context.OrderStatusHistory.AddAsync(new OrderStatusHistory
                 {
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     OrderId = orderMapper.Id,
                     OrderStatus = Enum.Parse<OrderStatus>(orderMapper.OrderStatus)
                 });
@@ -116,7 +116,7 @@ namespace Hoshi.Repositories.ClientOrderService
                             OrderId = orderMapper.Id,
                             OfferId = null,
                             PromotionId = slectedPromotionId,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.Now
                         });
                     }
                 }
@@ -173,10 +173,10 @@ namespace Hoshi.Repositories.ClientOrderService
                 // 2.1 Determin the Time that is matching with business logic which is (12H before and after)
                 var befor12H = targetOrder.ServicingDateTime.AddHours(-12);
                 var after12H = targetOrder.ServicingDateTime.AddHours(12);
-                // Suggested: ensure ServicingDateTime stored in UTC and compare against DateTime.UtcNow
+                // Suggested: ensure ServicingDateTime stored in UTC and compare against DateTime.Now
 
                 // 2.2 Befor 12H
-                if (DateTime.UtcNow <= befor12H)
+                if (DateTime.Now <= befor12H)
                 {
                     targetOrder.OrderStatus = Enums.OrderStatus.Cancelled.ToString();
                     _context.Orders.Update(targetOrder);
@@ -191,7 +191,7 @@ namespace Hoshi.Repositories.ClientOrderService
                 }
 
                 // 2.3 After 12H
-                if (DateTime.UtcNow >= after12H)
+                if (DateTime.Now >= after12H)
                 {
 
                     var clientDetails = await _context.ClientSpecifications
@@ -241,7 +241,7 @@ namespace Hoshi.Repositories.ClientOrderService
                         Title = "اضافة تعويض الغاء",
                         IsIncome = true,
                         WorkerWalletId = workerWallet.Id,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                     });
 
                     _context.WorkerWallets.Update(workerWallet);

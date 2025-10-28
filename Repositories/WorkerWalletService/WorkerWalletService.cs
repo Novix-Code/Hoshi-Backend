@@ -166,7 +166,9 @@ namespace Hoshi.Repositories.WorkerWalletService
                 WorkerWalletId = wallet.Id,
                 Title = title,
                 Value = amount,
-                IsIncome = true
+                IsIncome = true,
+                CreatedAt = DateTime.Now,
+
             });
 
             await _context.SaveChangesAsync();
@@ -188,7 +190,9 @@ namespace Hoshi.Repositories.WorkerWalletService
                 WorkerWalletId = wallet.Id,
                 Title = title,
                 Value = amount,
-                IsIncome = false
+                IsIncome = false,
+                CreatedAt = DateTime.Now,
+
             });
 
             await _context.SaveChangesAsync();

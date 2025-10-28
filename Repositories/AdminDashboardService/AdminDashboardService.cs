@@ -848,7 +848,7 @@ namespace Hoshi.Repositories.AdminDashboardService
                     var result = await context.WorkerWallets.AddAsync(new WorkerWallet()
                     {
                         WorkerId = workerId,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                     });
 
                     // save changes to get new wallet id
@@ -878,13 +878,13 @@ namespace Hoshi.Repositories.AdminDashboardService
                     });
 
                 paymentRequest.IsApproved = true;
-                paymentRequest.ModifiedAt = DateTime.UtcNow;
+                paymentRequest.ModifiedAt = DateTime.Now;
 
                 // 4- Add it to wallet history
                 await context.WorkerWalletHistories.AddAsync(new WorkerWalletHistory
                 {
                     IsIncome = true,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     WorkerWalletId = workerWallet.Id,
                     Value = paymentValue,
                     Title = "اضافة رصيد جديد على المحفظة"
@@ -1008,7 +1008,7 @@ namespace Hoshi.Repositories.AdminDashboardService
                 getComplaint.Response = complaintCreateDto.Response.Trim();
 
                 getComplaint.ComplaintStatus = ComplaintStatus.Solved.ToString();
-                getComplaint.ModifiedAt = DateTime.UtcNow;
+                getComplaint.ModifiedAt = DateTime.Now;
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
