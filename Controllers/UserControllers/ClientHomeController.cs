@@ -46,7 +46,7 @@ namespace Hoshi.Controllers.UserControllers
         /// </summary>
         /// <param name="serviceId">The ID of the service to delete</param>
         /// <returns>Result indicating success or failure</returns>
-        [HttpDelete("DeleteServiceTest/{serviceId}")]
+        [HttpDelete("DeleteServiceTest/{serviceId:int}")]
         [AllowAnonymous]
 
         public async Task<IActionResult> DeleteServiceTest(int serviceId)
@@ -60,7 +60,7 @@ namespace Hoshi.Controllers.UserControllers
         /// </summary>
         /// <param name="categoryId">The ID of the category to delete</param>
         /// <returns>Result indicating success or failure</returns>
-        [HttpDelete("DeleteCategoryTest/{categoryId}")]
+        [HttpDelete("DeleteCategoryTest/{categoryId:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> DeleteCategoryTest(int categoryId)
         {
@@ -69,7 +69,7 @@ namespace Hoshi.Controllers.UserControllers
         }
         
         
-        [HttpDelete("DeleteJobTest/{jobId}")]
+        [HttpDelete("DeleteJobTest/{jobId:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> DeleteJobTest(int jobId)
         {
@@ -78,7 +78,7 @@ namespace Hoshi.Controllers.UserControllers
 
         }
         
-        [HttpDelete("DeleteJobServiceTest/{jobId}/{serviceId}")]
+        [HttpDelete("DeleteJobServiceTest/{jobId:int}/{serviceId:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> DeleteJobServiceTest(int jobId,int serviceId)
         {
@@ -91,7 +91,7 @@ namespace Hoshi.Controllers.UserControllers
         /// </summary>
         /// <param name="offerId">The ID of the offer to delete</param>
         /// <returns>Result indicating success or failure</returns>
-        [HttpDelete("DeleteOfferTest/{offerId}")]
+        [HttpDelete("DeleteOfferTest/{offerId:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> DeleteOfferTest(int offerId)
         {
@@ -100,6 +100,13 @@ namespace Hoshi.Controllers.UserControllers
 
         }
         
-        
+        [HttpDelete("DeletePromotionTest/{promotionId:int}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DeletePromotionTest(int promotionId)
+        {
+            var response = await clientHomeService.DeletePromotion(promotionId);
+            return StatusCode((int)response.StatusCode, response);
+
+        }
     }
 }

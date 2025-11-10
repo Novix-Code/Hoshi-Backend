@@ -367,9 +367,8 @@ namespace Hoshi.Repositories.ClientHomeService
                     };
                 }
 
-                // Step 3: Perform soft delete by setting IsDeleted to true
-                promotion.IsDeleted = true;
-                _context.Promotions.Update(promotion);
+                // promotion.IsDeleted = true;
+                _context.Promotions.Remove(promotion);
                 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
