@@ -44,6 +44,6 @@ namespace Hoshi.Repositories.ClientHomeService
         /// <param name="promotionId">The ID of the promotion to delete</param>
         /// <returns>Result indicating success or failure</returns>
         Task<ResultDTO<object>> DeletePromotion(int promotionId);
-
+        Task<ResultDTO<object>> DeleteOrder(int orderId);
     }
 }

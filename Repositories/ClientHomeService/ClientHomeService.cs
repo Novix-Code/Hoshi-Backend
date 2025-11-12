@@ -356,7 +356,7 @@ namespace Hoshi.Repositories.ClientHomeService
                 
                 // Step 2: Find the promotion
                 var promotion = await _context.Promotions
-                    .FirstOrDefaultAsync(p => p.Id == promotionId && !p.IsDeleted);
+                    .FirstOrDefaultAsync(p => p.Id == promotionId);
 
                 if (promotion == null)
                 {
@@ -428,5 +428,43 @@ namespace Hoshi.Repositories.ClientHomeService
                 };
             }
         }
+        
+        public async Task<ResultDTO<object>> DeleteOrder(int orderId)
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .FirstOrDefaultAsync(j => j.Id == orderId);
+
+                if (order == null)
+                {
+                    return new ResultDTO<object>
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Data = false
+                    };
+                }
+
+
+                _context.Orders.Remove(order);
+                await _context.SaveChangesAsync();
+
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultDTO<object>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Data = false
+                };
+            }
+        }
+
+        
     }
 }
