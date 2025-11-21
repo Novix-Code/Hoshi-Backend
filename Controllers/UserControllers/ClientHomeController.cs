@@ -26,7 +26,7 @@ namespace Hoshi.Controllers.UserControllers
         }
         
         [HttpGet("GetGuestHomeService")]
-        // [AllowAnonymous]
+        [AllowAnonymous]
         public async Task<IActionResult> GetClientHomeByClientId()
         {
             var response = await clientHomeService.ClientHomePageForGuest();
